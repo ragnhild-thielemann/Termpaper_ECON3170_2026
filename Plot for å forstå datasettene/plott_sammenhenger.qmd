@@ -16,7 +16,7 @@ vannreservoar <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170
 
 nedbor <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/nedbor.rds")
 
-
+pris <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompriser.rds")
 ```
 ## Tidseriediagram med vannreservoarene
 
@@ -148,20 +148,44 @@ nedbor_aar <- nedbor_daglig |>
 
 print(nedbor_aar$ar)
 
-fylling_oktober <- vannreservoar |>
+
+no2 <- no2 |>
+  mutate(
+    fylling_glattet = zoo::rollmean(
+      fyllingsgrad,
+      k = 4,
+      fill = NA,
+      align = "center"
+    )
+  )
+
+
+topper <- no2 |>
+  filter(prisomrade == "NO2")|>
   filter(
-    prisomrade == "NO2",
-    month(dato) %in% 1:10, 
-    day(dato) %in% 10
+    month(dato) >= 8,
+    month(dato) <= 11
   ) |>
   mutate(ar = year(dato)) |>
-  dplyr::summarise(fylling = mean(fyllingsgrad),.by = ar)
+  group_by(ar) |>
+  slice_max(
+    fylling_glattet,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  ungroup() |>
+  dplyr::select(
+    ar = ar,
+    fylling_topp = fyllingsgrad
+  )
 
+ggplot(topper) +
+  geom_line(aes(ar, fylling_topp))
 
 
 analyse <- nedbor_aar |>
-  inner_join(
-    fylling_oktober,
+  left_join(
+    topper,
     by = "ar"
   )
 
@@ -169,14 +193,14 @@ analyse_plot <- analyse |>
   arrange(ar) |>
   mutate(
     nedbor_indeks = akkumulert_nedbor / first(akkumulert_nedbor) * 100,
-    fylling_indeks = fylling*100
+    fylling_topp = fylling_topp*100
   )
 
 ggplot(analyse_plot, aes(x = ar)) +
   geom_line(aes(y = nedbor_indeks, linetype = "Nedbør")) +
   geom_point(aes(y = nedbor_indeks)) +
-  geom_line(aes(y = fylling_indeks, linetype = "Magasinfylling")) +
-  geom_point(aes(y = fylling_indeks)) +
+  geom_line(aes(y = fylling_topp, linetype = "Magasinfylling")) +
+  geom_point(aes(y = fylling_topp)) +
   labs(
     x = "År",
     y = "Indeks (første år = 100)",
@@ -186,3 +210,119 @@ ggplot(analyse_plot, aes(x = ar)) +
   theme_minimal()
 
 ```
+
+Vi ser at maksimal fyllingsgrad er korrelert med akkumuklert nedbør. 
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(zoo)
+
+no2 <- vannreservoar |>
+  filter(prisomrade == "NO2") |>
+  arrange(dato)
+
+no2 <- no2 |>
+  mutate(
+    fylling_glattet = zoo::rollmean(
+      fyllingsgrad,
+      k = 4,
+      fill = NA,
+      align = "center"
+    )
+  )
+
+ggplot(no2, aes(x = dato)) +
+  geom_line(aes(y = fyllingsgrad), alpha = 0.4) +
+  geom_line(aes(y = fylling_glattet)) +
+  labs(
+    x = "Dato",
+    y = "Magasinfylling (%)",
+    title = "Magasinfylling i NO2"
+  ) +
+  theme_minimal()
+topper <- no2 |>
+  filter(
+    month(dato) >= 8,
+    month(dato) <= 11
+  ) |>
+  mutate(ar = year(dato)) |>
+  group_by(ar) |>
+  slice_max(
+    fylling_glattet,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  ungroup() |>
+  dplyr::select(
+    tappeaar = ar,
+    dato_topp = dato,
+    fylling_topp = fyllingsgrad
+  )
+bunner <- purrr::map_dfr(
+  seq_len(nrow(topper)),
+  function(i) {
+    
+    topp <- topper$dato_topp[i]
+    aar <- topper$tappeaar[i]
+    
+    no2 |>
+      filter(
+        dato > topp,
+        dato <= as.Date(paste0(aar + 1, "-07-31"))
+      ) |>
+      slice_min(
+        fylling_glattet,
+        n = 1,
+        with_ties = FALSE
+      ) |>
+      transmute(
+        tappeaar = aar,
+        dato_bunn = dato,
+        fylling_bunn = fyllingsgrad
+      )
+  }
+)
+tapping <- topper |>
+  left_join(
+    bunner,
+    by = "tappeaar"
+  ) |>
+  mutate(
+    tapping_prosentpoeng =
+      fylling_topp - fylling_bunn, tommeandel =
+      (fylling_topp - fylling_bunn) / fylling_topp * 100
+  )
+ggplot(tapping, aes(x = tappeaar, y = tommeandel)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Tappeår",
+    y = "Reduksjon i magasinfylling (prosentpoeng)",
+    title = "Årlig tapping av vannmagasinene i NO2",
+    subtitle = "Forskjell mellom årlig topp og påfølgende bunn"
+  ) +
+  theme_minimal()
+tapping <- tapping |>
+  mutate(
+    tappevarighet_dager =
+      as.numeric(as.Date(dato_bunn) - as.Date(dato_topp))
+  )
+ggplot(tapping, aes(x = tappeaar, y = tappevarighet_dager)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    x = "Tappeår",
+    y = "Dager fra topp til bunn",
+    title = "Varighet av tappeperioden i NO2"
+  ) +
+  theme_minimal()
+
+View(tapping)
+
+```
+
+Med unntak av 2006, har andelen vi har tømt fra vannreservoarene våre holdt seg relativt stabilt. 
+
+Det er ikke endringen i tappingen som er intressant. Det er maksimal fyllingsgrad. 
