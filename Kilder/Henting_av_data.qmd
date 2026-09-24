@@ -25,8 +25,8 @@ Vi skal bruke API-er til å innhente dataen vi skal bruke for prosjektet. For å
 
 ```{r}
 
-hent_vannreservoar <- function(start_year = 1950,
-                           end_year = 2024,
+hent_vannreservoar <- function(start_year = 1995,
+                           end_year = 2026,
                            areas = c("NO1", "NO2", "NO3", "NO4", "NO5")) { #har initialverdier for funksjonen, som kan endres om ønskelig
   
   # URL til NVE sitt API
@@ -226,4 +226,71 @@ ggplot(p1, aes(
 
 ```{r}
 
+library(httr2)
+library(jsonlite)
+library(dplyr)
+library(purrr)
+library(lubridate)
+
+hent_strompris <- function(dato, prisomrade = "NO2") {
+  
+  url <- paste0(
+    "https://www.hvakosterstrommen.no/api/v1/prices/",
+    year(dato), "/",
+    format(dato, "%m-%d"), "_",
+    prisomrade,
+    ".json"
+  )
+  
+  response <- request(url) |>
+    req_perform()
+  
+  fromJSON(resp_body_string(response)) |>
+    as_tibble() |>
+    mutate(dato = dato)
+}
+
+
+hent_priser_periode <- function(
+    start_date = "2021-12-01",
+    end_date = "2024-12-31",
+    prisomrade = "NO2"
+) {
+  
+  datoer <- seq(
+    as.Date(start_date),
+    as.Date(end_date),
+    by = "day"
+  )
+  
+  map_dfr(
+    datoer,
+    function(dato) {
+      
+      tryCatch(
+        {
+          hent_strompris(dato, prisomrade)
+        },
+        error = function(e) {
+          message("Feil for dato: ", dato)
+          tibble()
+        }
+      )
+      
+    }
+  )
+}
+
+
+strompriser <- hent_priser_periode(
+  "2021-12-01",
+  "2024-12-31",
+  "NO2"
+)
+
+saveRDS(
+  strompriser,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompriser.rds")
+
+View(strompriser)
 ```
