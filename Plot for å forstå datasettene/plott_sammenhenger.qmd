@@ -14,7 +14,7 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 ```{r}
 vannreservoar <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
 
-nedbor <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
+nedbor <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/nedbor.rds")
 
 
 ```
@@ -125,6 +125,64 @@ er endringen i fyllingsgraden større når strømprisen er høy? øker eksporter
 
 ```{r}
 
-glimpse(nedbor)
+
+nedbor_daglig <- nedbor |>
+  group_by(dato) |>
+  summarise(
+    nedbor_mm = mean(nedbor_mm, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+nedbor_aar <- nedbor_daglig |>
+  mutate(
+    ar = year(dato)
+  ) |>
+  filter(
+    month(dato) <= 9
+  ) |>
+  group_by(ar) |>
+  summarise(
+    akkumulert_nedbor = sum(nedbor_mm, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print(nedbor_aar$ar)
+
+fylling_oktober <- vannreservoar |>
+  filter(
+    prisomrade == "NO2",
+    month(dato) %in% 1:10, 
+    day(dato) %in% 10
+  ) |>
+  mutate(ar = year(dato)) |>
+  dplyr::summarise(fylling = mean(fyllingsgrad),.by = ar)
+
+
+
+analyse <- nedbor_aar |>
+  inner_join(
+    fylling_oktober,
+    by = "ar"
+  )
+
+analyse_plot <- analyse |>
+  arrange(ar) |>
+  mutate(
+    nedbor_indeks = akkumulert_nedbor / first(akkumulert_nedbor) * 100,
+    fylling_indeks = fylling*100
+  )
+
+ggplot(analyse_plot, aes(x = ar)) +
+  geom_line(aes(y = nedbor_indeks, linetype = "Nedbør")) +
+  geom_point(aes(y = nedbor_indeks)) +
+  geom_line(aes(y = fylling_indeks, linetype = "Magasinfylling")) +
+  geom_point(aes(y = fylling_indeks)) +
+  labs(
+    x = "År",
+    y = "Indeks (første år = 100)",
+    linetype = "Variabel",
+    title = "Utviklingen i nedbør og magasinfylling over tid"
+  ) +
+  theme_minimal()
 
 ```
