@@ -9,21 +9,20 @@ Det første vi gjør, er at vi imporerer alle pakkene vi strenger for prosjektet
 #| 
 library(httr); library(jsonlite); library(dplyr); library(tidyr); library(lubridate); library(zoo); library(rugarch); library(plm); library(readr); library(vars) 
 
-
 ```
 
 ## Innsamling av data
 
-Vi skal bruke API-er til å innhente dataen vi skal bruke for prosjektet. For å finne den historiske fyllingsgraden i vannmagasinene bruker vi Statnett sine data
+Vi skal bruke API-er til å innhente dataen vi skal bruke for prosjektet. For å finne den historiske fyllingsgraden i vannmagasinene bruker vi datasett fra NVE
 
 
 
 
 ```{r}
 
-get_reservoirs <- function(start_year = 1950,
+hent_vannreservoar <- function(start_year = 1950,
                            end_year = 2024,
-                           areas = c("NO1", "NO2", "NO3", "NO4", "NO5")) {
+                           areas = c("NO1", "NO2", "NO3", "NO4", "NO5")) { #har initialverdier for funksjonen, som kan endres om ønskelig
   
   # URL til NVE sitt API
   url <- paste0(
@@ -34,32 +33,33 @@ get_reservoirs <- function(start_year = 1950,
   # Hent data
   data <- jsonlite::fromJSON(url)
   
-  # Gjør om til dataframe og bearbeid
-  reservoirs <- data %>%
+  # Gjør om til dataframe og bearbeider det som en tibble
+  reservoarer <- data |>
     dplyr::filter(
       iso_aar >= start_year,
       iso_aar <= end_year
-    ) %>%
+    ) |>
     dplyr::mutate(
-      area = paste0("NO", omrnr),
-      filling_percent = fyllingsgrad
-    ) %>%
+      prisomrade = paste0("NO", omrnr),
+    ) |>
     dplyr::filter(
-      area %in% areas
-    ) %>%
+      prisomrade %in% areas
+    ) |>
     dplyr::select(
-      date = dato_Id,
-      area,
-      filling_percent
-    ) %>%
+      dato = dato_Id,
+      prisomrade,
+      fyllingsgrad,
+      fyllingsgrad_forrige_uke
+    ) |>
     dplyr::arrange(
-      date,
-      area
+      dato,
+      prisomrade
     )
   
-  return(reservoirs)
+  return(reservoarer)
 }
 
+hent_vannreservoar()
 
 ```
 
