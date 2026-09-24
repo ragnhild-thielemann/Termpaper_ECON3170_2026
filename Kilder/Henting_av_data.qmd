@@ -1,0 +1,26 @@
+---
+title: "Henting_av_data"
+format: html
+---
+```{r}
+# 1) Last inn biblioteker ---------------------------------------------------
+install.packages("rugarch")
+install.packages("plm")
+library(httr); library(jsonlite); library(dplyr); library(tidyr)
+library(lubridate); library(zoo); library(rugarch); library(plm)
+
+
+# 2) Hent data (eksempel for én dag) ---------------------------------------
+reservoirs <- GET("https://driftsdata.statnett.no/restapi/v1/reservoirs") %>%
+  content(as = "text") %>% fromJSON(flatten = TRUE) %>%
+  select(date = timestamp, name, filling) %>%
+  mutate(date = as.Date(date))
+
+prices <- read.csv("nordpool_prices_2020_2025.csv") %>%
+  mutate(datetime = ymd_hms(timestamp),
+         date = as.Date(datetime),
+         logprice = log(price))
+
+weather <- read.csv("met_no_daily_2020_2025.csv") %>%
+  mutate(date = as.Date(date))
+```
