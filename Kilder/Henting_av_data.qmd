@@ -2,25 +2,68 @@
 title: "Henting_av_data"
 format: html
 ---
+
+Det første vi gjør, er at vi imporerer alle pakkene vi strenger for prosjektet vårt. Disse kjører vi en gang, slik at de er importert når vi fortsetter å jobbe.
 ```{r}
-# 1) Last inn biblioteker ---------------------------------------------------
-install.packages("rugarch")
-install.packages("plm")
-library(httr); library(jsonlite); library(dplyr); library(tidyr)
-library(lubridate); library(zoo); library(rugarch); library(plm)
+#| echo: false
+#| 
+library(httr); library(jsonlite); library(dplyr); library(tidyr); library(lubridate); library(zoo); library(rugarch); library(plm); library(readr); library(vars) 
 
 
-# 2) Hent data (eksempel for én dag) ---------------------------------------
-reservoirs <- GET("https://driftsdata.statnett.no/restapi/v1/reservoirs") %>%
-  content(as = "text") %>% fromJSON(flatten = TRUE) %>%
-  select(date = timestamp, name, filling) %>%
-  mutate(date = as.Date(date))
+```
 
-prices <- read.csv("nordpool_prices_2020_2025.csv") %>%
-  mutate(datetime = ymd_hms(timestamp),
-         date = as.Date(datetime),
-         logprice = log(price))
+## Innsamling av data
 
-weather <- read.csv("met_no_daily_2020_2025.csv") %>%
-  mutate(date = as.Date(date))
+Vi skal bruke API-er til å innhente dataen vi skal bruke for prosjektet. For å finne den historiske fyllingsgraden i vannmagasinene bruker vi Statnett sine data
+
+
+
+
+```{r}
+
+get_reservoirs <- function(start_year = 1950,
+                           end_year = 2024,
+                           areas = c("NO1", "NO2", "NO3", "NO4", "NO5")) {
+  
+  # URL til NVE sitt API
+  url <- paste0(
+    "https://biapi.nve.no/magasinstatistikk/",
+    "api/Magasinstatistikk/HentOffentligData"
+  )
+  
+  # Hent data
+  data <- jsonlite::fromJSON(url)
+  
+  # Gjør om til dataframe og bearbeid
+  reservoirs <- data %>%
+    dplyr::filter(
+      iso_aar >= start_year,
+      iso_aar <= end_year
+    ) %>%
+    dplyr::mutate(
+      area = paste0("NO", omrnr),
+      filling_percent = fyllingsgrad
+    ) %>%
+    dplyr::filter(
+      area %in% areas
+    ) %>%
+    dplyr::select(
+      date = dato_Id,
+      area,
+      filling_percent
+    ) %>%
+    dplyr::arrange(
+      date,
+      area
+    )
+  
+  return(reservoirs)
+}
+
+
+```
+
+
+
+
 ```
