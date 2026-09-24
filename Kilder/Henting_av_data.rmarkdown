@@ -8,7 +8,7 @@ Det første vi gjør, er at vi imporerer alle pakkene vi strenger for prosjektet
 ```{r}
 #| echo: false
 #| 
-library(httr); library(jsonlite); library(dplyr); library(tidyr); library(lubridate); library(zoo); library(rugarch); library(plm); library(readr); library(vars) ; library(tidyverse)
+library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
 
 ```
 
