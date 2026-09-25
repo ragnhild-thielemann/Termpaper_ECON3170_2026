@@ -1,6 +1,3 @@
-
-
-
 library(httr2)
 library(xml2)
 library(dplyr)
@@ -15,33 +12,32 @@ library(lubridate)
 readRenviron("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/.Renviron")
 
 api_key <- Sys.getenv("europa") #henter ut nøkkelen
+response <- httr2::request(
+  "https://web-api.tp.entsoe.eu/api"
+) |>
+  httr2::req_url_query(
+    securityToken = api_key,
+    documentType = "A11",
+    processType = "A16",
+    in_Domain = "10Y1001A1001A82H",
+    out_Domain = "10YNO-2--------T",
+    periodStart = "202008010000",
+    periodEnd = "202009010000"
+  ) |>
+  httr2::req_perform()
+
+response
 
 
-
-if (api_key == "") {
-  stop("Fant ikke ENTSOE_TOKEN. Sjekk .Renviron.")
-}
-
-
-hent_priser_norge <- function(
+hent_stromflyt <- function(
     start,
     end,
-    prisomrade,
+    fra_zone,
+    til_zone,
+    fra_eic,
+    til_eic,
     api_key
 ) {
-  if (word(prisomrade,1)== "Norway"){ #tester for prisområde i Norge
-    eic_koder <- c(
-      NO1 = "10YNO-1--------2",
-      NO2 = "10YNO-2--------T",
-      NO3 = "10YNO-3--------J",
-      NO4 = "10YNO-4--------9",
-      NO5 = "10Y1001A1001A48H"
-    )
-    
-    eic_code <- eic_koder[word(prisomrade,-1)]
-  }
-  
-  
   
   start <- as.Date(start)
   end <- as.Date(end)
@@ -66,7 +62,8 @@ hent_priser_norge <- function(
     )
     
     message(
-      "Henter Norge ", prisomrade, ": ",
+      "Henter strømflyt ",
+      fra_zone, " -> ", til_zone, ": ",
       maaned_start, " -> ", maaned_slutt
     )
     
@@ -85,9 +82,10 @@ hent_priser_norge <- function(
     ) |>
       httr2::req_url_query(
         securityToken = api_key,
-        documentType = "A44",
-        in_Domain = eic_code,
-        out_Domain = eic_code,
+        documentType = "A11",
+        processType = "A16",
+        in_Domain = til_eic,
+        out_Domain = fra_eic,
         periodStart = period_start,
         periodEnd = period_end
       ) |>
@@ -150,11 +148,11 @@ hent_priser_norge <- function(
         )
       )
       
-      price <- as.numeric(
+      quantity <- as.numeric(
         xml2::xml_text(
           xml2::xml_find_all(
             points,
-            ".//*[local-name()='price.amount']"
+            ".//*[local-name()='quantity']"
           )
         )
       )
@@ -168,11 +166,11 @@ hent_priser_norge <- function(
       datetime <- start_datetime +
         minutes * 60 * (position - 1)
       
-      tibble::tibble(
+      tibble::tibble( #bygger opp en tibble
         datetime = datetime,
-        country = "Norway",
-        zone = prisomrade,
-        price = price,
+        from_zone = fra_zone,
+        to_zone = til_zone,
+        flow_MW = quantity,
         position = position,
         resolution = resolution
       )
@@ -181,29 +179,43 @@ hent_priser_norge <- function(
     dplyr::bind_rows(resultat)
   })
   
-  dplyr::bind_rows(alle_data) |>
+  resultat <- dplyr::bind_rows(alle_data)
+  
+  if (nrow(resultat) == 0) {
+    warning(
+      "Ingen strømflytdata ble funnet for ",
+      fra_zone, " -> ", til_zone
+    )
+    
+    return(tibble::tibble(
+      datetime = as.POSIXct(character()),
+      from_zone = character(),
+      to_zone = character(),
+      flow_MW = numeric(),
+      position = integer(),
+      resolution = character()
+    ))
+  }
+  
+  resultat |>
     dplyr::distinct(
       datetime,
-      country,
-      zone,
+      from_zone,
+      to_zone,
       .keep_all = TRUE
     ) |>
     dplyr::arrange(datetime)
 }
 
-#kan nå hente for hvert prisområde vi ønsker å ha ut. Funksjonen bør lages generell, slik at
 
-
-#Struktur = 
-# Hvis i norge, hent inn tilleggsinformasjonen om prisområde. Du kaller funksjonen med (Norway, prisomrade)
-priser_no2 <- hent_priser_norge(
+flyt_no2_delu <- hent_stromflyt(
   start = "2020-08-01",
   end = "2020-08-31",
-  prisomrade = "Norway NO2",
+  fra_zone = "NO2",
+  til_zone = "NO1",
+  fra_eic = "10YNO-2--------T",
+  til_eic = "10YNO-1--------2",
   api_key = api_key
 )
 
-View(priser_no2)
-saveRDS(
-  priser_no2,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/priser_no2.rds")
+flyt_no2_delu

@@ -296,4 +296,11 @@ View(strompriser)
 ```
 
 
-## Henting av  data fra 
+## Henting av  data fra ENTSOE
+
+
+```{r}
+
+
+
+```
