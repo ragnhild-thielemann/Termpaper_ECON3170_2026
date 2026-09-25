@@ -92,13 +92,12 @@ hent_eic_kode <- function(land,omrade, api_key) {
     TRUE ~ NA_character_
   )
   
-  if (is.na(eic_code)) { #Dersom ingen av alternativene passer, sendes det ut en feilmelding
-    stop("Fant ikke EIC-kode for: ", prisomrade)
+  if (is.na(eic_code)) {
+    stop("Fant ikke EIC-kode for: ", land, " ", omrade)
   }
   
   return(eic_code)
 }
-
 
 hent_markedspriser <- function(start_dato, slutt_dato, prisomrade , variabel = "A44",  api_key= api_key) {
   #' Vi har startidspunkt, slutttidspunkt, prisområde, variabel (hva slags data vi vil hente ut) og API-nøkkel som funksjonsverdier
@@ -107,7 +106,7 @@ hent_markedspriser <- function(start_dato, slutt_dato, prisomrade , variabel = "
   
   eic_code = hent_eic_kode(land, omrade,api_key)
   #' Henter ut eic-koden ved hjelp av funkjsjonen
-
+  
   #Konverterer datoene til klassen for datoer, slik at R håndterere datapunktene 
   start_dato <- as.Date(start_dato)
   slutt_dato <- as.Date(slutt_dato)
@@ -115,7 +114,7 @@ hent_markedspriser <- function(start_dato, slutt_dato, prisomrade , variabel = "
   #'Vi kan ikke hente ut hele datasettet på en gang, da dette blir for mye å håndtere. 
   #'Derfor oppretter vi en liste med månedsvise bolker, som vi henter  ut sekvensielt. 
   #'De månedsvise datasettenede bindes sammen med bind_cols
-
+  
   maaneder <- seq(
     from = as.Date(format(start_dato, "%Y-%m-01")),
     to = as.Date(format(slutt_dato, "%Y-%m-01")),
@@ -266,5 +265,3 @@ hent_markedspriser <- function(start_dato, slutt_dato, prisomrade , variabel = "
 }
 
 #kan nå hente for hvert prisområde vi ønsker å ha ut. Funksjonen bør lages generell, slik at
-
-
