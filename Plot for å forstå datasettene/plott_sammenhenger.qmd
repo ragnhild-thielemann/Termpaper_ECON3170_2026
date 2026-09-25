@@ -17,6 +17,11 @@ vannreservoar <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170
 nedbor <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/nedbor.rds")
 
 pris <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompriser.rds")
+
+
+osterrike_test <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/osterrike_test.rds")
+
+no2 <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/priser_no2.rds")
 ```
 ## Tidseriediagram med vannreservoarene
 
@@ -326,3 +331,35 @@ View(tapping)
 Med unntak av 2006, har andelen vi har tømt fra vannreservoarene våre holdt seg relativt stabilt. 
 
 Det er ikke endringen i tappingen som er intressant. Det er maksimal fyllingsgrad. 
+
+
+```{r}
+
+library(lubridate)
+library(dplyr)
+
+p1 <- osterrike_test|>
+  dplyr::select(price, datetime)|>
+  ggplot(aes(datetime,price)) +
+  geom_line() + 
+  labs(title = "Markedsprisen på strøm" )
+p1
+
+```
+
+
+
+
+```{r}
+
+library(lubridate)
+library(dplyr)
+
+p1 <- no2|>
+  dplyr::select(price, datetime)|>
+  ggplot(aes(datetime,price)) +
+  geom_line() + 
+  labs(title = "Markedsprisen pa strøm" )
+p1
+
+```

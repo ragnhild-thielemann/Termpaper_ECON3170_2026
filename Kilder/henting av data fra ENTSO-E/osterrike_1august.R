@@ -284,7 +284,7 @@ datetime <- start_datetime +
 # 17. Lag datasett
 # ------------------------------------------------------------
 
-priser <- tibble(
+osterrike_test <- tibble(
   datetime = datetime,
   country = country,
   zone = zone,
@@ -367,3 +367,8 @@ message(
   "Manglende priser: ",
   sum(is.na(price))
 )
+
+#lagrer filen manuelt
+saveRDS(
+  osterrike_test,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/osterrike_test.rds")

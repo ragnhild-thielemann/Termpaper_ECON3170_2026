@@ -10,3 +10,19 @@ Datasettet over strømprisene er enormt, og krever derfor god kode for å få ut
 
 
 API-nøkkel → ENTSO-E API → XML → prisdata → tidspunkt → R-datasett
+
+
+position <- et tall mellom 1 og 96, da vi får en ny observasjon hvert 15 minutt
+
+
+
+Forklaring av datasettet
+
+|Variabel|Forklaring|
+|------|--------|
+|position | Tidsintervall på 15 min. Begynner ved 1 ved midnatt|
+|eic_code| Landkoden brukt for lagringen lokalt|
+|price| Markedsprisen på strøm målt i EUR/MWh. Dette er ikke det samme som prisen vi faktisk betaler|
+
+
+Pris konsumentene betaler = markedspris + nettleie + avgifter + mva
