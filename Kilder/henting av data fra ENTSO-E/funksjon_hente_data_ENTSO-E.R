@@ -32,8 +32,6 @@ hent_eic_kode <- function(land,omrade, api_key) {
   #' En funksjon som henter EIC-koden til landet/prisområdet.
   #' Både Norge og Sverige har ulike prisområder, som tas hensyn til. 
   
-  land <- stringr::word(prisomrade, 1) #vi deler opp strengen med Land og prissone, slik at disse kan behandles separat. 
-  omrade <- stringr::word(prisomrade, -1)
   
   eic_code <- dplyr::case_when(
     

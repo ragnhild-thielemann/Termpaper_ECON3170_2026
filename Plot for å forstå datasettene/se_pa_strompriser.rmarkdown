@@ -1,0 +1,55 @@
+---
+title: "Plott for strompriser"
+format: docx
+warning: false
+---
+```{r}
+#| echo: false
+#| 
+library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
+
+```
+
+
+```{r}
+
+#gjør det til et tidy format
+strom_norge <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/pris_total.rds")|>
+  pivot_longer(cols = -datetime,
+               names_prefix = "pris_",
+               names_to = "prisomrade",
+               values_to = "pris") 
+
+View(strom_norge)
+
+```
+
+
+
+```{r}
+p1 <- strom_norge |>
+  ggplot(aes(x = datetime, y = pris, color = prisomrade)) + geom_line()
+
+p1
+
+```
+
+
+```{r}
+
+p2 <- strom_norge |>
+  dplyr::filter(prisomrade %in% c("NO4"))|>
+  mutate(tid_pa_dagen = hour(datetime),ar = as.factor(year(datetime)))|>
+ 
+  summarise(strompris = mean(pris, na.rm = TRUE), .by = c(tid_pa_dagen,ar))|>
+  arrange(tid_pa_dagen) |>
+  ggplot(aes(x = tid_pa_dagen, y = strompris, color = ar)) +
+  geom_line()
+
+
+p2
+
+```
+
+Nå har flere kommet tilbake på kontoret, slik at strømprisen midt på dagen går ned. Når vi var hjemme hele dagen, var det et relativt konstant forbruk av  strøm gjennom hele vår våkne tilstand.
+
