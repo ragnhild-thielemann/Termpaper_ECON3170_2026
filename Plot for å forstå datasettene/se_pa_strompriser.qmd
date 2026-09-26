@@ -13,21 +13,14 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 
 ```{r}
 
-#gjør det til et tidy format
-strom_norge <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/pris_total.rds")|>
-  pivot_longer(cols = -datetime,
-               names_prefix = "pris_",
-               names_to = "prisomrade",
-               values_to = "pris") 
-
-View(strom_norge)
-
+strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
+strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
 ```
 
 
 
 ```{r}
-p1 <- strom_norge |>
+p1 <- strompriser_norge_long |>
   ggplot(aes(x = datetime, y = pris, color = prisomrade)) + geom_line()
 
 p1

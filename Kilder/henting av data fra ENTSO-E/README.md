@@ -3,10 +3,13 @@ title: "README"
 output: html_document
 ---
 
-Datasettet over strømprisene er enormt, og krever derfor god kode for å få ut på en fornuftig måte. Når vi skal hente ut datasettet, oppretter vi en sjult fil som inneholder tilgangsnøkkelen til API-et. Deretter henter vi denne frem, og lager en testfunksjon der vi henter ut dataen fra Østerrike, for å undersøke strukturen til API-et. Datasettet er en XML-fil, som vi må håndtere, før vi får dataen på r-format. 
+## Beskrivelse av datainnhentingen 
+Datasettet over strømpriser er omfattende og krever derfor strukturert og effektiv kode for å kunne hentes ut og behandles på en hensiktsmessig måte. For å hente data fra API-et oppretter vi først en skjult fil som inneholder tilgangsnøkkelen. Denne hentes inn i R-koden uten at nøkkelen eksponeres. Deretter lager vi en testfunksjon som henter data fra Østerrike, slik at vi kan undersøke strukturen i API-et og forstå hvordan dataene er organisert. Dataene leveres som XML-filer, og må derfor parses og bearbeides før de kan struktureres som et datasett i R.
 
+Vi har valgt en objektorientert og modulær struktur, der de ulike funksjonene ligger i separate filer. Dette gjør koden mer oversiktlig og enklere å navigere i, samtidig som funksjonene kan gjenbrukes på tvers av datasett. Vi har derfor én fil som inneholder selve funksjonskallet, og separate filer som bruker funksjonene til å hente ut de ulike datasettene.
 
-Jeg jobber objektorientert, og skriver de ulike funksjonene i hvert sitt dokument. Dette er for å unngå at filene blir for store, og dermed vannkelig å navigere i.
+De ferdig hentede datasettene lagres som RDS-filer. På denne måten slipper vi å gjøre de samme API-kallene hver gang koden kjøres. Dette er særlig viktig fordi datamengden er stor, og innhentingen kan være både tidkrevende og unødvendig ressurskrevende dersom den gjentas.
+
 
 
 API-nøkkel → ENTSO-E API → XML → prisdata → tidspunkt → R-datasett

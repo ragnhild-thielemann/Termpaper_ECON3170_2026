@@ -5,6 +5,9 @@ library(tibble)
 library(lubridate)
 library(stringr)
 
+source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteeickode.R")
+source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
+
 
 # ==========================================================
 # FUNKSJON: Hent faktisk og prognostisert strømforbruk
@@ -13,7 +16,7 @@ library(stringr)
 hent_forbruk_ENTSOE <- function(
     start_dato,
     slutt_dato,
-    prisomrade = "NO1",
+    prisomrade = "Norway NO1",
     api_key = api_key
 ) {
   
@@ -21,11 +24,12 @@ hent_forbruk_ENTSOE <- function(
   # 1. Finn EIC-koden til prisområdet
   # --------------------------------------------------------
   
-  land <- "Norway"
+  land <- stringr::word(prisomrade, 1) #vi deler opp strengen med Land og prissone, slik at disse kan behandles separat. 
+  omrade <- stringr::word(prisomrade, -1)
   
   eic_code <- hent_eic_kode(
     land,
-    prisomrade,
+    omrade,
     api_key
   )
   
@@ -374,11 +378,3 @@ hent_forbruk_ENTSOE <- function(
 }
 
 
-forbruk_NO1 <- hent_forbruk_ENTSOE(
-  start_dato = "2026-08-01",
-  slutt_dato = "2026-08-31",
-  prisomrade = "NO1",
-  api_key = api_key
-)
-
-summary(forbruk_NO1$prognosefeil_MW)
