@@ -9,7 +9,9 @@ warning: false
 library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
 
 ```
+## Strømstøtteordningen
 
+For å analysere forbruke 
 ## Henter du datasettene som er lagret på datamaskinen
 ```{r}
 
@@ -17,6 +19,9 @@ strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_
 
 strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
 forventing_mot_forbruk <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
+total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
+
+
 
 ```
 
@@ -78,7 +83,7 @@ prisomrader |>
   ) |>
   width(j = 1, width = 1) |>
   width(j = 2, width = 1.8) |>
-  width(j = 3, width = 4.5) |>
+  width(j = 3, width = 4) |>
   theme_booktabs() |>
   align(align = "left", part = "all") |>
   valign(valign = "top", part = "all")
@@ -109,3 +114,20 @@ Det er imidlertid viktig å være forsiktig med å tolke dette som en direkte sa
 En mulig forklaring på at strømforbruket holder seg relativt stabilt til tross for variasjoner i markedsprisen, er Norgesprisordningen. Norgespris ble innført i oktober 2025 og gir husholdninger som velger ordningen en fast kraftpris på 40 øre/kWh ekskludert merverdiavgift ut 2026. Når spotprisen er høyere enn Norgesprisen, dekker staten differansen, mens kunden betaler differansen dersom spotprisen er lavere. Nettleie, avgifter og eventuelle påslag kommer i tillegg.
 
 Dette innebærer at spotprisen vi observerer i datasettet, ikke nødvendigvis er den samme prisen husholdningene faktisk møter. Sammenhengen mellom markedspris og strømforbruk blir derfor vanskeligere å tolke direkte. Det relativt stabile forbruket kan være forenlig med uelastisk etterspørsel etter strøm på kort sikt, men kan også påvirkes av at husholdningenes faktiske kraftpris er skjermet fra deler av variasjonen i spotprisen. 
+
+
+
+```{r}
+
+
+
+p1 <- total_produksjon |>
+  filter(prisomrade == "NO4")|>
+  drop_na()|>
+  select(production_MW, produksjonstype, datetime) |>
+  ggplot(aes(x = datetime, y = production_MW, fill = produksjonstype)) + 
+  geom_area()
+  
+p1
+
+```

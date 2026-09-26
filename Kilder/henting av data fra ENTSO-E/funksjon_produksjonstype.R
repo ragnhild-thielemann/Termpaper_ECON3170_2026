@@ -15,7 +15,7 @@ hent_produksjon_ENTSOE <- function(
     slutt_dato,
     prisomrade = "Norway NO1",
     api_key = api_key,
-    psr_type = "B04"
+    psr_type = NULL
 ) {
   
   land <- stringr::word(prisomrade, 1)
@@ -58,20 +58,40 @@ hent_produksjon_ENTSOE <- function(
       format(maaned_slutt + 1, "%Y%m%d"),
       "0000"
     )
+    response <- tryCatch(
+      {
+        httr2::request(
+          "https://web-api.tp.entsoe.eu/api"
+        ) |>
+          httr2::req_url_query(
+            securityToken = api_key,
+            documentType = "A75",
+            processType = "A16",
+            in_Domain = eic_code,
+            periodStart = period_start,
+            periodEnd = period_end
+          ) |>
+          httr2::req_timeout(120) |>
+          httr2::req_retry(
+            max_tries = 3,
+            backoff = ~ 2^.x
+          ) |>
+          httr2::req_perform()
+      },
+      error = function(e) {
+        warning(
+          "Feil ved henting av ",
+          format(maaned, "%Y-%m"),
+          ": ",
+          conditionMessage(e)
+        )
+        return(NULL)
+      }
+    )
     
-    response <- httr2::request(
-      "https://web-api.tp.entsoe.eu/api"
-    ) |>
-      httr2::req_url_query(
-        securityToken = api_key,
-        documentType = "A75",
-        processType = "A16",
-        in_Domain = eic_code,
-        periodStart = period_start,
-        periodEnd = period_end
-      ) |>
-      httr2::req_perform()
-    
+    if (is.null(response)) {
+      return(NULL)
+    }
     xml <- httr2::resp_body_xml(response)
     
     time_series <- xml2::xml_find_all(
@@ -149,19 +169,32 @@ hent_produksjon_ENTSOE <- function(
         datetime = start_datetime +
           minutes * 60 * (position - 1),
         production_MW = quantity,
+        psr_type = psr,
         prisomrade = omrade
       )
     })
     
     dplyr::bind_rows(resultat)
   }
-  
   resultat <- lapply(
     maaneder,
     hent_maaned
   ) |>
-    dplyr::bind_rows() |>
-    dplyr::distinct(datetime, .keep_all = TRUE) |>
+    dplyr::bind_rows()
+  
+  # Sjekk om vi faktisk fikk data
+  if (nrow(resultat) == 0) {
+    warning("Ingen produksjonsdata ble hentet.")
+    return(resultat)
+  }
+  print(names(resultat))
+  print(dplyr::glimpse(resultat))
+  resultat <- resultat |>
+    dplyr::distinct(
+      datetime,
+      psr_type,
+      .keep_all = TRUE
+    ) |>
     dplyr::arrange(datetime)
   
   resultat
