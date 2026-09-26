@@ -10,7 +10,7 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 
 ```
 
-## Henter du datasettene fra maskinen
+## Henter du datasettene som er lagret på datamaskinen
 ```{r}
 
 strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
@@ -31,37 +31,81 @@ p1
 ```
 
 
-```{r}
-
-p2 <- strom_norge |>
-  dplyr::filter(prisomrade %in% c("NO4"))|>
-  mutate(tid_pa_dagen = hour(datetime),ar = as.factor(year(datetime)))|>
- 
-  summarise(strompris = mean(pris, na.rm = TRUE), .by = c(tid_pa_dagen,ar))|>
-  arrange(tid_pa_dagen) |>
-  ggplot(aes(x = tid_pa_dagen, y = strompris, color = ar)) +
-  geom_line()
 
 
-p2
+# Kombinerer de to datasettene for forvenet strømforbruk, og markedsprisen på strøm
 
-```
-
-
-Nå har flere kommet tilbake på kontoret, slik at strømprisen midt på dagen går ned. Når vi var hjemme hele dagen, var det et relativt konstant forbruk av  strøm gjennom hele vår våkne tilstand.
-
-#Kombinerer de to datasettene for forvenet strømforbruk, og strømpris
-
+For å finne sammenhenger mellom strømforbruk og strømpris, kombinerer vi de to datasettene til en tibble. Deretter lager vi et scatterplot, for å få et innblikk i eventuelle korrelasjoner. 
 ```{r}
 
 strompriser_mot_forventing <- forventing_mot_forbruk |>
   left_join(strompriser_norge_long, by = c("datetime", "prisomrade")) 
 
-nrow(strompriser_mot_forventing)
+```
+Norge er delt inn i fem prisområder: NO1, NO2, NO3, NO4 og NO5. Prisområdene er geografiske områder der strømprisen kan være forskjellig som følge av blant annet forskjeller i produksjon, forbruk og kapasitet i strømnettet. Når det er begrenset kapasitet mellom to områder, kan det oppstå prisforskjeller mellom dem.
+```{r}
+#| echo: false
 
-strompriser_mot_forventing |>
-  drop_na()
+#| input: false
 
-nrow(strompriser_mot_forventing)
+library(tibble)
+library(flextable)
+
+prisomrader <- tibble(
+  Prisomrade = c("NO1", "NO2", "NO3", "NO4", "NO5"),
+  Omrade = c(
+    "Ostlandet",
+    "Sorvestlandet",
+    "Midt-Norge",
+    "Nord-Norge",
+    "Vestlandet"
+  ),
+  Kjennetegn = c(
+    "Oslo-omradet. Hoyt forbruk og tett befolkning.",
+    "Agder og Rogaland. Mye vannkraft og sterke forbindelser til utlandet.",
+    "Trondelag og More og Romsdal. Mye vannkraft, men kan ha begrenset overforingskapasitet mot sor.",
+    "Nordland, Troms og Finnmark. Mye vannkraft og relativt lavt forbruk.",
+    "Vestland og omradet rundt Bergen. Mye vannkraft og store variasjoner i produksjon."
+  )
+)
+
+prisomrader |>
+  flextable() |>
+  set_header_labels(
+    Prisomrade = "Prisomrade",
+    Omrade = "Geografisk omrade",
+    Kjennetegn = "Kjennetegn"
+  ) |>
+  width(j = 1, width = 1) |>
+  width(j = 2, width = 1.8) |>
+  width(j = 3, width = 4.5) |>
+  theme_booktabs() |>
+  align(align = "left", part = "all") |>
+  valign(valign = "top", part = "all")
+
 
 ```
+
+```{r}
+
+
+scatter_plot <- strompriser_mot_forventing |>
+  filter(hour(datetime) %in% 8:16)|>
+  ggplot(aes(x = faktisk_forbruk_MW, y = pris,color = prisomrade)) + 
+  
+  geom_point()
+
+scatter_plot
+
+
+```
+
+Av plottet ser vi at strømforbruket holder seg relativt stabilt selv om markedsprisen varierer. Dette er særlig tydelig i prisområdene NO4 og NO5. I mikroøkonomi lærer vi at etterspørselen etter strøm ofte er relativt uelastisk på kort sikt. Plottet er forenlig med dette, ettersom det faktiske strømforbruket endrer seg lite til tross for betydelige variasjoner i markedsprisen.
+
+Det er imidlertid viktig å være forsiktig med å tolke dette som en direkte sammenheng mellom markedspris og etterspørsel. Forbrukerne møter ikke nødvendigvis den samme prisen som markedsprisen i datasettet. Norgesprisordningen innebærer at enkelte husholdninger betaler en fast eller regulert pris for strømmen, mens markedsprisen fortsatt varierer. Dermed vil endringer i markedsprisen i mindre grad slå direkte ut i den prisen forbrukeren faktisk betaler. Dette kan bidra til å forklare hvorfor strømforbruket holder seg relativt stabilt selv når markedsprisen varierer.
+
+**Norgesprisordningen**
+
+En mulig forklaring på at strømforbruket holder seg relativt stabilt til tross for variasjoner i markedsprisen, er Norgesprisordningen. Norgespris ble innført i oktober 2025 og gir husholdninger som velger ordningen en fast kraftpris på 40 øre/kWh ekskludert merverdiavgift ut 2026. Når spotprisen er høyere enn Norgesprisen, dekker staten differansen, mens kunden betaler differansen dersom spotprisen er lavere. Nettleie, avgifter og eventuelle påslag kommer i tillegg.
+
+Dette innebærer at spotprisen vi observerer i datasettet, ikke nødvendigvis er den samme prisen husholdningene faktisk møter. Sammenhengen mellom markedspris og strømforbruk blir derfor vanskeligere å tolke direkte. Det relativt stabile forbruket kan være forenlig med uelastisk etterspørsel etter strøm på kort sikt, men kan også påvirkes av at husholdningenes faktiske kraftpris er skjermet fra deler av variasjonen i spotprisen. 

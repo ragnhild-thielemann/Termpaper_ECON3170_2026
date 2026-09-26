@@ -13,7 +13,7 @@ strompris_norge <- tibble()
 for (sone in prissoner){
   
   priser_sone <- hent_markedspriser(
-    start_dato = "2026-09-01",
+    start_dato = "2026-07-01",
     slutt_dato = Sys.Date(),
     prisomrade= paste("Norway",sone),
     variabel = "A44",
@@ -22,7 +22,6 @@ for (sone in prissoner){
     dplyr::select(datetime, price)|>
     rename(!!paste0("pris_", sone) := price)
   
-  View(priser_sone)
   if (nrow(strompris_norge) == 0) { #Dersom tibbelen er tom, opprettes den med utgangpunkt i den første oversikten over priser-sone
     strompris_norge <- priser_sone
   } else {

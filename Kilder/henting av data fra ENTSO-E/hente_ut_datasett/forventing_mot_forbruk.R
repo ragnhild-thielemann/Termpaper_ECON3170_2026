@@ -9,7 +9,7 @@ forbruk_norge <- tibble()
 for (sone in prissoner){
   
   forbruk_sone <- hent_forbruk_ENTSOE(
-    start_dato = "2026-09-1",
+    start_dato = "2026-07-1",
     slutt_dato = Sys.Date(),
     prisomrade= paste("Norway",sone),
     variabel = "A16",
@@ -31,3 +31,4 @@ saveRDS(
   forbruk_norge,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
 
+View(forbruk_norge)
