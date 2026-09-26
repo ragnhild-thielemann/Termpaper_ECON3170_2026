@@ -33,6 +33,31 @@ for (sone in prissoner){
       )
   }}
 
+#'Vi har noen celler som mangler verdier for pris. 
+#'For at dette ikke skal bli tomme celler, antar vi at prisen på det gitte tidspunktet, 
+#'i det gitte intervallet er gjennomsnittet av de to foregående prisene. 
+#'
+#'Derfor lager vi en funksjon som beregner dette gjennomsnittet for de tomme cellene
+#'
+#'Funksjonen fungerer bare på long-formater
+
+
+lag_pris_estimat <- function(pris_tibble) {
+  
+  pris_tibble |>
+    arrange(prisomrade, datetime) |>
+    group_by(prisomrade) |>
+    mutate(
+      pris_modellert = if_else(
+        is.na(pris),
+        (lag(pris, 1) + lag(pris, 2)) / 2,
+        pris
+      )
+    ) |>
+    ungroup()
+}
+
+
 #Vi lagrer to tibbler - en i wide og en i long format, da de har ulike bruksområder. 
 
 strompris_norge_wide <- strompris_norge|>
@@ -45,6 +70,9 @@ strompris_norge_long <- strompris_norge |>
                values_to = "pris") |>
   arrange(datetime)
 #lagrer hele datafilen som en RDS-fil på datamaskinen
+
+strompriser_norge_long <- lag_pris_estimat(strompriser_norge_long)
+
 saveRDS(
   strompris_norge_wide,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")

@@ -17,6 +17,7 @@ hent_forbruk_ENTSOE <- function(
     start_dato,
     slutt_dato,
     prisomrade = "Norway NO1",
+    variabel = "A16",
     api_key = api_key
 ) {
   
@@ -303,7 +304,7 @@ hent_forbruk_ENTSOE <- function(
       
       hent_type(
         maaned = m,
-        process_type = "A16",
+        process_type = variabel,
         navn = "faktisk forbruk"
       )
     }

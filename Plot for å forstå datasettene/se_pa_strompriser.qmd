@@ -10,11 +10,14 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 
 ```
 
-
+## Henter du datasettene fra maskinen
 ```{r}
 
 strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
+
 strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
+forventing_mot_forbruk <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
+
 ```
 
 
@@ -44,4 +47,21 @@ p2
 
 ```
 
+
 Nå har flere kommet tilbake på kontoret, slik at strømprisen midt på dagen går ned. Når vi var hjemme hele dagen, var det et relativt konstant forbruk av  strøm gjennom hele vår våkne tilstand.
+
+#Kombinerer de to datasettene for forvenet strømforbruk, og strømpris
+
+```{r}
+
+strompriser_mot_forventing <- forventing_mot_forbruk |>
+  left_join(strompriser_norge_long, by = c("datetime", "prisomrade")) 
+
+nrow(strompriser_mot_forventing)
+
+strompriser_mot_forventing |>
+  drop_na()
+
+nrow(strompriser_mot_forventing)
+
+```
