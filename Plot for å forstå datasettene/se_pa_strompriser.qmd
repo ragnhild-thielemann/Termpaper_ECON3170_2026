@@ -20,6 +20,7 @@ strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_
 strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
 forventing_mot_forbruk <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
 total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
+vannreservoar <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
 
 
 
@@ -116,19 +117,47 @@ En mulig forklaring på at strømforbruket holder seg relativt stabilt til tross
 Dette innebærer at spotprisen vi observerer i datasettet, ikke nødvendigvis er den samme prisen husholdningene faktisk møter. Sammenhengen mellom markedspris og strømforbruk blir derfor vanskeligere å tolke direkte. Det relativt stabile forbruket kan være forenlig med uelastisk etterspørsel etter strøm på kort sikt, men kan også påvirkes av at husholdningenes faktiske kraftpris er skjermet fra deler av variasjonen i spotprisen. 
 
 
+## Plotte energisammensetningen
 
+Når vi skal plotte energimiksen i ulike prisområder, er det enorme datasett vi skal behandle. Derfor aggregerer vi til timespoduksjon, der vi setter produksjonen til gjennomsnittet av den inneværende timen. 
 ```{r}
 
 
 
-p1 <- total_produksjon |>
-  filter(prisomrade == "NO4")|>
-  drop_na()|>
-  select(production_MW, produksjonstype, datetime) |>
-  ggplot(aes(x = datetime, y = production_MW, fill = produksjonstype)) + 
-  geom_area() 
+aggregert_produksjon <- total_produksjon |>
+  select(production_MW, produksjonstype, datetime,prisomrade) |>
+  arrange(datetime)|>
+  mutate(datetime = floor_date(datetime,"hour"))|> #aggregerer datasettet til timespriser, for å gjøre omfanget mindre
+  summarise(production_MW = mean(production_MW,na.rm = TRUE ), .by = c(datetime, produksjonstype, prisomrade)) #grupperer innad i gruppen
   
-p1 
+```
+
+Vi plotter nå energisammensetningen i prissone 4 :)
+
+
+```{r}
+
+
+plot_no4 <- aggregert_produksjon |>
+  filter(prisomrade == "NO4") |>
+  ggplot(aes(x = datetime, y = production_MW, fill = produksjonstype)) + 
+  geom_area() + 
+  labs(x = "Tid", y = "Produksjon (i MW)", color = "Produksjonstype" , title = "Energiproduksjon i NO4")
+
+plot_no4
+
+
 
 ```
-hei
+
+
+# Fyllingsgrad svinger i takt med vannkraftsproduksjonen i magasinene
+
+Datasettet vårt over vannreservoarene har bare 
+```{r}
+
+
+vannreservoar |>
+  filter(d)
+
+```

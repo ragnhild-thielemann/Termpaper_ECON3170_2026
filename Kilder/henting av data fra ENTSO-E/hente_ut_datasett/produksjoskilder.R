@@ -48,7 +48,8 @@ for (i in seq_along(prisomrader)) {
   )
 }
 
-total_produksjon <- bind_rows(resultater)
+total_produksjon <- bind_rows(resultater) |>
+  drop_na() #fjerner tomme rader, så det blir lettere å jobbe med
 
 
 nrow(total_produksjon)
