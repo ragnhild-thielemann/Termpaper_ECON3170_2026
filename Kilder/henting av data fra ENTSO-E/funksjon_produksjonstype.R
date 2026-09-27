@@ -1,10 +1,4 @@
 
-library(httr2)
-library(xml2)
-library(dplyr)
-library(tibble)
-library(lubridate)
-library(stringr)
 
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteeickode.R")
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")

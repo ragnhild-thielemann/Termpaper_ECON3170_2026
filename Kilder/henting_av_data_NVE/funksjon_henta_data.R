@@ -34,7 +34,7 @@ hent_vannreservoar <- function(start_date ,
       prisomrade %in% areas
     ) |>
     dplyr::select(
-      datetime = dato_Id,
+      datetime = (dato_Id),
       prisomrade,
       fyllingsgrad,
       fyllingsgrad_forrige_uke

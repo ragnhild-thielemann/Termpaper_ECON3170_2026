@@ -23,7 +23,6 @@ total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON31
 vannreservoar <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
 
 
-
 ```
 
 
@@ -123,13 +122,13 @@ Når vi skal plotte energimiksen i ulike prisområder, er det enorme datasett vi
 ```{r}
 
 
-
 aggregert_produksjon <- total_produksjon |>
-  select(production_MW, produksjonstype, datetime,prisomrade) |>
+  select(production_MW, produksjonskilde, datetime,prisomrade) |>
   arrange(datetime)|>
-  mutate(datetime = floor_date(datetime,"hour"))|> #aggregerer datasettet til timespriser, for å gjøre omfanget mindre
-  summarise(production_MW = mean(production_MW,na.rm = TRUE ), .by = c(datetime, produksjonstype, prisomrade)) #grupperer innad i gruppen
+  mutate(datetime = as.Date(floor_date(datetime,"hour")))|> #aggregerer datasettet til timespriser, for å gjøre omfanget mindre
+  summarise(production_MW = mean(production_MW,na.rm = TRUE ), .by = c(datetime, produksjonskilde, prisomrade)) #grupperer innad i gruppen
   
+
 ```
 
 Vi plotter nå energisammensetningen i prissone 4 :)
@@ -140,9 +139,9 @@ Vi plotter nå energisammensetningen i prissone 4 :)
 
 plot_no4 <- aggregert_produksjon |>
   filter(prisomrade == "NO4") |>
-  ggplot(aes(x = datetime, y = production_MW, fill = produksjonstype)) + 
+  ggplot(aes(x = datetime, y = production_MW, fill = produksjonskilde)) + 
   geom_area() + 
-  labs(x = "Tid", y = "Produksjon (i MW)", color = "Produksjonstype" , title = "Energiproduksjon i NO4")
+  labs(x = "Tid", y = "Produksjon (i MW)", color = "produksjonskilde" , title = "Energiproduksjon i NO4")
 
 plot_no4
 
@@ -156,8 +155,19 @@ plot_no4
 Datasettet vårt over vannreservoarene har bare 
 ```{r}
 
+glimpse(aggregert_produksjon)
+glimpse(vannreservoar)
+resultat <- aggregert_produksjon |>
+  filter(produksjonskilde == "Vannkraft med magasin")|>
+  left_join(
+    vannreservoar,
+    by = join_by(
+      datetime,
+      prisomrade
+    )
+  ) |>
+  fill(fyllingsgrad,.direction = "down",.by = prisomrade)
 
-vannreservoar |>
-  filter(d)
+View(resultat)
 
 ```

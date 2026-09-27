@@ -15,7 +15,6 @@ psr_oversikt <- tibble(
   ),
   navn = c(
     "Gass",
-    
     "Elvekraft",
     "Vannkraft med magasin",
     "Annen fornybar",
@@ -40,7 +39,7 @@ for (i in seq_along(prisomrader)) {
   sone <- prisomrader[i]
   
   resultater[[i]] <- hent_produksjon_ENTSOE(
-    start_dato = "2026-09-20",
+    start_dato = "2026-08-20",
     slutt_dato = Sys.Date(),
     prisomrade = paste("Norway", sone),
     api_key = api_key,
@@ -49,11 +48,17 @@ for (i in seq_along(prisomrader)) {
 }
 
 total_produksjon <- bind_rows(resultater) |>
-  drop_na() #fjerner tomme rader, så det blir lettere å jobbe med
-
-
-nrow(total_produksjon)
-
+  drop_na() |>
+  mutate(
+    datetime = as.Date(datetime)
+  ) |>
+  left_join(
+    psr_oversikt,
+    by = c("psr_type" = "kode")
+  ) |>
+  rename(
+    produksjonskilde = navn
+  )
 
 saveRDS(
   total_produksjon,
