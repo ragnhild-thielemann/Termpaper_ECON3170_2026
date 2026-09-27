@@ -6,9 +6,9 @@ output: html_document
 ## Beskrivelse av datainnhentingen 
 Datasettet over strømpriser er omfattende og krever derfor strukturert og effektiv kode for å kunne hentes ut og behandles på en hensiktsmessig måte. For å hente data fra API-et oppretter vi først en skjult fil som inneholder tilgangsnøkkelen. Denne hentes inn i R-koden uten at nøkkelen eksponeres. Deretter lager vi en testfunksjon som henter data fra Østerrike, slik at vi kan undersøke strukturen i API-et og forstå hvordan dataene er organisert. Dataene leveres som XML-filer, og må derfor parses og bearbeides før de kan struktureres som et datasett i R.
 
-Vi har valgt en objektorientert og modulær struktur, der de ulike funksjonene ligger i separate filer. Dette gjør koden mer oversiktlig og enklere å navigere i, samtidig som funksjonene kan gjenbrukes på tvers av datasett. Vi har derfor én fil som inneholder selve funksjonskallet, og separate filer som bruker funksjonene til å hente ut de ulike datasettene.
+Vi har valgt en modulær struktur på prosjektet, der de ulike funksjonene ligger i separate filer. Dette gjør koden mer oversiktlig og enklere å navigere i, samtidig som funksjonene kan gjenbrukes på tvers av datasett. Vi har derfor én fil som inneholder selve funksjonskallet, og separate filer som bruker funksjonene til å hente ut de ulike datasettene. For å hente ut datasettet for strømpris, bruker jeg følgende modulære sturkur (hente ut API-nøkkelen fra lokalt på PCen) -> (finne eic-koden som prisområdet er regisrert i) -> hente ut datasettet. På denne måten kan jeg gjenbruke de samme funksjonene i kall for ulike variabler, samtidig som githuben som beskriver arbeidsproseesn er enkel å navigere i. 
 
-De ferdig hentede datasettene lagres som RDS-filer. På denne måten slipper vi å gjøre de samme API-kallene hver gang koden kjøres. Dette er særlig viktig fordi datamengden er stor, og innhentingen kan være både tidkrevende og unødvendig ressurskrevende dersom den gjentas.
+De ferdig hentede datasettene lagres som RDS-filer, for at vi skal unngå å laste inn datasettene på nytt hver gang. API-kallene er både tidkrevende og resusskrevende, så vi ønsker å unngå å gjøre dette unødig mye. 
 
 
 

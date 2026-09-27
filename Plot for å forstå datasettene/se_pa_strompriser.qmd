@@ -126,8 +126,9 @@ p1 <- total_produksjon |>
   drop_na()|>
   select(production_MW, produksjonstype, datetime) |>
   ggplot(aes(x = datetime, y = production_MW, fill = produksjonstype)) + 
-  geom_area()
+  geom_area() 
   
-p1
+p1 
 
 ```
+hei

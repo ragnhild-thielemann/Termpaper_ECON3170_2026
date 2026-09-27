@@ -10,6 +10,15 @@ source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/hentin
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 
+library(httr2)
+library(xml2)
+library(dplyr)
+library(tibble)
+library(lubridate)
+library(stringr)
+library(purrr)
+
+
 hent_produksjon_ENTSOE <- function(
     start_dato,
     slutt_dato,
@@ -18,52 +27,75 @@ hent_produksjon_ENTSOE <- function(
     psr_type = NULL
 ) {
   
-  land <- stringr::word(prisomrade, 1)
-  omrade <- stringr::word(prisomrade, -1)
-  
-  eic_code <- hent_eic_kode(
-    land,
-    omrade,
-    api_key
-  )
+  # ------------------------------------------------------------
+  # 1. Klargjør input
+  # ------------------------------------------------------------
   
   start_dato <- as.Date(start_dato)
   slutt_dato <- as.Date(slutt_dato)
   
+  if (start_dato > slutt_dato) {
+    stop("start_dato kan ikke være etter slutt_dato.")
+  }
+  
+  # Finn land og prisområde
+  land <- stringr::word(prisomrade, 1)
+  omrade <- stringr::word(prisomrade, -1)
+  
+  # Finn EIC-kode
+  eic_code <- hent_eic_kode(
+    land = land,
+    omrade = omrade,
+    api_key = api_key
+  )
+  
+  # ------------------------------------------------------------
+  # 2. Lag månedsintervaller
+  # ------------------------------------------------------------
+  
   maaneder <- seq(
-    from = as.Date(format(start_dato, "%Y-%m-01")),
-    to = as.Date(format(slutt_dato, "%Y-%m-01")),
+    from = floor_date(start_dato, "month"),
+    to = floor_date(slutt_dato, "month"),
     by = "month"
   )
   
+  
+  # ------------------------------------------------------------
+  # 3. Funksjon som henter én måned
+  # ------------------------------------------------------------
+  
   hent_maaned <- function(maaned) {
     
-    maaned_start <- max(maaned, start_dato)
+    maaned_start <- max(
+      maaned,
+      start_dato
+    )
     
     maaned_slutt <- min(
-      seq(
-        maaned,
-        by = "month",
-        length.out = 2
-      )[2] - 1,
+      ceiling_date(maaned, "month") - days(1),
       slutt_dato
     )
     
+    # ENTSO-E bruker UTC og format YYYYMMDDHHMM
     period_start <- paste0(
       format(maaned_start, "%Y%m%d"),
       "0000"
     )
     
     period_end <- paste0(
-      format(maaned_slutt + 1, "%Y%m%d"),
+      format(maaned_slutt + days(1), "%Y%m%d"),
       "0000"
     )
+    
+    
+    # ----------------------------------------------------------
+    # API-kall
+    # ----------------------------------------------------------
+    
     response <- tryCatch(
       {
-        httr2::request(
-          "https://web-api.tp.entsoe.eu/api"
-        ) |>
-          httr2::req_url_query(
+        request("https://web-api.tp.entsoe.eu/api") |>
+          req_url_query(
             securityToken = api_key,
             documentType = "A75",
             processType = "A16",
@@ -71,79 +103,121 @@ hent_produksjon_ENTSOE <- function(
             periodStart = period_start,
             periodEnd = period_end
           ) |>
-          httr2::req_timeout(120) |>
-          httr2::req_retry(
+          req_timeout(120) |>
+          req_retry(
             max_tries = 3,
             backoff = ~ 2^.x
           ) |>
-          httr2::req_perform()
+          req_perform()
       },
       error = function(e) {
+        
         warning(
           "Feil ved henting av ",
           format(maaned, "%Y-%m"),
           ": ",
           conditionMessage(e)
         )
-        return(NULL)
+        
+        NULL
       }
     )
     
     if (is.null(response)) {
       return(NULL)
     }
-    xml <- httr2::resp_body_xml(response)
     
-    time_series <- xml2::xml_find_all(
+    
+    # ----------------------------------------------------------
+    # 4. Les XML
+    # ----------------------------------------------------------
+    
+    xml <- resp_body_xml(response)
+    
+    time_series <- xml_find_all(
       xml,
       ".//*[local-name()='TimeSeries']"
     )
     
-    resultat <- lapply(time_series, function(ts) {
+    if (length(time_series) == 0) {
+      warning(
+        "Ingen TimeSeries funnet for ",
+        format(maaned, "%Y-%m")
+      )
       
-      # Finn produksjonstype
-      psr <- xml2::xml_text(
-        xml2::xml_find_first(
+      return(NULL)
+    }
+    
+    
+    # ----------------------------------------------------------
+    # 5. Behandle hver TimeSeries
+    # ----------------------------------------------------------
+    
+    map_dfr(time_series, function(ts) {
+      
+      # Produksjonstype
+      psr <- xml_text(
+        xml_find_first(
           ts,
           ".//*[local-name()='MktPSRType']/*[local-name()='psrType']"
         )
       )
       
-      # Vi beholder bare ønsket produksjonstype
-      if (psr != psr_type) {
+      # Hvis psr_type er spesifisert,
+      # behold bare denne typen
+      if (!is.null(psr_type) && psr != psr_type) {
         return(NULL)
       }
       
-      interval_start <- xml2::xml_text(
-        xml2::xml_find_first(
+      
+      # Starttidspunkt
+      interval_start <- xml_text(
+        xml_find_first(
           ts,
-          ".//*[local-name()='start']"
+          ".//*[local-name()='Period']/*[local-name()='timeInterval']/*[local-name()='start']"
         )
       )
       
-      resolution <- xml2::xml_text(
-        xml2::xml_find_first(
+      # Oppløsning
+      resolution <- xml_text(
+        xml_find_first(
           ts,
-          ".//*[local-name()='resolution']"
+          ".//*[local-name()='Period']/*[local-name()='resolution']"
         )
       )
       
       minutes <- dplyr::case_when(
         resolution == "PT15M" ~ 15,
         resolution == "PT30M" ~ 30,
-        resolution == "PT60M" ~ 60,
-        resolution == "PT1H"  ~ 60,
+        resolution %in% c("PT60M", "PT1H") ~ 60,
         TRUE ~ NA_real_
       )
       
-      points <- xml2::xml_find_all(
+      if (is.na(minutes)) {
+        warning(
+          "Ukjent tidsoppløsning: ",
+          resolution
+        )
+        return(NULL)
+      }
+      
+      
+      # --------------------------------------------------------
+      # 6. Hent alle punktene
+      # --------------------------------------------------------
+      
+      points <- xml_find_all(
         ts,
         ".//*[local-name()='Point']"
       )
       
+      if (length(points) == 0) {
+        return(NULL)
+      }
+      
       position <- as.integer(
-        xml2::xml_text(
-          xml2::xml_find_all(
+        xml_text(
+          xml_find_all(
             points,
             ".//*[local-name()='position']"
           )
@@ -151,13 +225,18 @@ hent_produksjon_ENTSOE <- function(
       )
       
       quantity <- as.numeric(
-        xml2::xml_text(
-          xml2::xml_find_all(
+        xml_text(
+          xml_find_all(
             points,
             ".//*[local-name()='quantity']"
           )
         )
       )
+      
+      
+      # --------------------------------------------------------
+      # 7. Lag datasett
+      # --------------------------------------------------------
       
       start_datetime <- as.POSIXct(
         interval_start,
@@ -165,7 +244,7 @@ hent_produksjon_ENTSOE <- function(
         tz = "UTC"
       )
       
-      tibble::tibble(
+      tibble(
         datetime = start_datetime +
           minutes * 60 * (position - 1),
         production_MW = quantity,
@@ -173,31 +252,39 @@ hent_produksjon_ENTSOE <- function(
         prisomrade = omrade
       )
     })
-    
-    dplyr::bind_rows(resultat)
   }
-  resultat <- lapply(
+  
+  
+  # ------------------------------------------------------------
+  # 8. Hent alle måneder
+  # ------------------------------------------------------------
+  
+  resultat <- map_dfr(
     maaneder,
     hent_maaned
-  ) |>
-    dplyr::bind_rows()
+  )
   
-  # Sjekk om vi faktisk fikk data
+  
+  # ------------------------------------------------------------
+  # 9. Kontroller resultat
+  # ------------------------------------------------------------
+  
   if (nrow(resultat) == 0) {
     warning("Ingen produksjonsdata ble hentet.")
     return(resultat)
   }
-  print(names(resultat))
-  print(dplyr::glimpse(resultat))
+  
+  
+  # Fjern eventuelle duplikater
   resultat <- resultat |>
-    dplyr::distinct(
+    distinct(
       datetime,
       psr_type,
       .keep_all = TRUE
     ) |>
-    dplyr::arrange(datetime)
+    arrange(datetime)
+  
   
   resultat
 }
-
 
