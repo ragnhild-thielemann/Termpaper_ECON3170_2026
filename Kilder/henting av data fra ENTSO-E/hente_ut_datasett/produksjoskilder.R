@@ -39,7 +39,7 @@ for (i in seq_along(prisomrader)) {
   sone <- prisomrader[i]
   
   resultater[[i]] <- hent_produksjon_ENTSOE(
-    start_dato = "2026-08-20",
+    start_dato = "2026-01-21",
     slutt_dato = Sys.Date(),
     prisomrade = paste("Norway", sone),
     api_key = api_key,
@@ -60,6 +60,7 @@ total_produksjon <- bind_rows(resultater) |>
     produksjonskilde = navn
   )
 
+summary(total_produksjon)
 saveRDS(
   total_produksjon,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds"

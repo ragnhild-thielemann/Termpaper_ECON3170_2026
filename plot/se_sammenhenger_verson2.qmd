@@ -1,9 +1,12 @@
 ---
-title: "Plott for strompriser"
+title: "Sammenhenger mellom vannkraft, magasinfylling og nedbør"
 format: docx
 warning: false
 ---
+  
+  
 ```{r}
+
 #| echo: false
 #| 
 library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
@@ -12,16 +15,20 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 ## Strømstøtteordningen
 
 For å analysere forbruke 
+
 ## Henter du datasettene som er lagret på datamaskinen
 ```{r}
 
 strompriser_norge_wide <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
+nedbor <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/nedbor.rds"
+)
 
 strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
 forventing_mot_forbruk <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
 total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
 vannreservoar <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
-
+glimpse(nedbor)
 
 ```
 
@@ -110,8 +117,8 @@ Av plottet ser vi at strømforbruket holder seg relativt stabilt selv om markeds
 Det er imidlertid viktig å være forsiktig med å tolke dette som en direkte sammenheng mellom markedspris og etterspørsel. Forbrukerne møter ikke nødvendigvis den samme prisen som markedsprisen i datasettet. Norgesprisordningen innebærer at enkelte husholdninger betaler en fast eller regulert pris for strømmen, mens markedsprisen fortsatt varierer. Dermed vil endringer i markedsprisen i mindre grad slå direkte ut i den prisen forbrukeren faktisk betaler. Dette kan bidra til å forklare hvorfor strømforbruket holder seg relativt stabilt selv når markedsprisen varierer.
 
 **Norgesprisordningen**
-
-En mulig forklaring på at strømforbruket holder seg relativt stabilt til tross for variasjoner i markedsprisen, er Norgesprisordningen. Norgespris ble innført i oktober 2025 og gir husholdninger som velger ordningen en fast kraftpris på 40 øre/kWh ekskludert merverdiavgift ut 2026. Når spotprisen er høyere enn Norgesprisen, dekker staten differansen, mens kunden betaler differansen dersom spotprisen er lavere. Nettleie, avgifter og eventuelle påslag kommer i tillegg.
+  
+  En mulig forklaring på at strømforbruket holder seg relativt stabilt til tross for variasjoner i markedsprisen, er Norgesprisordningen. Norgespris ble innført i oktober 2025 og gir husholdninger som velger ordningen en fast kraftpris på 40 øre/kWh ekskludert merverdiavgift ut 2026. Når spotprisen er høyere enn Norgesprisen, dekker staten differansen, mens kunden betaler differansen dersom spotprisen er lavere. Nettleie, avgifter og eventuelle påslag kommer i tillegg.
 
 Dette innebærer at spotprisen vi observerer i datasettet, ikke nødvendigvis er den samme prisen husholdningene faktisk møter. Sammenhengen mellom markedspris og strømforbruk blir derfor vanskeligere å tolke direkte. Det relativt stabile forbruket kan være forenlig med uelastisk etterspørsel etter strøm på kort sikt, men kan også påvirkes av at husholdningenes faktiske kraftpris er skjermet fra deler av variasjonen i spotprisen. 
 
@@ -127,7 +134,7 @@ aggregert_produksjon <- total_produksjon |>
   arrange(datetime)|>
   mutate(datetime = as.Date(floor_date(datetime,"hour")))|> #aggregerer datasettet til timespriser, for å gjøre omfanget mindre
   summarise(production_MW = mean(production_MW,na.rm = TRUE ), .by = c(datetime, produksjonskilde, prisomrade)) #grupperer innad i gruppen
-  
+
 
 ```
 
@@ -152,11 +159,10 @@ plot_no4
 
 # Fyllingsgrad svinger i takt med vannkraftsproduksjonen i magasinene
 
-Datasettet vårt over vannreservoarene har bare 
+Datasettet vårt over vannreservoarene har bare en observasjon i uken. Derfor fyller vi radene med den samme observasjonen gjennom hele uken. 
 ```{r}
 
-glimpse(aggregert_produksjon)
-glimpse(vannreservoar)
+
 resultat <- aggregert_produksjon |>
   filter(produksjonskilde == "Vannkraft med magasin")|>
   left_join(
@@ -166,8 +172,24 @@ resultat <- aggregert_produksjon |>
       prisomrade
     )
   ) |>
-  fill(fyllingsgrad,.direction = "down",.by = prisomrade)
+  fill(fyllingsgrad,fyllingsgrad_forrige_uke ,endring                   ,.direction = "down",.by = prisomrade) |>
+  drop_na() #fjerner tomme celler
 
-View(resultat)
 
 ```
+
+Nå vil vi finne korrelasjonen mellom endringen i fyllingsgraden i vannmagasinene, og produsert vannkraft. Dette gjør vi ved å sette opp en enkel linjær regresjonsmodell, på formen $P_i = \hat{b_0} + \hat{b_1} x_i + \epsilon_i$, der $P_i$ = produsert vannkraft, og $x_i$ er endringen i fyllingsgraden, $\hat{b_1}$ er den estimerte sammenhengen mellom endringen i fyllingsgrad og vannkraftproduksjon, og $\epsilon_i$ er feilleddet. 
+
+```{r}
+
+model <- lm(production_MW ~ endring, resultat)
+
+summary(model)
+
+```
+
+Resultatet viser en negativ sammenheng mellom endringen i fyllingsgrad og vannkraftproduksjonen. Det innebærer at en økning i fyllingsgraden er forbundet med lavere vannkraftproduksjon, mens en reduksjon i fyllingsgraden er forbundet med høyere produksjon. Dette er konsistent med at vannmagasinene tappes når vannkraftproduksjonen er høy.
+
+Koeffisienten for endring har en p-verdi på 0,03. Ved et signifikansnivå på 5 prosent forkaster vi derfor nullhypotesen om at koeffisienten er lik null. Det er dermed statistisk signifikant evidens for en lineær sammenheng mellom endringen i fyllingsgrad og produsert vannkraft i dette datasettet.
+
+**Må ta inn nedbør**
