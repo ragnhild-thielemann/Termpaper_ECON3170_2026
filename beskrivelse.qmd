@@ -48,7 +48,11 @@ Formålet er å bruke dataanalyse til å undersøke sammenhengen mellom vannkraf
 
 ## Bruk av AI
 
-Jeg ser på prosjektet som en god mulighet til å utvikle forståelse for strukturen i ulike API-er og hvordan data fra API-er kan hentes, bearbeides og omformes til datasett som kan brukes i videre analyse. Derfor er det et mål at all kode skal være forståelig, effektiv og etterprøvbar. Bruken av AI i prosjektet vil primært være begrenset til hjelp med syntaks og debugging, mens jeg selv skal ha forståelse for og kontroll over koden som benyttes.
+Jeg ser på prosjektet som en god mulighet til å utvikle forståelse for strukturen i ulike API-er og hvordan data fra API-er kan hentes, bearbeides og omformes til datasett som kan brukes i videre analyse. Derfor er det et mål at all kode skal være forståelig, effektiv og etterprøvbar.
+
+I forbindelse med innhentingen av data har jeg brukt AI som et hjelpemiddel. API-ene som benyttes, særlig ENTSO-E og Frost, er omfattende og komplekse, og det kan derfor være krevende å navigere i dokumentasjonen og finne frem til riktig struktur og syntaks for dataforespørsler. AI har i denne delen av prosjektet blitt brukt til hjelp med syntaks, forståelse av API-strukturen og debugging.
+
+Jeg har ikke brukt AI-agenter til å utvikle eller gjennomføre analysen. All kode er gjennomgått og tilpasset av meg, og jeg har selv arbeidet med debugging, optimalisering og strukturering av koden. Selve analysen av dataene, herunder valg av metoder, bearbeiding, visualisering og tolkning av resultatene, har jeg gjort selv. Jeg har dermed hatt kontroll over både datainnhentingen og den videre analysen, og skal kunne forstå og forklare koden som benyttes.
 
 
 

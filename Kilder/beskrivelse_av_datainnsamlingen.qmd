@@ -17,3 +17,6 @@ execute:
   message: false
 ---
 
+# Henting av API-er. 
+
+Jeg har brukt tre kilder for dette prosjektet, NVE for fyllingsgraden i vannmagasinene

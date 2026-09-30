@@ -1,0 +1,30 @@
+---
+title: "Første utkast for kildebeskrivelse"
+subtitle: ""
+author:
+  - name: kandidatnummer
+date: today
+date-format: D MMMM YYYY
+
+format: docx
+number-sections: true
+bibliography: referanser.bib 
+lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
+citeproc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Beskrivelse av  API-ene som er brukt
+
+
+NVE - JSON-filer
+ENSTO - XML 
+  - tekstbasert
+
+2 Datainnsamling
+Prosjektet vil benytte timeoppløste strømpriser, kraftflyt- og produksjonsdata fra ENTSO-E, samt ukeoppløste data for magasinfylling fra NVE. I tillegg benyttes historiske nedbørsdata fra Meteorologisk institutt (MET Norway) gjennom Frost API-et for å undersøke hydrologiske forhold. Frost API-et gir tilgang til historiske meteorologiske observasjoner, blant annet nedbør.
+Dataene fra ENTSO-E hentes gjennom deres API og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse. For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele arbeidet opp i mindre, gjenbrukbare deler, og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
+

@@ -8,7 +8,6 @@ date-format: D MMMM YYYY
 
 format: docx
 number-sections: true
-bibliography: referanser.bib 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
 citeproc: true
 execute:
@@ -30,22 +29,39 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 
 ```{r}
 
-strompris_norge_long <- readRDS("Datasett/strompris_norge_long.rds")
 
-forventing_mog_forbruk <- readRDS("Datasett/forventing_mot_forbruk_norge.rds")
+
+strompris_norge_long_fra_2020 <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long_fra_2020.rds"
+)
+
+
 ```
 
 
-## Tidsserieplott for å undersøke trendene
-Det første vi vil undersøke, er de langsiktige trendene i markedsprisene på strøm. Dataene fra ENTSO-E har en oppløsning på 15 minutter og inneholder både negative priser og enkelte ekstreme prisutslag. For å redusere påvirkningen fra slike ekstreme observasjoner aggregeres dataene til dagsnivå. Utviklingen visualiseres deretter i et tidsserieplott, hvor de ulike prisområdene representeres av hver sin linje.
+## Tidsserieplott for å undersøke langsiktige trender
+Det første vi undersøker, er den langsiktige utviklingen i markedsprisene på strøm siden 2020. ENTSO-E-dataene har en tidsoppløsning på 15 - 60 minutter, og inneholder derfor mange observasjoner med både kortvarige negative priser og enkelte observasjoner med unormalt store prisutslag. For å få frem de overordnede prisutviklingene fremfor de kortsiktige svingningene gjennom dagen, aggregeres prisene til dagsnivå. De daglige prisene visualiseres deretter i et tidsserieplott, der hvert prisområde representeres av en egen linje.
 
-Datasettet inneholder totalt ** rader. Ved å aggregere dataene til dagsnivå reduseres datamengden betydelig, noe som  gjør den videre databehandlingen og visualiseringen mer effektiv.
+Det opprinnelige datasettet består av ** observasjoner. Ved å aggregere fra 15-minutters- til dagsnivå reduseres antallet observasjoner betydelig. Dette gjør datasettet mer oversiktlig og gjør samtidig den videre behandlingen og visualiseringen mer effektiv. I dette plottet tar jeg ikke hensyn til at strømprisen varierer gjennom døgnet. 
 
 
 ```{r}
+library(lubridate)
 
-nrow(strompris_norge_long)
+aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020 |>
+  mutate(datetime = as.Date(datetime)) |> #setter på dager 
+  summarise(pris_dag = mean(pris_modellert, na.rm = TRUE) , .by = c(prisomrade, datetime))
+
+p1 <- aggregert_dag_fra_2020 |>
+  ggplot() +
+  geom_line(aes(x = datetime, y = pris_dag, color = prisomrade)) + 
+  labs(x = "Tid", y = "Gjennomsnittspris per dogn", title = "Tidsserieplott for stromprisen", color = "Prisomrade")
+
+p1
+
 
 ```
+Av plottet ser vi at strømprisene var relativt lave og stabile frem til 2021. Fra 2022 økte prisene kraftig i NO1, NO2 og NO5, noe som sammenfaller med Russlands invasjon av Ukraina og den påfølgende reduksjonen i Europas energitilgang (tilførsel av gass) fra Russland. NO3 og NO4 hadde derimot betydelig lavere priser gjennom perioden. Dette kan annet ses i sammenheng med at kraftflyten mellom Nord- og Sør-Norge er begrenset, slik at prisutviklingen i nord i mindre grad påvirkes av prisene og knappheten på kraft i Sør-Norge og Europa. Prisene i sør dempet seg mot 2024, før det oppstod enkelte svært høye prisutslag i NO2 i 2025.
+
 
 

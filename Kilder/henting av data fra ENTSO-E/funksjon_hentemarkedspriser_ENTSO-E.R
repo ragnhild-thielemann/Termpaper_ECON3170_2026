@@ -13,7 +13,11 @@ source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 
 
-hent_markedspriser <- function(start_dato, slutt_dato, prisomrade , variabel = "A44",  api_key= api_key) {
+hent_markedspriser <- function(start_dato, 
+                               slutt_dato, 
+                               prisomrade , 
+                               variabel = "A44",  
+                               api_key= api_key) {
   #' Vi har startidspunkt, slutttidspunkt, prisområde, variabel (hva slags data vi vil hente ut) og API-nøkkel som funksjonsverdier
   land <- stringr::word(prisomrade, 1) #vi deler opp strengen med Land og prissone, slik at disse kan behandles separat. 
   omrade <- stringr::word(prisomrade, -1)
