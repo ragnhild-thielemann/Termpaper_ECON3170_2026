@@ -13,7 +13,7 @@ strompris_norge <- tibble()
 for (sone in prissoner){
   
   priser_sone <- hent_markedspriser(
-    start_dato = "2026-07-01",
+    start_dato = "2020-01-01",
     slutt_dato = Sys.Date(),
     prisomrade= paste("Norway",sone),
     variabel = "A44",

@@ -8,7 +8,7 @@ date-format: D MMMM YYYY
 
 format: docx
 number-sections: true
-bibliography: referanser.bib
+bibliography: referanser.bib 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
 citeproc: true
 execute:
@@ -32,8 +32,6 @@ Deretter undersøkes sammenhengen mellom strømpris, magasinfylling og nedbør. 
 
 Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen.
 
-
-## Datainnsamling 
 
 ## Datainnsamling
 

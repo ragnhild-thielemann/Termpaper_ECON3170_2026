@@ -1,0 +1,19 @@
+---
+title: "Beskrivelse av datainnsamlingen"
+subtitle: ""
+author:
+  - name: kandidatnummer
+date: today
+date-format: D MMMM YYYY
+
+format: docx
+number-sections: true
+bibliography: referanser.bib 
+lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
+citeproc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+

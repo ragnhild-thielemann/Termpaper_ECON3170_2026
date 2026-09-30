@@ -1,0 +1,51 @@
+---
+title: "Første utkast for timeseries"
+subtitle: ""
+author:
+  - name: kandidatnummer
+date: today
+date-format: D MMMM YYYY
+
+format: docx
+number-sections: true
+bibliography: referanser.bib 
+lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
+citeproc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+
+```{r}
+
+#| echo: false
+#| 
+library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
+
+```
+
+
+```{r}
+
+strompris_norge_long <- readRDS("Datasett/strompris_norge_long.rds")
+
+forventing_mog_forbruk <- readRDS("Datasett/forventing_mot_forbruk_norge.rds")
+```
+
+
+## Tidsserieplott for å undersøke trendene
+Det første vi vil undersøke, er de langsiktige trendene i markedsprisene på strøm. Dataene fra ENTSO-E har en oppløsning på 15 minutter og inneholder både negative priser og enkelte ekstreme prisutslag. For å redusere påvirkningen fra slike ekstreme observasjoner aggregeres dataene til dagsnivå. Utviklingen visualiseres deretter i et tidsserieplott, hvor de ulike prisområdene representeres av hver sin linje.
+
+Datasettet inneholder totalt ** rader. Ved å aggregere dataene til dagsnivå reduseres datamengden betydelig, noe som  gjør den videre databehandlingen og visualiseringen mer effektiv.
+
+
+```{r}
+
+nrow(strompris_norge_long)
+
+```
+
+
