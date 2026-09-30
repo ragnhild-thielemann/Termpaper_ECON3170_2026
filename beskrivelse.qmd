@@ -18,23 +18,13 @@ execute:
   message: false
 ---
 
-## Overordnet beskrivelse av  prosjektet
 
 
+## Problemstillinger jeg skal jobbe med
 
-Motivasjonen for prosjektet er Norges særegne rolle i det europeiske kraftmarkedet. En stor andel av norsk elektrisitetsproduksjon kommer fra vannkraft, og utbyggingen av magasinkraftverk har gitt Norge en betydelig mengde regulerbar og fornybar kraftproduksjon. Vannkraften skiller seg fra mange andre fornybare energikilder ved at produksjonen i stor grad kan tilpasses etterspørselen: Vann kan holdes tilbake i magasiner og produseres når behovet for strøm er større eller når prisene er høye.
+Den overordede problemstillingen for prosjektet er 
 
-Samtidig er vannkraftproduksjonen avhengig av hydrologiske forhold. Nedbør og snøsmelting påvirker tilsiget til vannmagasinene, mens produksjon og tapping av vann påvirker magasinfyllingen. Magasinfyllingen gir derfor informasjon om hvor mye vann som er tilgjengelig for fremtidig kraftproduksjon, men må ses i sammenheng med både tidligere produksjon og tilsig. Dette gjør produsert vannkraft, nedbør og strømpriser til interessante størrelser å se i sammenheng.  
-
-Norge har et kraftoverskudd i mange år og er koblet til det europeiske kraftmarkedet gjennom flere utenlandsforbindelser. Et sentralt spørsmål i prosjektet er derfor hvordan utbyggingen av disse forbindelsene har påvirket det norske strømmarkedet. Ved å sammenligne strømpriser og prisvariasjon før og etter at nye utenlandskabler ble satt i drift, vil jeg undersøke om det har skjedd endringer i prisnivået og i hvor tett norske strømpriser følger prisene i de europeiske markedene.
-
-Analysen vil blant annet ta utgangspunkt i de ulike tidspunktene for idriftsettelse av utenlandskablene, og undersøke utviklingen i norske prisområder før og etter disse endringene. Samtidig må utviklingen i strømprisene ses i sammenheng med andre forhold som påvirker kraftmarkedet, blant annet nedbør, magasinfylling, kraftproduksjon og europeiske energipriser. Ettersom Norge har flere prisområder og begrensninger i overføringsnettet, vil det også undersøkes om effekten av utenlandsforbindelsene varierer mellom ulike deler av landet.
-
-Prosjektet vil dermed undersøke hvordan strømprisene har utviklet seg over tid, og om utviklingen har endret seg etter at Norge ble sterkere integrert i det europeiske kraftmarkedet gjennom nye utenlandsforbindelser.
-
-
-## Problemstilling
-vordan har norske strømpriser utviklet seg over tid, og hvordan henger prisvariasjonen sammen med vannkraft, hydrologiske forhold og tilknytningen til det europeiske kraftmarkedet?
+**Hvordan har norske strømpriser utviklet seg over tid, og hvordan henger prisvariasjonen sammen med vannkraftsproduksjonen, hydrologiske forhold (akkumulert nedbør) og tilknytningen til det europeiske kraftmarkedet?**
 
 Prosjektet vil særlig undersøke tre deler. Først analyseres strømprisene i de norske prisområdene fra 2020 og frem til i dag, både som tidsserier og med hensyn på hvordan prisene varierer gjennom døgnet og året.
 
@@ -45,11 +35,14 @@ Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfy
 
 ## Data og metode
 
-Prosjektet vil benytte timeoppløste strømpriser og kraftflytdata, samt ukeoppløste data for magasinfylling. I tillegg brukes nedbørsdata for å undersøke hydrologiske forhold.
+Prosjektet vil benytte timeoppløste strømpriser og kraftflytdata, samt ukeoppløste data for magasinfylling. I tillegg brukes nedbørsdata for å undersøke hydrologiske forhold. Dataene fra ENTSO-E hentes og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse.
 
-Analysen vil hovedsakelig være datadrevet og bestå av tidsserieanalyse, visualisering og statistiske modeller. Det vil blant annet undersøkes hvordan strømprisen varierer over tid, mellom prisområder og med ulike hydrologiske forhold. Til slutt vil prediksjonsmodeller brukes til å undersøke hvor godt strømprisen kan predikeres ved hjelp av tilgjengelige data.
+For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele opp arbeidet i mindre, gjenbrukbare deler og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
+
+Analysen vil hovedsakelig være datadrevet og bestå av tidsserieanalyse, visualisering og statistiske modeller som lineær regresjon, LASSO, random forest og XGBoost. Det vil blant annet undersøkes hvordan strømprisen varierer over tid, mellom prisområder og med ulike hydrologiske forhold. Til slutt vil prediksjonsmodeller brukes til å undersøke hvor godt strømprisen kan predikeres ved hjelp av tilgjengelige data.
 
 Formålet er å bruke dataanalyse til å undersøke sammenhengen mellom vannkraft, hydrologiske forhold, utenlandskabler og strømpriser i det norske kraftmarkedet.
+
 
 
 
