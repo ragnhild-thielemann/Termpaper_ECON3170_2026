@@ -22,7 +22,7 @@ execute:
 
 #| echo: false
 #| 
-library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse)
+library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rugarch); library(plm); library(vars) ; library(tidyverse) ; library(lubridate) ; library(data.table);library(dtplyr); library(scales)
 
 ```
 
@@ -38,15 +38,14 @@ strompris_norge_long_fra_2020 <- readRDS(
 
 ```
 
-
+# De store trendene siden 2020
 ## Tidsserieplott for å undersøke langsiktige trender
 Det første vi undersøker, er den langsiktige utviklingen i markedsprisene på strøm siden 2020. ENTSO-E-dataene har en tidsoppløsning på 15 - 60 minutter, og inneholder derfor mange observasjoner med både kortvarige negative priser og enkelte observasjoner med unormalt store prisutslag. For å få frem de overordnede prisutviklingene fremfor de kortsiktige svingningene gjennom dagen, aggregeres prisene til dagsnivå. De daglige prisene visualiseres deretter i et tidsserieplott, der hvert prisområde representeres av en egen linje.
 
-Det opprinnelige datasettet består av ** observasjoner. Ved å aggregere fra 15-minutters- til dagsnivå reduseres antallet observasjoner betydelig. Dette gjør datasettet mer oversiktlig og gjør samtidig den videre behandlingen og visualiseringen mer effektiv. I dette plottet tar jeg ikke hensyn til at strømprisen varierer gjennom døgnet. 
+Det opprinnelige datasettet består av 421950 observasjoner. Ved å aggregere fra 15-minutters- til dagsnivå reduseres antallet observasjoner betydelig. Dette gjør datasettet mer oversiktlig og gjør samtidig den videre behandlingen og visualiseringen mer effektiv. I dette plottet tar jeg ikke hensyn til at strømprisen varierer gjennom døgnet. 
 
 
 ```{r}
-library(lubridate)
 
 aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020 |>
   mutate(datetime = as.Date(datetime)) |> #setter på dager 
@@ -61,7 +60,39 @@ p1
 
 
 ```
-Av plottet ser vi at strømprisene var relativt lave og stabile frem til 2021. Fra 2022 økte prisene kraftig i NO1, NO2 og NO5, noe som sammenfaller med Russlands invasjon av Ukraina og den påfølgende reduksjonen i Europas energitilgang (tilførsel av gass) fra Russland. NO3 og NO4 hadde derimot betydelig lavere priser gjennom perioden. Dette kan annet ses i sammenheng med at kraftflyten mellom Nord- og Sør-Norge er begrenset, slik at prisutviklingen i nord i mindre grad påvirkes av prisene og knappheten på kraft i Sør-Norge og Europa. Prisene i sør dempet seg mot 2024, før det oppstod enkelte svært høye prisutslag i NO2 i 2025.
+Av plottet ser vi at strømprisene var relativt lave og stabile frem til 2021. Fra 2022 økte prisene kraftig i NO1, NO2 og NO5, noe som sammenfaller med Russlands invasjon av Ukraina og den påfølgende reduksjonen i Europas energitilgang (tilførsel av gass) fra Russland. NO3 og NO4 hadde derimot betydelig lavere priser gjennom perioden. Dette kan annet ses i sammenheng med at kraftflyten mellom Nord- og Sør-Norge er begrenset, slik at prisutviklingen i nord i mindre grad påvirkes av prisene og knappheten på kraft i Europa. Prisene i sør dempet seg mot 2024, før det oppstod enkelte svært høye prisutslag i NO2 i 2025.
 
+
+
+## Pris gjennom døgnet
+
+Et annet aspekt er hvordan strømprisen varierer gjennom døgnet. Ettersom prisnivået varierer betydelig mellom prisområdene, differensierer vi også her mellom de ulike prisområdene. For hvert prisområde beregner vi gjennomsnittlig strømpris for hvert klokkeslett basert på de seks årene med data, og plotter deretter den gjennomsnittlige døgnprofilen.
+
+Av plottet ser vi at prisområdene med høyere prisnivå også har større variasjoner gjennom døgnet. Her øker prisen om morgenen når strømforbruket øker, før den faller noe midt på dagen og igjen øker rundt middagstid. I prisområdene med lavere prisnivå er døgnvariasjonen mindre, og prisene holder seg i større grad stabile gjennom dagen. Også her ser vi imidlertid en nedgang i prisene om natten, når strømforbruket er lavere.
+
+
+
+```{r}
+
+
+gjennom_dagen <- strompris_norge_long_fra_2020 |>
+  lazy_dt() |>
+  mutate(time = hour(datetime)) |>
+  summarise(dogn_pris = mean(pris_modellert, na.rm = TRUE), .by = c(time,prisomrade)) |>
+  as_tibble()
+
+
+p2 <- gjennom_dagen|>
+  ggplot() +
+  geom_line(aes(x = time, y = dogn_pris,color = prisomrade)) + 
+  labs(x = "tid pa dognet", y = "Pris",title = "Prisvariasjoner gjennom dagen") + 
+  scale_x_continuous(breaks = seq(0,24,4),
+                   labels = sprintf("%02d:00",seq(0,24,4)))
+p2
+
+
+
+
+```
 
 

@@ -32,6 +32,8 @@ Deretter undersøkes sammenhengen mellom strømpris, magasinfylling og nedbør. 
 
 Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen.
 
+Sammenhengene mellom hydrologiske forhold, vannkraft, strømpriser og det europeiske kraftmarkedet er allerede godt dokumentert, blant annet av NVE og Statnett.[@sporsmal_og_svar],[@kraftsystem],[@hvordan_settes_stromprisen]. Målet med prosjektet er derfor ikke å undersøke et problem som tidligere ikke er studert, men å bruke en kjent og relevant problemstilling til å utvikle egne ferdigheter i dataanalyse. Ved å hente inn, strukturere, sammenstille og visualisere dataene selv får jeg praktisk erfaring med hele analyseprosessen. At det allerede finnes eksistrende studier på dette temaet gir også mulighet til å undersøke hvor tydelig de tidligere dokumenterte sammenhengene faktisk kommer frem i dataene jeg jobber med.
+
 
 ## Datainnsamling
 
@@ -52,7 +54,9 @@ Jeg ser på prosjektet som en god mulighet til å utvikle forståelse for strukt
 
 I forbindelse med innhentingen av data har jeg brukt AI som et hjelpemiddel. API-ene som benyttes, særlig ENTSO-E og Frost, er omfattende og komplekse, og det kan derfor være krevende å navigere i dokumentasjonen og finne frem til riktig struktur og syntaks for dataforespørsler. AI har i denne delen av prosjektet blitt brukt til hjelp med syntaks, forståelse av API-strukturen og debugging.
 
-Jeg har ikke brukt AI-agenter til å utvikle eller gjennomføre analysen. All kode er gjennomgått og tilpasset av meg, og jeg har selv arbeidet med debugging, optimalisering og strukturering av koden. Selve analysen av dataene, herunder valg av metoder, bearbeiding, visualisering og tolkning av resultatene, har jeg gjort selv. Jeg har dermed hatt kontroll over både datainnhentingen og den videre analysen, og skal kunne forstå og forklare koden som benyttes.
+Jeg har ikke brukt AI-agenter til å utvikle eller gjennomføre analysen. All kode er gjennomgått og tilpasset av meg, og jeg har selv arbeidet med debugging, optimalisering og strukturering av koden. Selve analysen av dataene, herunder valg av metoder, bearbeiding, visualisering og tolkning av resultatene, har jeg gjort selv. Jeg har dermed hatt kontroll over både datainnhentingen og den videre analysen, og kan derfor forstå og forklare all kode i prosjektet.
+
+## Referanser
 
 
 
