@@ -1,5 +1,5 @@
 
-source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
+source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 hent_eic_kode <- function(land,omrade, api_key) {
   #' En funksjon som henter EIC-koden til landet/prisområdet.

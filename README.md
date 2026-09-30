@@ -13,6 +13,8 @@ Jeg skal sentrere prosjektet rundt tre spørsmål:
   
 Også se på energimiksen i ulike prisområder. 
 
+Hvordan forholde seg til at githuben er lagret på mitt navn?
+
 # Kilder
 | Kilde| Variabler | Adresse | KOmmentar|
 | :--- | :---: | ---: |---:|

@@ -25,6 +25,7 @@ nedbor <- readRDS(
 )
 
 strompriser_norge_long <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
+View(strompriser_norge_long)
 forventing_mot_forbruk <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge.rds")
 total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
 vannreservoar <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds")
@@ -42,6 +43,39 @@ p1
 
 ```
 
+
+```{r}
+summary(forventing_mot_forbruk)
+library(tidyverse)
+library(lubridate)
+colnames(forventing_mot_forbruk)
+p2 <- forventing_mot_forbruk|>
+  
+  filter(prisomrade == "NO4")|>
+  dplyr::select(datetime, faktisk_forbruk_MW) |>
+  mutate(time = hour(datetime)) |>
+  summarise(forbruk = mean(faktisk_forbruk_MW,na.rm = TRUE), .by = time)|>
+  ggplot(aes(x = time, y = forbruk)) +
+  geom_line()
+
+p2
+
+```
+
+```{r}
+
+p3<- strompriser_norge_long|>
+  
+  filter(prisomrade == "NO4")|>
+  dplyr::select(datetime, pris) |>
+  mutate(time = hour(datetime)) |>
+  summarise(pris_g = mean(pris,na.rm = TRUE), .by = time)|>
+  ggplot(aes(x = time, y = pris_g)) +
+  geom_line()
+
+p3
+
+```
 
 
 
