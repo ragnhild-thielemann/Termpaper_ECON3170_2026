@@ -8,7 +8,7 @@ library(lubridate)
 
 
 
-readRenviron("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/.Renviron")
+readRenviron("Kilder/.Renviron")
 
 api_key <- Sys.getenv("europa") #henter ut nøkkelen
 

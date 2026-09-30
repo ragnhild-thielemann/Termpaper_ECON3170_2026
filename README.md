@@ -1,6 +1,17 @@
 # Termpaper_ECON3170_2026
 
+#
+dtplyr
+https://dtplyr.tidyverse.org/
 
+```{r}
+
+lazy_result <- lazy_dt(mtcasr) |> #konverterer til et dtplyr objekt
+
+
+```
+
+arrow <- kan håntere store datasett
 #Prosjektbeskrivelse
 
 Jeg skal sentrere prosjektet rundt tre spørsmål: 
@@ -13,8 +24,7 @@ Jeg skal sentrere prosjektet rundt tre spørsmål:
   
 Også se på energimiksen i ulike prisområder. 
 
-Hvordan forholde seg til at githuben er lagret på mitt navn?
-
+Hele prosjektet skal lagres som en zip-fil
 # Kilder
 | Kilde| Variabler | Adresse | KOmmentar|
 | :--- | :---: | ---: |---:|

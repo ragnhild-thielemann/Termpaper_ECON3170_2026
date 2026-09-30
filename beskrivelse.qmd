@@ -2,11 +2,10 @@
 title: "Prosjektbeskrivelse av semesteroppgaven"
 subtitle: "En analyse av strømmarkedet"
 author:
-  - name: Ragnhild Thielemann
+  - name: kandidatnummer
 date: today
 date-format: D MMMM YYYY
-abstract: |
-  Prosjektbeskrivelse
+
 format: docx
 number-sections: true
 bibliography: referanser.bib
@@ -20,29 +19,38 @@ execute:
 
 
 
-## Problemstillinger jeg skal jobbe med
+## Problemstilling
 
-Den overordede problemstillingen for prosjektet er 
 
 **Hvordan har norske strømpriser utviklet seg over tid, og hvordan henger prisvariasjonen sammen med vannkraftsproduksjonen, hydrologiske forhold (akkumulert nedbør) og tilknytningen til det europeiske kraftmarkedet?**
 
-Prosjektet vil særlig undersøke tre deler. Først analyseres strømprisene i de norske prisområdene fra 2020 og frem til i dag, både som tidsserier og med hensyn på hvordan prisene varierer gjennom døgnet og året.
+Prosjektet er tredelt, med følgende stuktur:
+
+Først analyseres strømprisene i de norske prisområdene fra 2020 og frem til i dag, både som tidsserier og med hensyn på hvordan prisene varierer gjennom døgnet og året.
 
 Deretter undersøkes sammenhengen mellom strømpris, magasinfylling og nedbør. Nedbør og magasinfylling vil analyseres samlet for å få et bedre mål på tilgjengeligheten av vannkraft og hvordan hydrologiske forhold kan påvirke strømprisene.
 
 Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen.
 
 
-## Data og metode
+## Datainnsamling 
 
-Prosjektet vil benytte timeoppløste strømpriser og kraftflytdata, samt ukeoppløste data for magasinfylling. I tillegg brukes nedbørsdata for å undersøke hydrologiske forhold. Dataene fra ENTSO-E hentes og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse.
+## Datainnsamling
 
-For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele opp arbeidet i mindre, gjenbrukbare deler og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
+Prosjektet vil benytte timeoppløste strømpriser, kraftflyt- og produksjonsdata fra ENTSO-E, samt ukeoppløste data for magasinfylling fra NVE. I tillegg benyttes historiske nedbørsdata fra Meteorologisk institutt (MET Norway) gjennom Frost API-et for å undersøke hydrologiske forhold. Frost API-et gir tilgang til historiske meteorologiske observasjoner, blant annet nedbør.
 
-Analysen vil hovedsakelig være datadrevet og bestå av tidsserieanalyse, visualisering og statistiske modeller som lineær regresjon, LASSO, random forest og XGBoost. Det vil blant annet undersøkes hvordan strømprisen varierer over tid, mellom prisområder og med ulike hydrologiske forhold. Til slutt vil prediksjonsmodeller brukes til å undersøke hvor godt strømprisen kan predikeres ved hjelp av tilgjengelige data.
+Dataene fra ENTSO-E hentes gjennom deres API og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse. For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele arbeidet opp i mindre, gjenbrukbare deler, og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
+
+
+## Analyse
+
+Analysen vil hovedsakelig være datadrevet og bestå av tidsserieanalyse, visualisering og statistiske modeller som lineær regresjon, LASSO, random forest og XGBoost. Jeg skal blant annet undersøkes hvordan strømprisen varierer over tid, der prisområder og magasinfylling brukes som forklaringsvariabler. Til slutt vil prediksjonsmodeller brukes til å undersøke hvor godt strømprisen kan predikeres ved hjelp av tilgjengelige data.
 
 Formålet er å bruke dataanalyse til å undersøke sammenhengen mellom vannkraft, hydrologiske forhold, utenlandskabler og strømpriser i det norske kraftmarkedet.
 
+## Bruk av AI
+
+Jeg ser på prosjektet som en god mulighet til å utvikle forståelse for strukturen i ulike API-er og hvordan data fra API-er kan hentes, bearbeides og omformes til datasett som kan brukes i videre analyse. Derfor er det et mål at all kode skal være forståelig, effektiv og etterprøvbar. Bruken av AI i prosjektet vil primært være begrenset til hjelp med syntaks og debugging, mens jeg selv skal ha forståelse for og kontroll over koden som benyttes.
 
 
 
