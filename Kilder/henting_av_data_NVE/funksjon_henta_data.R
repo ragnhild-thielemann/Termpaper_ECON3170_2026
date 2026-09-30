@@ -10,7 +10,7 @@ library(lubridate)
 
 hent_vannreservoar <- function(start_date ,
                                end_date= Sys.Date(),
-                               areas = c("NO1", "NO2", "NO3", "NO4", "NO5")) { #har initialverdier for funksjonen, som kan endres om ønskelig
+                               omrader = c("NO1", "NO2", "NO3", "NO4", "NO5")) { #har initialverdier for funksjonen, som kan endres om ønskelig
   
   # URL til NVE sitt API
   url <- paste0(
@@ -31,7 +31,7 @@ hent_vannreservoar <- function(start_date ,
       prisomrade = paste0("NO", omrnr),
     ) |>
     dplyr::filter(
-      prisomrade %in% areas
+      prisomrade %in% omrader
     ) |>
     dplyr::select(
       datetime = (dato_Id),

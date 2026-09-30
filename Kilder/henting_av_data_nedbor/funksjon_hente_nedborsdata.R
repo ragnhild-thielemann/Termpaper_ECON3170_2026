@@ -85,13 +85,13 @@ hent_nedbor <- function(key,
         dato = as.Date(x$referenceTime),
         nedbor_mm = purrr::map_dbl(
           x$observations,
-          ~ as.numeric(.x$value)|>
-            arrange(dato)
+          ~ as.numeric(.x$value)
         )
       )
       
     }
   )
   
-  return(nedbor)
+  return(nedbor |>
+           arrange(dato)) #sorterer på dato
 }
