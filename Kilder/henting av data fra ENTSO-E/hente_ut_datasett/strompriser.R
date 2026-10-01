@@ -1,53 +1,49 @@
+
+
 library(tidyverse)
-library(dtplyr)
-library(data.table)
-library(docstring)
-
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
-
+#her bør man bruke 
 
 # Henter ut strømprisene i Norge fra 2020 til 2026
 
-prissoner <- c("NO1", "NO2", "NO3", "NO4", "NO5")
-
+prissoner <- c("NO1","NO2","NO3","NO4","NO5")
 strompris_norge <- tibble()
 
 
-for (sone in prissoner) {
+for (sone in prissoner){
   
   priser_sone <- hent_markedspriser(
     start_dato = "2020-01-01",
     slutt_dato = Sys.Date(),
-    prisomrade = paste("Norway", sone),
+    prisomrade= paste("Norway",sone),
     variabel = "A44",
     api_key = api_key
-  ) |>
-    dplyr::select(datetime, price) |>
-    dplyr::rename(!!paste0("pris_", sone) := price)
+  )|>
+    dplyr::select(datetime, price)|>
+    rename(!!paste0("pris_", sone) := price)
   
-  if (nrow(strompris_norge) == 0) {
-    
+  if (nrow(strompris_norge) == 0) { #Dersom tibbelen er tom, opprettes den med utgangpunkt i den første oversikten over priser-sone
     strompris_norge <- priser_sone
-    
   } else {
-    
     strompris_norge <- strompris_norge |>
       left_join(
         priser_sone,
         by = "datetime"
       )
-  }
-}
+  }}
 
-
+#'Vi har noen celler som mangler verdier for pris. 
+#'For at dette ikke skal bli tomme celler, antar vi at prisen på det gitte tidspunktet, 
+#'i det gitte intervallet er gjennomsnittet av de to foregående prisene. 
+#'
+#'Derfor lager vi en funksjon som beregner dette gjennomsnittet for de tomme cellene
+#'
+#'Funksjonen fungerer bare på long-formater
 
 
 lag_pris_estimat <- function(pris_tibble) {
-  #' Funksjon for å estimere manglende priser
-  #'Estimatet beregnes som gjennomsnittet av de to foregående
-  #' prisobservasjonene i samme prisområde.
+  
   pris_tibble |>
-    lazy_dt() |>
     arrange(prisomrade, datetime) |>
     group_by(prisomrade) |>
     mutate(
@@ -57,50 +53,31 @@ lag_pris_estimat <- function(pris_tibble) {
         pris
       )
     ) |>
-    ungroup() |>
-    as_tibble()
+    ungroup()
 }
 
 
-# Wide-format
-# Beholdes fordi dette formatet er praktisk for enkelte analyser og plott.
+#Vi lagrer to tibbler - en i wide og en i long format, da de har ulike bruksområder. 
 
-strompris_norge_wide <- strompris_norge |>
-  lazy_dt() |>
-  arrange(datetime) |>
-  as_tibble()
-
-
-# Long-format
+strompris_norge_wide <- strompris_norge|>
+  arrange(datetime)
 
 strompris_norge_long <- strompris_norge |>
-  #' lazy_dt() gjør at dtplyr oversetter operasjonene til data.table-kode.
-  #' dette gjør behandlingen raskere
-  lazy_dt() |>
-  pivot_longer(
-    cols = -datetime,
-    names_prefix = "pris_",
-    names_to = "prisomrade",
-    values_to = "pris"
-  ) |>
-  arrange(datetime) |>
-  as_tibble()
+  pivot_longer(cols = -datetime,
+               names_prefix = "pris_",
+               names_to = "prisomrade",
+               values_to = "pris") |>
+  arrange(datetime)
+#lagrer hele datafilen som en RDS-fil på datamaskinen
 
-
-# Beregner estimerte priser for manglende observasjoner
-
-strompris_norge_long <- lag_pris_estimat(strompris_norge_long)
-
-
-# Lagrer dataene som RDS-filer
+strompriser_norge_long <- lag_pris_estimat(strompriser_norge_long)
 
 saveRDS(
   strompris_norge_wide,
-  "Datasett/strompris_norge_wide_fra_2020.rds"
-)
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
 
 saveRDS(
   strompris_norge_long,
-  "Datasett/strompris_norge_long_fra_2020.rds"
-)
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
+
 

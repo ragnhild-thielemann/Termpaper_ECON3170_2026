@@ -16,6 +16,63 @@ execute:
   message: false
 ---
 
+# Introduksjon
+
+
+## Innledning
+
+Elektrisitet er en sentral del av det norske energisystemet, og utviklingen i strømprisene har stor betydning både for husholdninger, næringsliv og kraftprodusenter. Norge skiller seg fra mange andre europeiske land ved at en stor del av elektrisitetsproduksjonen kommer fra vannkraft. Vannkraften gjør at tilgangen på vann i magasiner og dermed de hydrologiske forholdene kan ha stor betydning for hvor mye elektrisitet som er tilgjengelig. Samtidig er Norge en del av det europeiske kraftmarkedet gjennom flere utenlandsforbindelser. Strømprisene påvirkes derfor ikke bare av forholdene i Norge, men også av kraftflyt mellom prisområder og utviklingen i det europeiske markedet.
+
+For å ta hensyn til forskjeller i produksjon, forbruk og overføringskapasitet er Norge delt inn i fem prisområder. Prisområdene er ikke nødvendigvis sammenfallende med fylkes- eller kommunegrenser, men representerer områder der strømprisen kan variere som følge av begrensninger i strømnettet. I de første plottene, som viser de store trendene i strømmarkedet kommer forskjellen mellom de ulike prissonene tydelig frem. 
+```{r}
+#| echo: false
+ 
+#| input: false
+
+library(tibble)
+library(flextable)
+
+prisomrader <- tibble(
+  Prisomrade = c("NO1", "NO2", "NO3", "NO4", "NO5"),
+  Omrade = c(
+    "Østlandet, inkludert Oslo-området",
+    "Sorvestlandet",
+    "Midt-Norge, innkludert Trondheim",
+    "Nord-Norge",
+    "Vestlandet, innkludert Bergen"
+  ), 
+  Kjennetegn = c(
+    "Hoyt forbruk og tett befolkning. Lite egen strøm produksjon",
+    "Mye vannkraft og  overføringskabler forbindelser til utlandet (Danmark, Storbritannia og Tyskland",
+    "Mye vannkraft, men begrenset overforingskapasitet mot sor. Relativt høyt forbruk, grunnet mange inbyggere og mye industri",
+    "Mye vannkraft og relativt lavt forbruk, grunnet få mennesker. Noe kraftkrevende industri etablerer seg, grunnet de lave prisene",
+    "Vestland og omradet rundt Bergen. Mye vannkraft og store variasjoner i produksjon."
+  )
+)
+
+prisomrader |>
+  flextable() |>
+  set_header_labels(
+    Prisomrade = "Prisomrade",
+    Omrade = "Geografisk omrade",
+    Kjennetegn = "Kjennetegn"
+  ) |>
+  width(j = 1, width = 1) |>
+  width(j = 2, width = 1.8) |>
+  width(j = 3, width = 4) |>
+  theme_booktabs() |>
+  align(align = "left", part = "all") |>
+  valign(valign = "top", part = "all")
+
+
+```
+Disse forskjellene gjør det relevant å undersøke hvordan strømprisene utvikler seg både mellom og innenfor de ulike prisområdene. Prosjektet undersøker derfor hvordan norske strømpriser har utviklet seg fra 2020 og frem til i dag, og hvordan prisvariasjonen henger sammen med vannkraftproduksjon, hydrologiske forhold og Norges tilknytning til det europeiske kraftmarkedet.
+
+Prosjektet er tredelt. Først analyseres utviklingen i strømprisene i de fem norske prisområdene. Det undersøkes både hvordan prisene har utviklet seg over tid, og hvordan de varierer gjennom døgnet og året. Deretter undersøkes sammenhengen mellom strømpris, magasinfylling og nedbør. Nedbør og magasinfylling analyseres samlet for å få et bedre bilde av tilgjengeligheten av vannkraft og hvordan hydrologiske forhold kan påvirke strømprisene. Til slutt undersøkes det om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen.
+
+Målet er dermed å bruke dataanalyse til å undersøke både den historiske utviklingen i norske strømpriser og hvilke faktorer som kan bidra til å forklare variasjonen mellom ulike tidspunkter og prisområder.
+
+
 
 
 ```{r}
@@ -35,6 +92,10 @@ strompris_norge_long_fra_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long_fra_2020.rds"
 )
 
+
+forventing_mot_forbruk_norge_2020 <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge_2020.rds"
+)
 
 ```
 
@@ -66,9 +127,7 @@ Av plottet ser vi at strømprisene var relativt lave og stabile frem til 2021. F
 
 ## Pris gjennom døgnet
 
-Et annet aspekt er hvordan strømprisen varierer gjennom døgnet. Ettersom prisnivået varierer betydelig mellom prisområdene, differensierer vi også her mellom de ulike prisområdene. For hvert prisområde beregner vi gjennomsnittlig strømpris for hvert klokkeslett basert på de seks årene med data, og plotter deretter den gjennomsnittlige døgnprofilen.
-
-Av plottet ser vi at prisområdene med høyere prisnivå også har større variasjoner gjennom døgnet. Her øker prisen om morgenen når strømforbruket øker, før den faller noe midt på dagen og igjen øker rundt middagstid. I prisområdene med lavere prisnivå er døgnvariasjonen mindre, og prisene holder seg i større grad stabile gjennom dagen. Også her ser vi imidlertid en nedgang i prisene om natten, når strømforbruket er lavere.
+Et annet aspekt er hvordan strømprisen varierer gjennom døgnet. Ettersom prisnivået varierer betydelig mellom prisområdene, differensierer vi også her mellom de ulike prisområdene. For hvert prisområde beregner vi gjennomsnittlig strømpris for hvert klokkeslett basert på de seks årene med data (for å se på de store, underliggende trendene), og plotter deretter den gjennomsnittlige døgnprofilen.
 
 
 
@@ -95,4 +154,20 @@ p2
 
 ```
 
+Av plottet ser vi at prisområdene med høyere prisnivå også har større variasjoner gjennom døgnet. Her øker prisen om morgenen når strømforbruket øker, før den faller noe midt på dagen og igjen øker rundt middagstid. I prisområdene med lavere prisnivå er døgnvariasjonen mindre, og prisene holder seg i større grad stabile gjennom dagen. Også her ser vi imidlertid en nedgang i prisene om natten, når strømforbruket er lavere.
+
+
+## Forbruk som en funksjon av pris
+
+I mikroøkonomi lærer vi at strøm har en uelastisk etterspørsel, da konsumentne i liten grad kan tilpasse strønforbruket sitt med hensyn på prisen. Strøm brukes stort sett til oppvarming av bolig for privatpersoner, og til maskiner for bedrifters del. Derfor er det intressant å se på korrelasjonen mellom pris og konsumert strøm i et scatterplott. Vi gjør både datasettet med strømforbruket og datasettet med markedspriser i de ulike prissionene timesoppløste, før vi merger disse sammen.
+
+```{r}
+
+View(forventing_mot_forbruk_norge_2020)
+
+forventing_mot_forbruk_norge_2020_time <- forventing_mot_forbruk_norge_2020 |>
+  mutate(time = hour(datetime)) |>
+  mutate(datetime = ymd(datetime))
+
+```
 

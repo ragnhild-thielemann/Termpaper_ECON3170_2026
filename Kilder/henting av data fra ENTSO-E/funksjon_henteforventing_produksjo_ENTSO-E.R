@@ -5,8 +5,8 @@ library(tibble)
 library(lubridate)
 library(stringr)
 
-source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteeickode.R")
-source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
+source("Kilder/henting av data fra ENTSO-E/funksjon_henteeickode.R")
+source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 
 # ==========================================================
@@ -348,32 +348,7 @@ hent_forbruk_ENTSOE <- function(
     by = "datetime"
   )
   
-  
-  # ========================================================
-  # 8. Beregn prognosefeil
-  # ========================================================
-  
-  resultat <- resultat |>
-    mutate(
-      
-      # Faktisk - prognose
-      prognosefeil_MW =
-        faktisk_forbruk_MW -
-        prognose_forbruk_MW,
-      
-      # Absolutt prognosefeil
-      absolutt_prognosefeil_MW =
-        abs(prognosefeil_MW),
-      
-      # Relativ prognosefeil
-      prognosefeil_prosent =
-        100 *
-        prognosefeil_MW /
-        prognose_forbruk_MW
-    ) |>
-    
-    arrange(datetime)
-  
+ 
   
   return(resultat)
 }
