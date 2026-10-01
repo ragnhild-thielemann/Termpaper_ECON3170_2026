@@ -89,9 +89,6 @@ vannreservoar <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds"
 )
 
-total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
-
-nrow(total_produksjon)
 
 strompris_norge_long_fra_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long_fra_2020.rds"
@@ -106,25 +103,6 @@ forventing_mot_forbruk_norge_2020 <- readRDS(
 
 
 ```
-#Gjør tibbelene til timesbaserte
-```{r}
-
-strompris_norge_long_fra_2020_time <-
-  strompris_norge_long_fra_2020|>
-  lazy_dt() |>
-  floor_date(datetime, "hour"))|>
-  as_tibble()
-
-
-
-total_produksjon_time <- total_produksjon |>
-  lazy_dt() |>
-  mutate(datetime = floor_date(datetime, "hour"))|>
-  summarise()
-  as_tibble()
-
-View(total_produksjon)
-```
 
 # De store trendene siden 2020
 
@@ -136,7 +114,7 @@ Det opprinnelige datasettet består av 421950 observasjoner. Ved å aggregere fr
 
 ```{r}
 
-aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020_time |>
+aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020 |>
   mutate(datetime = floor_date(datetime,"day")) |> #setter på dager 
   summarise(pris_dag = mean(pris_modellert, na.rm = TRUE) , .by = c(prisomrade, datetime))
 
@@ -162,7 +140,7 @@ Et annet aspekt er hvordan strømprisen varierer gjennom døgnet. Ettersom prisn
 ```{r}
 
 
-gjennom_dagen <- strompris_norge_long_fra_2020_time |>
+gjennom_dagen <- strompris_norge_long_fra_2020 |>
   lazy_dt() |>
   mutate(time = hour(datetime)) |>
   summarise(dogn_pris = mean(pris_modellert, na.rm = TRUE), .by = c(time,prisomrade)) |>
@@ -222,74 +200,3 @@ p2
 ```
 
 
-
-
-
-## Plotte energisammensetningen
-
-Når vi skal plotte energimiksen i ulike prisområder, er det enorme datasett vi skal behandle. Derfor aggregerer vi til timespoduksjon, der vi setter produksjonen til gjennomsnittet av den inneværende timen. 
-```{r}
-
-aggregert_produksjon <- total_produksjon_time |>
-  lazy_dt() |>
-
-  #finner gjennomsnittlig produksjon innad i den gitte timen. Vi bruker datasettet som allerede har aggregert til timesintervaller for tiden. 
-  summarise(production_MW_time = mean(production_MW, na.rm = TRUE), .by = c(datetime, prisomrade,produksjonskilde))|> 
-  as_tibble()
-  
-  
-
-```
-
-```{r}
-
-p3 <- aggregert_produksjon |>
-  filter(prisomrade == "NO4") |>
-  ggplot(aes(x = datetime, y = production_MW_time, fill = produksjonskilde)) + 
-  geom_area()
-
-p3
-```
-
-
-
-Vannkraft er strøm som kan reguleres. Derfor ønsker vi å finne ut om vannkraftsproduksjonen er korrelert med spotprisen, og eventuell annen strømproduksjon.I første omgang gjør vi analysen for NO4. 
-
-```{r}
-
-total_produksjon_prissone <- total_produksjon_time |>
-  
-  #gjør om til data.frame for å gjøre behanlingen raskere
-  lazy_dt() |>
- 
-  
-  #finner total strømprosuksjon per time
-  mutate(total_produksjon = sum(production_MW, na.rm = TRUE), .by = c(datetime, prisomrade))|>
-  
-  #sorterer ut kolonnene som drøfter vannkraftsproduksjonen
-  filter(produksjonskilde == "Vannkraft med magasin")|>
-  rename(vannkraft = production_MW)|>
-  
-  #finner andelen vannkraftsproduksjon
-  mutate(andel = vannkraft/total_produksjon)|>
-  #sorter ut de relevante kolonne
-  select(datetime, vannkraft, total_produksjon,andel)|>
-  as_tibble()
-
-
-```
-
-
-
-```{r}
-
-View(strompris_norge_long_fra_2020_time)
-View(total_produksjon_time)
-vannkraft_av_spotpris <- strompris_norge_long_fra_2020_time |>
-  lazy_dt() |>
-  left_join(total_produksjon_prissone, join_by (c(prisomrade, datetime)))|>
-  as_tibble()
-  
-View(vannkraft_av_spotpris)
-  
-```

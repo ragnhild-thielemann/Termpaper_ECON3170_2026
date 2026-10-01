@@ -1,10 +1,10 @@
 
+library(docstring)
 source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 hent_eic_kode <- function(land,omrade, api_key) {
   #' En funksjon som henter EIC-koden til landet/prisområdet.
-  #' Både Norge og Sverige har ulike prisområder, som tas hensyn til. 
-  
+  #' Funksjonen tar hensyn til både land og prisområde
   
   eic_code <- dplyr::case_when(
     

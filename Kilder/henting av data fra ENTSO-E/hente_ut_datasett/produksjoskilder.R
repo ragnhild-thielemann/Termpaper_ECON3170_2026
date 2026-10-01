@@ -1,67 +1,74 @@
-
+library(docstring)
 library(tidyverse)
-library(tibble)
+library(dtplyr)
+library(data.table)
 
-source(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_produksjonstype.R"
-)
+source("Kilder/henting av data fra ENTSO-E/funksjon_produksjonstype.R")
 
 
-# Oversikt mellom PSR-kode og produksjonstype
+
 psr_oversikt <- tibble(
-  kode = c(
-    "B04", "B11", "B12",
-    "B15", "B16", "B17", "B18"
-  ),
-  navn = c(
+  psr_type = c("B04", "B11", "B12",
+    "B15", "B16", "B18", "B19"),
+  produksjonskilde = c(
     "Gass",
     "Elvekraft",
     "Vannkraft med magasin",
     "Annen fornybar",
     "Solkraft",
     "Vindkraft til havs",
-    "Vindkraft pa land"
-  )
+    "Vindkraft pa land")
 )
-
 
 prisomrader <- c(
   "NO1", "NO2", "NO3", "NO4", "NO5"
 )
 
 
-#Vektorisert kode er mer effektivt enn å oppdatere tibbelen konstant. 
+# ------------------------------------------------------------
+# Henter ut dataene
+# ------------------------------------------------------------
 
-resultater <- vector("list", length(prisomrader))
+resultater <- purrr::map(
+  prisomrader,
+  \(sone) {
+    
+    hent_produksjon_ENTSOE(
+      start_dato = "2020-01-01",
+      slutt_dato = Sys.Date(),
+      prisomrade = paste("Norway", sone),
+      api_key = api_key,
+      psr_type = NULL #går over alle prisområdene som er gitt i funksjonen. 
+    )
+  }
+)
 
-for (i in seq_along(prisomrader)) {
-  
-  sone <- prisomrader[i]
-  
-  resultater[[i]] <- hent_produksjon_ENTSOE(
-    start_dato = "2026-01-21",
-    slutt_dato = Sys.Date(),
-    prisomrade = paste("Norway", sone),
-    api_key = api_key,
-    psr_type = NULL
-  )
-}
+#'Da den samme operasjon skal utføres for hvert prisområde, 
+#'bruker vi purrr::map() til å gjennomføre funksjonen for 
+#'hvert element i vektoren.
+
 
 total_produksjon <- bind_rows(resultater) |>
-  drop_na() |>
-  mutate(
-    datetime = as.Date(datetime)
-  ) |>
-  left_join(
-    psr_oversikt,
-    by = c("psr_type" = "kode")
-  ) |>
-  rename(
-    produksjonskilde = navn
-  )
+  #gjør om til data.frame, slik at vi kan bruke dtplyr
+  lazy_dt() |>
+  
+  # Fjern rader uten produksjonsdata
+  filter(!is.na(production_MW)) 
 
-summary(total_produksjon)
+  # Koble PSR-kode til produksjonskilde
+  left_join(
+    lazy_dt(psr_oversikt),
+    by = "psr_type") |>
+  
+  # Sorter datasettet
+  arrange(datetime, prisomrade, psr_type) |> 
+  
+  # Gjør tilbake til tibble
+  as_tibble()
+
+
+#lagrer datasettet
 saveRDS(
   total_produksjon,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds"
-)
+  "Datasett/total_produksjon.rds")
+

@@ -32,7 +32,7 @@ hent_produksjon_ENTSOE <- function(
     stop("start_dato kan ikke være etter slutt_dato.")
   }
   
-  # Finn land og prisområde
+  # Finn land og prisområde med funskjonen fra "funksjon_henteeickode.R"
   land <- stringr::word(prisomrade, 1)
   omrade <- stringr::word(prisomrade, -1)
   
@@ -55,11 +55,11 @@ hent_produksjon_ENTSOE <- function(
   
   
   # ------------------------------------------------------------
-  # 3. Funksjon som henter én måned
+  # 3. Funksjon som henter én måned om gangen
   # ------------------------------------------------------------
   
   hent_maaned <- function(maaned) {
-    
+    # Finn første og siste dato som faktisk skal hentes
     maaned_start <- max(
       maaned,
       start_dato
@@ -116,7 +116,7 @@ hent_produksjon_ENTSOE <- function(
         NULL
       }
     )
-    
+    # Hvis API-kallet feilet, avsluttes søket for denne måneden 
     if (is.null(response)) {
       return(NULL)
     }
@@ -157,14 +157,13 @@ hent_produksjon_ENTSOE <- function(
         )
       )
       
-      # Hvis psr_type er spesifisert,
-      # behold bare denne typen
+      #' Hvis brukeren har valgt en bestemt produksjonstype,
+      #' hopper vi over de andre.
       if (!is.null(psr_type) && psr != psr_type) {
         return(NULL)
       }
       
-      
-      # Starttidspunkt
+      # Finn starttidspunktet for TimeSeries
       interval_start <- xml_text(
         xml_find_first(
           ts,
@@ -172,14 +171,15 @@ hent_produksjon_ENTSOE <- function(
         )
       )
       
-      # Oppløsning
+      # Finn tidsoppløsningen
       resolution <- xml_text(
         xml_find_first(
           ts,
           ".//*[local-name()='Period']/*[local-name()='resolution']"
         )
       )
-      
+      # Gjør tidsoppløsningen om til minutter
+      # Håndterer også at det er ulik tidsoppløsning på observasjonene i datasettet
       minutes <- dplyr::case_when(
         resolution == "PT15M" ~ 15,
         resolution == "PT30M" ~ 30,
@@ -208,7 +208,7 @@ hent_produksjon_ENTSOE <- function(
       if (length(points) == 0) {
         return(NULL)
       }
-      
+      # Hent posisjon og produksjonsmengde fra hvert punkt
       position <- as.integer(
         xml_text(
           xml_find_all(
@@ -260,7 +260,7 @@ hent_produksjon_ENTSOE <- function(
   
   
   # ------------------------------------------------------------
-  # 9. Kontroller resultat
+  # 9. Rydder opp i resulatet
   # ------------------------------------------------------------
   
   if (nrow(resultat) == 0) {

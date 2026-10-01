@@ -9,11 +9,8 @@ source("Kilder/henting av data fra ENTSO-E/funksjon_henteeickode.R")
 source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
 
-# ==========================================================
-# FUNKSJON: Hent faktisk og prognostisert strømforbruk
-# ==========================================================
-
 hent_forbruk_ENTSOE <- function(
+    #' Funksjon som finner forvenetet forbruk, samt faktisk forbruk
     start_dato,
     slutt_dato,
     prisomrade = "Norway NO1",
@@ -106,7 +103,7 @@ hent_forbruk_ENTSOE <- function(
     
     
     # ------------------------------------------------------
-    # Send forespørsel
+    # Send forespørsel til API-et
     # ------------------------------------------------------
     
     response <- httr2::request(
@@ -124,23 +121,24 @@ hent_forbruk_ENTSOE <- function(
     
     
     # ------------------------------------------------------
-    # Les XML
+    # Les XML-filene (tekstfiler)
     # ------------------------------------------------------
     
     xml <- httr2::resp_body_xml(response)
     
     
-    # Finn TimeSeries
+    # Finner TimeSeries
     time_series <- xml2::xml_find_all(
       xml,
       ".//*[local-name()='TimeSeries']"
     )
     
-    
+    #' Gir beskjed om API-kallet gir respons for den gitte prissonen. 
+    #' Dette er gunstig for å følge med på om kallene gir respons
     message(
-      "Fant ",
-      length(time_series),
-      " TimeSeries"
+      
+      
+      "Henter ",land, prisomrade, "fant",length(time_series)," TimeSeries"
     )
     
     
@@ -160,7 +158,7 @@ hent_forbruk_ENTSOE <- function(
     
     
     # ------------------------------------------------------
-    # Hent hver TimeSeries
+    # Henter hver TimeSeries
     # ------------------------------------------------------
     
     resultat <- lapply(
@@ -217,7 +215,7 @@ hent_forbruk_ENTSOE <- function(
         
         
         # --------------------------------------------------
-        # Finn alle Point
+        # Finn alle punktene
         # --------------------------------------------------
         
         points <- xml2::xml_find_all(
@@ -231,9 +229,6 @@ hent_forbruk_ENTSOE <- function(
         }
         
         
-        # --------------------------------------------------
-        # Position
-        # --------------------------------------------------
         
         position <- as.integer(
           xml2::xml_text(
@@ -246,7 +241,7 @@ hent_forbruk_ENTSOE <- function(
         
         
         # --------------------------------------------------
-        # Hent mengde
+        # Hent mengde produsert
         # --------------------------------------------------
         
         quantity <- as.numeric(
