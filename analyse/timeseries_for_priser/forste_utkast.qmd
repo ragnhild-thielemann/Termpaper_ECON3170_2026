@@ -85,8 +85,10 @@ library(httr); library(jsonlite);  library(lubridate); library(zoo); library(rug
 
 
 ```{r}
-
-
+vannreservoar <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds"
+)
+View(vannreservoar)
 
 strompris_norge_long_fra_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long_fra_2020.rds"
@@ -97,9 +99,12 @@ forventing_mot_forbruk_norge_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge_2020.rds"
 )
 
+nrow(forventing_mot_forbruk_norge_2020)
+
 ```
 
 # De store trendene siden 2020
+
 ## Tidsserieplott for å undersøke langsiktige trender
 Det første vi undersøker, er den langsiktige utviklingen i markedsprisene på strøm siden 2020. ENTSO-E-dataene har en tidsoppløsning på 15 - 60 minutter, og inneholder derfor mange observasjoner med både kortvarige negative priser og enkelte observasjoner med unormalt store prisutslag. For å få frem de overordnede prisutviklingene fremfor de kortsiktige svingningene gjennom dagen, aggregeres prisene til dagsnivå. De daglige prisene visualiseres deretter i et tidsserieplott, der hvert prisområde representeres av en egen linje.
 
@@ -163,11 +168,9 @@ I mikroøkonomi lærer vi at strøm har en uelastisk etterspørsel, da konsument
 
 ```{r}
 
-View(forventing_mot_forbruk_norge_2020)
+nrow(forventing_mot_forbruk_norge_2020)
 
-forventing_mot_forbruk_norge_2020_time <- forventing_mot_forbruk_norge_2020 |>
-  mutate(time = hour(datetime)) |>
-  mutate(datetime = ymd(datetime))
+
 
 ```
 

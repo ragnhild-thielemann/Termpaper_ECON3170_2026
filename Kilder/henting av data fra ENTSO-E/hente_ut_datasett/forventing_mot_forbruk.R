@@ -71,5 +71,5 @@ saveRDS(
   forbruk_norge_2020,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge_2020.rds"
 )
-```
+
 

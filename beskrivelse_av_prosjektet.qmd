@@ -1,10 +1,9 @@
 ---
 title: "Prosjektbeskrivelse av semesteroppgaven"
 subtitle: "En analyse av strømmarkedet"
-author:
-  - name: kandidatnummer
+
 date: today
-date-format: D MMMM YYYY
+date-format: D MMMM YYYY 
 
 format: docx
 number-sections: true
@@ -19,21 +18,20 @@ execute:
 
 
 
-## Problemstilling
+## Problemstilling 
 
 
 **Hvordan har norske strømpriser utviklet seg over tid, og hvordan henger prisvariasjonen sammen med vannkraftsproduksjonen, hydrologiske forhold (akkumulert nedbør) og tilknytningen til det europeiske kraftmarkedet?**
 
 Prosjektet er tredelt, med følgende stuktur:
 
-Først analyseres strømprisene i de norske prisområdene fra 2020 og frem til i dag, både som tidsserier og med hensyn på hvordan prisene varierer gjennom døgnet og året.
+Først analyseres strømprisene i de norske prisområdene fra 2020 og frem til i dag, både som tidsserier og med hensyn på hvordan prisene varierer gjennom døgnet og året. Jeg vil også se på hvordan forbruket av strøm varierer med hensyn på prisen (undersøke elastisiteten i etterspørselen).
 
 Deretter undersøkes sammenhengen mellom strømpris, magasinfylling og nedbør. Nedbør og magasinfylling vil analyseres samlet for å få et bedre mål på tilgjengeligheten av vannkraft og hvordan hydrologiske forhold kan påvirke strømprisene.
 
-Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen.
-
-Sammenhengene mellom hydrologiske forhold, vannkraft, strømpriser og det europeiske kraftmarkedet er allerede godt dokumentert, blant annet av NVE og Statnett.[@sporsmal_og_svar],[@kraftsystem],[@hvordan_settes_stromprisen]. Målet med prosjektet er derfor ikke å undersøke et problem som tidligere ikke er studert, men å bruke en kjent og relevant problemstilling til å utvikle egne ferdigheter i dataanalyse. Ved å hente inn, strukturere, sammenstille og visualisere dataene selv får jeg praktisk erfaring med hele analyseprosessen. At det allerede finnes eksistrende studier på dette temaet gir også mulighet til å undersøke hvor tydelig de tidligere dokumenterte sammenhengene faktisk kommer frem i dataene jeg jobber med.
-
+Til slutt vil jeg undersøke om informasjon om tidligere strømpriser, magasinfylling og hydrologiske forhold kan brukes til å predikere strømprisen. Jeg vil benytte ulike maskinlæringsmodeller for å undersøke hvor godt strømprisen kan predikeres basert på forklaringsvariablene i datasettene.
+ 
+Modellene vil trolig ha begrenset prediksjonsevne, ettersom datasettene ikke inneholder alle relevante faktorer som påvirker strømprisen. Analysen vil likevel gi trening i å identifisere underliggende sammenhenger i dataene, samt i å evaluere og kritisk vurdere ulike prediksjonsmodeller.
 
 ## Datainnsamling
 
@@ -41,12 +39,8 @@ Prosjektet vil benytte timeoppløste strømpriser, kraftflyt- og produksjonsdata
 
 Dataene fra ENTSO-E hentes gjennom deres API og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse. For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele arbeidet opp i mindre, gjenbrukbare deler, og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
 
+Mye av datainnsamlingen er gjort, men det gjenstår noe jobb for å formatere dataen i gunstige formater. Da dette er store datasett (rundt 1 million datapunkter per datasett), bruker jeg *dtplyr* for å gjøre wranglignen raskere. Dette er særlig nyttig når datasettene merges sammen for analyse. 
 
-## Analyse
-
-Analysen vil hovedsakelig være datadrevet og bestå av tidsserieanalyse, visualisering og statistiske modeller som lineær regresjon, LASSO, random forest og XGBoost. Jeg skal blant annet undersøkes hvordan strømprisen varierer over tid, der prisområder og magasinfylling brukes som forklaringsvariabler. Til slutt vil prediksjonsmodeller brukes til å undersøke hvor godt strømprisen kan predikeres ved hjelp av tilgjengelige data.
-
-Formålet er å bruke dataanalyse til å undersøke sammenhengen mellom vannkraft, hydrologiske forhold, utenlandskabler og strømpriser i det norske kraftmarkedet.
 
 ## Bruk av AI
 
@@ -55,6 +49,14 @@ Jeg ser på prosjektet som en god mulighet til å utvikle forståelse for strukt
 I forbindelse med innhentingen av data har jeg brukt AI som et hjelpemiddel. API-ene som benyttes, særlig ENTSO-E og Frost, er omfattende og komplekse, og det kan derfor være krevende å navigere i dokumentasjonen og finne frem til riktig struktur og syntaks for dataforespørsler. AI har i denne delen av prosjektet blitt brukt til hjelp med syntaks, forståelse av API-strukturen og debugging.
 
 Jeg har ikke brukt AI-agenter til å utvikle eller gjennomføre analysen. All kode er gjennomgått og tilpasset av meg, og jeg har selv arbeidet med debugging, optimalisering og strukturering av koden. Selve analysen av dataene, herunder valg av metoder, bearbeiding, visualisering og tolkning av resultatene, har jeg gjort selv. Jeg har dermed hatt kontroll over både datainnhentingen og den videre analysen, og kan derfor forstå og forklare all kode i prosjektet.
+
+Hele arbeidet lagres på github, slik at jeg har god oversikt over versonskontroll. 
+
+## Tidligere littaratur
+
+Sammenhengene mellom hydrologiske forhold, vannkraft, strømpriser og det europeiske kraftmarkedet er allerede godt dokumentert, blant annet av NVE og Statnett.[@sporsmal_og_svar],[@kraftsystem],[@hvordan_settes_stromprisen]. Målet med prosjektet er derfor ikke å undersøke et problem som tidligere ikke er studert, men å bruke en kjent og relevant problemstilling til å utvikle egne ferdigheter i dataanalyse. Ved å hente inn, strukturere, sammenstille og visualisere dataene selv får jeg praktisk erfaring med hele analyseprosessen. At det allerede finnes eksistrende studier på dette temaet gir også mulighet til å undersøke hvor tydelig de tidligere dokumenterte sammenhengene faktisk kommer frem i dataene jeg har tilgjenlig.  
+
+
 
 ## Referanser
 
