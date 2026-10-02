@@ -74,7 +74,7 @@ Målet er dermed å bruke dataanalyse til å undersøke både den historiske utv
 
 
 
-
+# Impotere biblioteker og datasett
 ```{r}
 
 #| echo: false
@@ -91,12 +91,10 @@ vannreservoar <- readRDS(
 
 total_produksjon <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds")
 
-nrow(total_produksjon)
 
 strompris_norge_long_fra_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long_fra_2020.rds"
 )
-nrow(strompris_norge_long_fra_2020)
 
 
 forventing_mot_forbruk_norge_2020 <- readRDS(
@@ -112,7 +110,7 @@ forventing_mot_forbruk_norge_2020 <- readRDS(
 strompris_norge_long_fra_2020_time <-
   strompris_norge_long_fra_2020|>
   lazy_dt() |>
-  floor_date(datetime, "hour"))|>
+  mutate(datetime = floor_date(datetime, "hour"))|>
   as_tibble()
 
 
@@ -120,7 +118,7 @@ strompris_norge_long_fra_2020_time <-
 total_produksjon_time <- total_produksjon |>
   lazy_dt() |>
   mutate(datetime = floor_date(datetime, "hour"))|>
-  summarise()
+
   as_tibble()
 
 View(total_produksjon)
@@ -277,7 +275,7 @@ total_produksjon_prissone <- total_produksjon_time |>
   as_tibble()
 
 
-```
+``` 
 
 
 
@@ -293,3 +291,9 @@ vannkraft_av_spotpris <- strompris_norge_long_fra_2020_time |>
 View(vannkraft_av_spotpris)
   
 ```
+
+
+
+## Vi finner kodelisten i
+
+[@kodeliste_entsoe]

@@ -85,7 +85,15 @@ hent_produksjon_ENTSOE <- function(
     # ----------------------------------------------------------
     # API-kall
     # ----------------------------------------------------------
-    
+    #' Skriver en melding om produksjonskallet, slik at man er oppdatert 
+    #' underveis i datainnsamlingen
+    message(
+      "Henter produksjonsdata for ",
+      omrade,
+      " – ",
+      format(maaned, "%Y-%m"),
+      "..."
+    )
     response <- tryCatch(
       {
         request("https://web-api.tp.entsoe.eu/api") |>

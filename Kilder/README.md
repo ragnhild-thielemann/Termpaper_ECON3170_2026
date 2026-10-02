@@ -8,5 +8,3 @@ output: html_document
 
 Jeg stukturerer slik at jeg har en fil for datainnsamlingen, som jeg så lagrer i tibbler. Dette gjør at dette slipper å lagres hver gang. 
 
-
-Jeg har sendt en mail til ENTSO-E for å få tilgang til APIen

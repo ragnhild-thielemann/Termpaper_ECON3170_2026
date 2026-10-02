@@ -6,20 +6,27 @@ library(data.table)
 source("Kilder/henting av data fra ENTSO-E/funksjon_produksjonstype.R")
 
 
-
+#Lager en oversikt over de ulike produksjonskildene for kraft
 psr_oversikt <- tibble(
-  psr_type = c("B04", "B11", "B12",
-    "B15", "B16", "B18", "B19"),
+  psr_type = c("B01","B04","B10", "B11", "B12",
+     "B15","B16", "B17","B18", "B19","B20"),
   produksjonskilde = c(
+    "Biomasse",
     "Gass",
+    "Pumpekraft",
     "Elvekraft",
     "Vannkraft med magasin",
     "Annen fornybar",
     "Solkraft",
+    "Avfall",
     "Vindkraft til havs",
-    "Vindkraft pa land")
+    "Vindkraft pa land",
+    "Annet"
+    )
 )
 
+
+View(psr_oversikt)
 prisomrader <- c(
   "NO1", "NO2", "NO3", "NO4", "NO5"
 )
@@ -53,7 +60,7 @@ total_produksjon <- bind_rows(resultater) |>
   lazy_dt() |>
   
   # Fjern rader uten produksjonsdata
-  filter(!is.na(production_MW)) 
+  filter(!is.na(production_MW)) |>
 
   # Koble PSR-kode til produksjonskilde
   left_join(
@@ -67,8 +74,10 @@ total_produksjon <- bind_rows(resultater) |>
   as_tibble()
 
 
+
 #lagrer datasettet
 saveRDS(
   total_produksjon,
   "Datasett/total_produksjon.rds")
 
+View(total_produksjon)
