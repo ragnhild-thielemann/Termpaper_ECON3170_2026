@@ -91,7 +91,6 @@ total_tibble <- total_produksjon_time |>
   ) |>
   as_tibble()
 
-View(total_tibble)
 
 
 p1 <- total_tibble |>
@@ -144,4 +143,17 @@ p4
 
 # vi ser at andelen har falt dramatisk etter 2020. 
 #andelen vannkraft i prisområde 1 har falt dramatisk
-              
+
+colnames(total_produksjon)
+p5 <- total_produksjon |>
+  lazy_dt()|>
+  filter(prisomrade == "NO1")|>
+  mutate(datetime = floor_date(datetime,"day"))|>
+  summarise(produksjon_dag = mean(production_MW), 
+            .by = c(datetime, produksjonskilde))|>
+
+  as_tibble()|>
+  ggplot(aes(x = datetime, y = produksjon_dag, fill =produksjonskilde ))+
+  geom_area()
+
+(p5)
