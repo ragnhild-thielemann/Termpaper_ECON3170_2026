@@ -16,7 +16,6 @@ library(scales)
 vannreservoar <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/vannreservoar.rds"
 )
-
 total_produksjon <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_produksjon.rds"
 )
@@ -59,6 +58,9 @@ total_produksjon_time <-
   mutate(total_produksjon = sum(timeproduksjon, na.rm = TRUE),.by = c(datetime,prisomrade))|>
   filter(produksjonskilde == "Vannkraft med magasin") |>
   rename(vannkraft = timeproduksjon   )|>
+  
+  #vi trenger ikke lengre produksjonskilden, fordi den eneste produksjonskilden er spesifikt vannraft
+  select(-produksjonskilde)|>
   as_tibble()
 
 # Gjør forbruket om til timesdata
@@ -90,3 +92,45 @@ total_tibble <- total_produksjon_time |>
   as_tibble()
 
 View(total_tibble)
+
+
+p1 <- total_tibble |>
+  filter(prisomrade == "NO2")|>
+  ggplot(aes(x = times_pris, y = total_produksjon)) +
+  geom_point()
+
+
+p1
+
+vannreservoar <- vannreservoar |>
+  mutate(datetime = as.Date(datetime))
+
+colnames(total_produksjon_time)
+vannresevorar_med_produksjon <- total_produksjon_time |>
+  lazy_dt()|>
+  
+  #' Gjør produksjonen om til dagsproduksjon, da dataen fra NVE har så lav oppløsning
+  mutate(datetime = as.Date(floor_date(datetime,"day")))|>
+  summarise(vannkraft = mean(vannkraft, na.rm = TRUE), total_produksjon = mean(total_produksjon, na.rm = TRUE), .by = c(datetime, prisomrade))|>
+  left_join(vannreservoar, by = c("datetime", "prisomrade"))|>
+  
+  #'da det bare er ukesobservasjoner for fyllingsgraden i magasinene, må vi 
+  #'fylle ut kolnnene nedover
+  fill(fyllingsgrad,fyllingsgrad_forrige_uke,endring,.direction  = "down")|>
+  drop_na()|>
+  as_tibble()
+
+p3 <- vannresevorar_med_produksjon |>
+  lazy_dt()|>
+  mutate(andel = vannkraft/total_produksjon) |>
+  filter(prisomrade == "NO2")|>
+  pivot_longer(cols = c(andel,fyllingsgrad),
+               names_to = "variabel",
+               values_to = "verdi")|>
+  as_tibble()|>
+  ggplot(aes(x = datetime, y = verdi, color = variabel)) + 
+  geom_smooth()
+
+
+p3
+              
