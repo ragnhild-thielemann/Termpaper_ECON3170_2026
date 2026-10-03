@@ -132,5 +132,16 @@ p3 <- vannresevorar_med_produksjon |>
   geom_smooth()
 
 
+
 p3
+
+p4 <- vannresevorar_med_produksjon |>
+  mutate(andel = vannkraft/total_produksjon) |>
+  ggplot(aes(x = datetime, y = andel, color = prisomrade)) + 
+  geom_point()
+
+p4
+
+# vi ser at andelen har falt dramatisk etter 2020. 
+#andelen vannkraft i prisområde 1 har falt dramatisk
               

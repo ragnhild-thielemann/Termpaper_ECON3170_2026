@@ -288,4 +288,35 @@ View(vannkraft_av_spotpris)
 [@kodeliste_entsoe]
 
 
+## Fyllingsgrad i vannmagasinene
+
+Fra 2020 og frem til i dag har magasinfyllingen variert mellom prisområdene, og utviklingen har ikke vært lik i hele Norge. 2022 skiller seg særlig ut, da fyllingsgraden var lav i flere områder gjennom vinteren. NO1 og NO4 hadde lave nivåer, mens situasjonen i NO2 var spesielt unormal. I 2026 har NO2 igjen hatt svært lav magasinfylling, mens NO4 i større grad har ligget på normale eller høye nivåer. Dette viser at den hydrologiske situasjonen kan være svært forskjellig mellom prisområdene. Det er derfor interessant å undersøke om lav magasinfylling i september henger sammen med høyere strømpriser, og om denne sammenhengen varierer mellom prisområdene.
+
+```{r}
+colnames(vannreservoar)
+p1 <- vannreservoar|>
+  ggplot(aes(x = datetime, y =fyllingsgrad, color = prisomrade )) + 
+  geom_line() +
+scale_x_date(
+  breaks = seq(as.Date("2020-01-01"), as.Date("2026-01-01"), by = "1 year"),
+  date_labels = "%Y"
+) 
+p1
+print(seq(2020,2026,1))
+
+```
+
+## Spagettiplot
+Det er tydelige periodiske inndelinger i utviklingen, samtidig som nivåene varierer mellom prisområdene. Et **spagettiplot er derfor gunstig**, fordi det gjør det mulig å følge utviklingen over tid for hvert prisområde og sammenligne periodene direkte.
+
+
+### andre ting
+
+```{r}
+
+p4 <- 
+  
+  
+```
+
 
