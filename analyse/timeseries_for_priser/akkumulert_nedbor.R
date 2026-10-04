@@ -1,11 +1,16 @@
 library(tidyverse)
 library(dtplyr)
 library(tidymodels)
+library(docstring)
 
 # ---------------------------------------------------------
 # 1. Del data i trenings- og testsett
 # ---------------------------------------------------------
+
+
 set.seed(67)
+
+#' Når vi deler dataen, ønsker vi å ha en lik andel av prisområdene i henholdsvis test-settet og trenignssettet
 delt_elv <- initial_split(
   regn_produksjon_pris |>
     filter(produksjonskilde == "Elvekraft") |>
@@ -46,6 +51,8 @@ lagg_nedbor <- function(data) {
   
   data |>
     arrange(prisomrade, datetime) |>
+    
+    #jobber med det som en data.frame
     lazy_dt() |>
     group_by(prisomrade) |>
     mutate(
@@ -56,7 +63,8 @@ lagg_nedbor <- function(data) {
       nedbor_lag14 = shift(nedbor, 14),
       nedbor_lag30 = shift(nedbor, 30),
       
-      # Akkumulert nedbør
+      # Akkumulert nedbør i løpet av  henholdsvis 7, 14 og 30 dager
+      nedbor_0d = frollsum(nedbor, 1, align = "right"),
       nedbor_7d = frollsum(nedbor, 7, align = "right"),
       nedbor_14d = frollsum(nedbor, 14, align = "right"),
       nedbor_30d = frollsum(nedbor, 30, align = "right")
@@ -66,7 +74,9 @@ lagg_nedbor <- function(data) {
 
 
 # ---------------------------------------------------------
-# 4. Lag variablene
+# 4. Setter henholdsvis trening-settet og test-settet som 
+#   variabler i lagg_nedbør(), slik at vi får retunert tibbles
+#   med akkumulert nedbør som variabler
 # ---------------------------------------------------------
 
 trening_elv <- lagg_nedbor(trening_elv)
@@ -77,160 +87,151 @@ test_magasin <- lagg_nedbor(test_magasin)
 
 
 # ---------------------------------------------------------
-# 5. Modell med nedbør samme dag
-# ---------------------------------------------------------
+# 5. Setter opp lineære modeller med pris og akkumulert
+#    nedbør som forklaringsvariabler. Det opprettes egne
+#    workflows for elvekraft og vannkraft med magasin,
+#    og for hver av de ulike periodene med akkumulert nedbør. 
 
-rec_elv <- recipe(
-  produksjon ~ nedbor + pris,
-  data = trening_elv
-)
-
-rec_magasin <- recipe(
-  produksjon ~ nedbor + pris,
-  data = trening_magasin
-)
-
-
-wf_elv <- workflow() |>
-  add_recipe(rec_elv) |>
-  add_model(linear_model)
-
-wf_magasin <- workflow() |>
-  add_recipe(rec_magasin) |>
-  add_model(linear_model)
-
-
-# Tilpass modellene på treningsdata
-fit_elv <- fit(wf_elv, trening_elv)
-
-fit_magasin <- fit(wf_magasin, trening_magasin)
-
+#     Dette gir mange modeller, men vi må undersøke korrelasjonskoeffisientene,
+#     signifikansen deres og R² for hver modell. Dette er nødvendig for å vurdere
+#     om pris og nedbør er signifikante forklaringsvariabler for produksjonen. 
+#     Derfor kjører vi dette som en løkke, før vi plotter resulatene
 
 # ---------------------------------------------------------
-# 6. Se summary
-# ---------------------------------------------------------
-
-summary(
-  extract_fit_engine(fit_elv)
-)
-
-summary(
-  extract_fit_engine(fit_magasin)
-)
 
 
-# ---------------------------------------------------------
-# 7. Modell med 7 dagers akkumulert nedbør
-# ---------------------------------------------------------
+antall_dager <- c("nedbor_0d", "nedbor_7d", "nedbor_14d", "nedbor_30d")
 
-rec_elv_7d <- recipe(
-  produksjon ~ nedbor_7d + pris,
-  data = trening_elv
-)
+resultater <- tibble()
 
-rec_magasin_7d <- recipe(
-  produksjon ~ nedbor_7d + pris,
-  data = trening_magasin
-)
+for (dager in antall_dager) {
+  
+  rec_elv <- recipe(
+    
+    #gjør antall dager som forkaringsvariablen tilhørende akkumulert nedbør
+    reformulate(c(dager, "pris"), response = "produksjon"),
+    data = trening_elv
+  )
+  
+  rec_magasin <- recipe(
+    reformulate(c(dager, "pris"), response = "produksjon"),
+    data = trening_magasin
+  )
+  
+  # Setter opp workflows
+  wf_elv <- workflow() |>
+    add_recipe(rec_elv) |>
+    add_model(linear_model)
+  
+  wf_magasin <- workflow() |>
+    add_recipe(rec_magasin) |>
+    add_model(linear_model)
+  
+  # Tilpass modellene på treningsdata
+  fit_elv <- fit(wf_elv, trening_elv)
+  fit_magasin <- fit(wf_magasin, trening_magasin)
+  
+  # Hent koeffisienter for elvekraft
+  resultat_elv <- tidy(extract_fit_engine(fit_elv)) |>
+    filter(term %in% c(dager, "pris")) |>
+    mutate(
+      dager = dager,
+      produksjonstype = "Elv"
+    )
+  
+  # Hent koeffisienter for magasinkraft
+  resultat_magasin <- tidy(extract_fit_engine(fit_magasin)) |>
+    filter(term %in% c(dager, "pris")) |>
+    mutate(
+      dager = dager,
+      produksjonstype = "Magasin"
+    )
+  
+  # Legg resultatene til som rader under den allerde eksistende tibbelen
+  resultater <- bind_rows(
+    resultater,
+    resultat_elv,
+    resultat_magasin
+  )
+  
+}
 
-
-wf_elv_7d <- workflow() |>
-  add_recipe(rec_elv_7d) |>
-  add_model(linear_model)
-
-wf_magasin_7d <- workflow() |>
-  add_recipe(rec_magasin_7d) |>
-  add_model(linear_model)
-
-
-fit_elv_7d <- fit(wf_elv_7d, trening_elv)
-
-fit_magasin_7d <- fit(wf_magasin_7d, trening_magasin)
-
-
-# Summary
-summary(
-  extract_fit_engine(fit_elv_7d)
-)
-
-summary(
-  extract_fit_engine(fit_magasin_7d)
-)
-
-
-# ---------------------------------------------------------
-# 8. Modell med 14 dagers akkumulert nedbør
-# ---------------------------------------------------------
-
-rec_elv_14d <- recipe(
-  produksjon ~ nedbor_14d + pris,
-  data = trening_elv
-)
-
-rec_magasin_14d <- recipe(
-  produksjon ~ nedbor_14d + pris,
-  data = trening_magasin
-)
-
-
-wf_elv_14d <- workflow() |>
-  add_recipe(rec_elv_14d) |>
-  add_model(linear_model)
-
-wf_magasin_14d <- workflow() |>
-  add_recipe(rec_magasin_14d) |>
-  add_model(linear_model)
-
-
-fit_elv_14d <- fit(wf_elv_14d, trening_elv)
-
-fit_magasin_14d <- fit(wf_magasin_14d, trening_magasin)
-
-
-summary(
-  extract_fit_engine(fit_elv_14d)
-)
-
-summary(
-  extract_fit_engine(fit_magasin_14d)
-)
-
-
-# ---------------------------------------------------------
-# 9. Modell med 30 dagers akkumulert nedbør
-# ---------------------------------------------------------
-
-rec_elv_30d <- recipe(
-  produksjon ~ nedbor_30d + pris,
-  data = trening_elv
-)
-
-rec_magasin_30d <- recipe(
-  produksjon ~ nedbor_30d + pris,
-  data = trening_magasin
-)
-
-
-wf_elv_30d <- workflow() |>
-  add_recipe(rec_elv_30d) |>
-  add_model(linear_model)
-
-wf_magasin_30d <- workflow() |>
-  add_recipe(rec_magasin_30d) |>
-  add_model(linear_model)
+resultater <- resultater |>
+  
+  #Endrer til kjent notasjon for forventing og standardavvik
+  rename(
+    mu = estimate,
+    sigma = std.error
+  ) |>
+  
+  #Gjør variablen konstatnt som pris eller nedbør
+  mutate(
+    variabel = if_else(
+      str_starts(term, "nedbor"),
+      "Nedbor",
+      "Pris"
+    ),
+    
+    #Gjør dager om til numeriske variabler, slik at dette kan brukes som
+    # x-aksen i plottet
+    dager = case_when(
+      dager == "nedbor_0d"  ~ 0,
+      dager == "nedbor_7d"  ~ 7,
+      dager == "nedbor_14d" ~ 14,
+      dager == "nedbor_30d" ~ 30
+    )
+  ) |>
+  
+  #filtrerer ut de relevante variablene for plottet
+  select(
+    dager,
+    mu,
+    sigma,
+    variabel,
+    produksjonstype
+  )
 
 
-fit_elv_30d <- fit(wf_elv_30d, trening_elv)
+# Plotter resulatet
 
-fit_magasin_30d <- fit(wf_magasin_30d, trening_magasin)
-
-
-summary(
-  extract_fit_engine(fit_elv_30d)
-)
-
-
-# For vannmagasinet har man en r**2 på 75%, som betyr at store deler av variasjonen faktisk fanges opp
-summary(
-  extract_fit_engine(fit_magasin_30d)
-)
+ggplot(
+  resultater,
+  aes(
+    x = dager,
+    y = mu,
+    colour = produksjonstype,
+    shape = variabel
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  
+  #plotter et 95% koefedisiensintervall
+  geom_errorbar(
+    aes(
+      ymin = mu - 1.96 * sigma,
+      ymax = mu + 1.96 * sigma
+    ),
+    width = 0.5
+  ) +
+  geom_point(size = 3) +
+  scale_colour_manual(
+    values = c(
+      "Elv" = "hotpink",
+      "Magasin" = "blue"
+    )
+  ) +
+  scale_shape_manual(
+    values = c(
+      "Pris" = 15,
+      "Nedbor" = 16
+    )
+  ) +
+  labs(
+    x = "Akkumulert nedbør (dager)",
+    y = "Estimert koeffisient",
+    colour = "Produksjonstype",
+    shape = "Forklaringsvariabel",
+    title = "Utviklingen til forklaringsvariablene"
+  ) +
+  
+  theme_minimal()
