@@ -188,7 +188,7 @@ Av plottet ser vi at prisområdene med høyere prisnivå også har større varia
 
 I mikroøkonomi lærer vi at etterspørselen etter strøm er relativt uelastisk (antagelsen er fullkomment marked, med prisfaste kvantumstilpassere), ettersom konsumentene i begrenset grad kan tilpasse strømforbruket sitt til endringer i prisen. For husholdninger brukes strøm blant annet til oppvarming, mens den for bedrifter i større grad inngår som en innsatsfaktor i produksjonen. Det er derfor interessant å undersøke sammenhengen mellom strømpris og strømforbruk.
 
-Vi gjør både strømforbruksdataene og markedsprisene for de ulike prisområdene timeoppløste, før datasettene merges. Analysen avgrenses til perioden fra juni 2026 og frem til i dag. Scatterplottet viser en relativt bratt etterspøselskurve i alle prisområder, med unntak av NO1. Dette kan sees i sammenheng med at 
+Vi gjør både strømforbruksdataene og markedsprisene for de ulike prisområdene timeoppløste, før datasettene merges. Vi ser bare på forbruket av strøm fra juli til august (for å begrense antall datapunkter), for hvert år siden 2020. Scatterplottet viser en relativt bratte etterspøselskurver i områdene med lavt forbruk, og kurvene tenderer til noe høyere forbuk når prisen øker. 
 ```{r}
 
 
@@ -209,9 +209,9 @@ pris_mot_forbruk <- pris_time |>
   as_tibble()|>
   drop_na() #fjerner manglende observasjoner
 
-View(pris_mot_forbruk)
+
 p2 <- pris_mot_forbruk |>
-  filter(year(datetime)==2026,month(datetime) %in% 7:10)|>
+  filter(month(datetime) %in% 7:9)|>
   ggplot(aes(x = forbruk_time, y =times_pris, color = prisomrade )) +
   geom_point() + 
   labs(x = "Faktisk forbruk (mWh)", y = "spotpris i markedet", title = "Ettersporselselastistet",color = "prissone") +
@@ -247,28 +247,41 @@ Vannkraft er strøm som kan reguleres. Derfor ønsker vi å finne ut om vannkraf
 
 ```{r}
 
-total_produksjon_prissone <- total_produksjon_time |>
+
+total_produksjon_prissone <- total_produksjon |>
   
   #gjør om til data.frame for å gjøre behanlingen raskere
   lazy_dt() |>
  
-  mutate(total = sum(timeproduksjon, na.rm = TRUE) , .by = c(datetime, prisomrade))|>
+  
+  mutate(total = sum(production_MW, na.rm = TRUE) , .by = c(datetime, prisomrade))|>
   #finner total strømprosuksjon per time
 
   #sorterer ut kolonnene som drøfter vannkraftsproduksjonen
   filter(produksjonskilde == "Vannkraft med magasin")|>
-  rename(vannkraft = timeproduksjon)|>
-  
-  #finner andelen vannkraftsproduksjon
-  mutate(andel_vann = vannkraft/total)|>
-  #sorter ut de relevante kolonne
-  select(datetime, vannkraft, total,andel_vann,prisomrade)|>
+  mutate(andel_vann =production_MW/total, .by = c(prisomrade,datetime) )|>
   as_tibble()
 View(total_produksjon_prissone)
 
+```
+
+
+```{r}
+p3 <- total_produksjon_prissone |>
+  
+  #aggregerer til dager, slik at plottet blir mer forståleig
+   mutate(datetime = as.Date(datetime)) |>
+  summarise(andel_vann = mean(andel_vann,na.rm = TRUE) , .by = c(prisomrade,datetime))|>
+  ggplot(aes(x = datetime, y = andel_vann, color = prisomrade)) +
+  geom_point() + 
+  labs(x = "tid", y = "Andel (%)", title = "Andel av produksjonen som er magasinkraftverk" ) + 
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_y_continuous(labels = label_comma(scale = 100), )
+p3
+
 ``` 
 
-
+Vi ser at andelen av strømproduksjonen som skjer med vannkraftverk med magasin har gått kraftig ned i NO1, mens den har hold seg relativt stabilt i de andre prisområdene. I tilegg ser vi at NO1 har en tydelig periodisk utvikling i kraftproduksjon med vannkraftverk med magainfylling, der det er tilnærmet null produksjon om sommern i årene etter 2022. 
 
 ```{r}
 
@@ -295,14 +308,11 @@ View(vannkraft_av_spotpris)
 Fra 2020 og frem til i dag har magasinfyllingen variert mellom prisområdene, og utviklingen har ikke vært lik i hele Norge. 2022 skiller seg særlig ut, da fyllingsgraden var lav i flere områder gjennom vinteren. NO1 og NO4 hadde lave nivåer, mens situasjonen i NO2 var spesielt unormal. I 2026 har NO2 igjen hatt svært lav magasinfylling, mens NO4 i større grad har ligget på normale eller høye nivåer. Dette viser at den hydrologiske situasjonen kan være svært forskjellig mellom prisområdene. Det er derfor interessant å undersøke om lav magasinfylling i september henger sammen med høyere strømpriser, og om denne sammenhengen varierer mellom prisområdene.
 
 ```{r}
-colnames(vannreservoar)
+glimpse(vannreservoar)
 p1 <- vannreservoar|>
   ggplot(aes(x = datetime, y =fyllingsgrad, color = prisomrade )) + 
   geom_line() +
-scale_x_date(
-  breaks = seq(as.Date("2020-01-01"), as.Date("2026-01-01"), by = "1 year"),
-  date_labels = "%Y"
-) 
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
 p1
 print(seq(2020,2026,1))
 
@@ -312,13 +322,19 @@ print(seq(2020,2026,1))
 Det er tydelige periodiske inndelinger i utviklingen, samtidig som nivåene varierer mellom prisområdene. Et **spagettiplot er derfor gunstig**, fordi det gjør det mulig å følge utviklingen over tid for hvert prisområde og sammenligne periodene direkte.
 
 
-### andre ting
+### 
 
 ```{r}
 
-p4 <- 
-  
+
+#| label: fig-hentet-plott
+#| fig-cap: "Her er mitt lagrede plott."
+#| echo: false
+knitr::include_graphics("pris_og_nedbor.png")
+
   
 ```
+
+Forbruk gjennom døgnet kan også være en forklaringsvariabel, da denne varierer
 
 

@@ -7,12 +7,13 @@ library(docstring)
 # 1. Del data i trenings- og testsett
 # ---------------------------------------------------------
 
-
+#henter inn tibbelsene fra sammenslåingen
+#source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_1/sammenslaing_av_tibbels.R")
 set.seed(67)
 
 #' Når vi deler dataen, ønsker vi å ha en lik andel av prisområdene i henholdsvis test-settet og trenignssettet
 delt_elv <- initial_split(
-  regn_produksjon_pris |>
+  regn_produksjon_pris_reservoar |>
     filter(produksjonskilde == "Elvekraft") |>
     select(-produksjonskilde),
   prop = 0.8,
@@ -99,22 +100,21 @@ test_magasin <- lagg_nedbor(test_magasin)
 
 # ---------------------------------------------------------
 
-
 antall_dager <- c("nedbor_0d", "nedbor_7d", "nedbor_14d", "nedbor_30d")
 
 resultater <- tibble()
-
+r2_resultater <- tibble()
 for (dager in antall_dager) {
-  
+  summary(regn_produksjon_pris_reservoar)
   rec_elv <- recipe(
     
     #gjør antall dager som forkaringsvariablen tilhørende akkumulert nedbør
-    reformulate(c(dager, "pris"), response = "produksjon"),
+    reformulate(c(dager,"faktisk_forbruk", "pris","fyllingsgrad "), response = "produksjon"),
     data = trening_elv
   )
   
   rec_magasin <- recipe(
-    reformulate(c(dager, "pris"), response = "produksjon"),
+    reformulate(c(dager, "faktisk_forbruk","pris","fyllingsgrad"), response = "produksjon"),
     data = trening_magasin
   )
   
@@ -131,9 +131,27 @@ for (dager in antall_dager) {
   fit_elv <- fit(wf_elv, trening_elv)
   fit_magasin <- fit(wf_magasin, trening_magasin)
   
+  r2_elv <- glance(extract_fit_engine(fit_elv)) |>
+    select(r.squared) |>
+    mutate(
+      dager = dager,
+      produksjonstype = "Elv"
+    )
+  
+  r2_magasin <- glance(extract_fit_engine(fit_magasin)) |>
+    select(r.squared) |>
+    mutate(
+      dager = dager,
+      produksjonstype = "Magasin"
+    )
+  
+  r2_resultater <- bind_rows(r2_resultater,
+                             r2_elv,
+                             r2_magasin)
+  
   # Hent koeffisienter for elvekraft
   resultat_elv <- tidy(extract_fit_engine(fit_elv)) |>
-    filter(term %in% c(dager, "pris")) |>
+    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Elv"
@@ -141,7 +159,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for magasinkraft
   resultat_magasin <- tidy(extract_fit_engine(fit_magasin)) |>
-    filter(term %in% c(dager, "pris")) |>
+    filter(term %in% c(dager, "pris","faktisk_forbruk","fyllingsgrad")) |>
     mutate(
       dager = dager,
       produksjonstype = "Magasin"
@@ -156,24 +174,31 @@ for (dager in antall_dager) {
   
 }
 
+#Behandling av resulatene
+
+r2_resultater <- r2_resultater |>
+  mutate(
+    dager = case_when(
+      dager == "nedbor_0d"  ~ 0,
+      dager == "nedbor_7d"  ~ 7,
+      dager == "nedbor_14d" ~ 14,
+      dager == "nedbor_30d" ~ 30
+    )
+  )
+
 resultater <- resultater |>
-  
-  #Endrer til kjent notasjon for forventing og standardavvik
   rename(
     mu = estimate,
     sigma = std.error
   ) |>
-  
-  #Gjør variablen konstatnt som pris eller nedbør
   mutate(
-    variabel = if_else(
-      str_starts(term, "nedbor"),
-      "Nedbor",
-      "Pris"
+    variabel = case_when(
+      str_starts(term, "nedbor") ~ "Nedbor",
+      term == "pris" ~ "Pris",
+      term == "faktisk_forbruk" ~ "Forbruk",
+      term == "fyllingsgrad" ~ "Fyllingsgrad"
     ),
     
-    #Gjør dager om til numeriske variabler, slik at dette kan brukes som
-    # x-aksen i plottet
     dager = case_when(
       dager == "nedbor_0d"  ~ 0,
       dager == "nedbor_7d"  ~ 7,
@@ -181,8 +206,6 @@ resultater <- resultater |>
       dager == "nedbor_30d" ~ 30
     )
   ) |>
-  
-  #filtrerer ut de relevante variablene for plottet
   select(
     dager,
     mu,
@@ -191,10 +214,10 @@ resultater <- resultater |>
     produksjonstype
   )
 
-
+View(resultater)
 # Plotter resulatet
 
-ggplot(
+p1<- ggplot(
   resultater,
   aes(
     x = dager,
@@ -223,7 +246,9 @@ ggplot(
   scale_shape_manual(
     values = c(
       "Pris" = 15,
-      "Nedbor" = 16
+      "Nedbor" = 16,
+      "Forbruk" = 17,
+      "Fyllingsgrad" = 18
     )
   ) +
   labs(
@@ -231,7 +256,38 @@ ggplot(
     y = "Estimert koeffisient",
     colour = "Produksjonstype",
     shape = "Forklaringsvariabel",
-    title = "Utviklingen til forklaringsvariablene"
-  ) +
+    title =  "Estimerte koeffisienter for pris, forbruk og nedbør") +
   
   theme_minimal()
+
+saveRDS(p1,
+  "Plott/pris_og_nedbor.rds"
+  )
+p1
+
+
+p2 <- ggplot(
+  r2_resultater,
+  aes(
+    x = dager,
+    y = r.squared,
+    colour = produksjonstype
+  )
+) +
+  geom_line() +
+  geom_point(size = 3) +
+  scale_colour_manual(
+    values = c(
+      "Elv" = "hotpink",
+      "Magasin" = "blue"
+    )
+  ) +
+  labs(
+    x = "Akkumulert nedbør (dager)",
+    y = expression(R^2),
+    colour = "Produksjonstype",
+    title = expression("Modellenes forklarte varians (" ~ R^2 ~ ")")
+  ) +
+  theme_minimal()
+
+p2
