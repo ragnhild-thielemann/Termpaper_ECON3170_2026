@@ -134,7 +134,7 @@ Det opprinnelige datasettet består av 421950 observasjoner. Ved å aggregere fr
 
 ```{r}
 
-View(strompris_norge_long_fra_2020_time)
+
 aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020_time |>
   mutate(datetime = floor_date(datetime,"day")) |> #setter på dager 
   summarise(pris_dag = mean(times_pris, na.rm = TRUE) , .by = c(prisomrade, datetime))
@@ -243,6 +243,8 @@ p3
 
 Vannkraft er strøm som kan reguleres. Derfor ønsker vi å finne ut om vannkraftsproduksjonen er korrelert med spotprisen, og eventuell annen strømproduksjon.I første omgang gjør vi analysen for NO4. 
 
+# Andelen vann i vannmagasinene
+
 ```{r}
 
 total_produksjon_prissone <- total_produksjon_time |>
@@ -250,7 +252,7 @@ total_produksjon_prissone <- total_produksjon_time |>
   #gjør om til data.frame for å gjøre behanlingen raskere
   lazy_dt() |>
  
-  
+  mutate(total = sum(timeproduksjon, na.rm = TRUE) , .by = c(datetime, prisomrade))|>
   #finner total strømprosuksjon per time
 
   #sorterer ut kolonnene som drøfter vannkraftsproduksjonen
@@ -258,9 +260,9 @@ total_produksjon_prissone <- total_produksjon_time |>
   rename(vannkraft = timeproduksjon)|>
   
   #finner andelen vannkraftsproduksjon
-  mutate(andel = vannkraft/total_produksjon)|>
+  mutate(andel_vann = vannkraft/total)|>
   #sorter ut de relevante kolonne
-  select(datetime, vannkraft, total_produksjon,andel)|>
+  select(datetime, vannkraft, total,andel_vann,prisomrade)|>
   as_tibble()
 View(total_produksjon_prissone)
 

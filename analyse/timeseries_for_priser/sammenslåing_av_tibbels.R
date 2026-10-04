@@ -28,6 +28,9 @@ forventing_mot_forbruk_norge_2020 <- readRDS(
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge_2020.rds"
 )
 
+nedbor_total <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/nedbor_total.rds"
+)
 
 # Gjør strømprisen om til timesdata
 strompris_norge_long_fra_2020_time <-
@@ -157,3 +160,86 @@ p5 <- total_produksjon |>
   geom_area()
 
 (p5)
+
+
+### Vi vil finne om elvekraft i større grad er korrelert med nedbør
+
+colnames(total_produksjon)
+colnames(nedbor_total)
+
+strompris_dag <- strompris_norge_long_fra_2020 |>
+  mutate(datetime = as.Date(datetime))|>
+  summarise(pris = mean(pris_modellert, na.rm = TRUE), .by = c(datetime, prisomrade))
+
+regn_produksjon_pris <- total_produksjon|>
+  
+  #må gjøre til dagsintervaller, for at det skal passe med datasettet for nedbør
+
+  mutate(datetime = as.Date(datetime))|>
+  summarise(produksjon = mean(production_MW), .by = c(datetime, prisomrade,produksjonskilde))|>
+  left_join(nedbor_total, by = join_by(datetime == dato, prisomrade) )|>
+  left_join(strompris_dag, by = join_by(datetime, prisomrade))|>
+  mutate(produksjonskilde = replace_na(produksjonskilde,"ukjent"))
+
+
+
+View(regn_produksjon)
+
+
+## Setter opp en linjær maskinlæringsmodell, for å bruke en paramter til estimeringen. finner da en korrelasjonskoefesient
+
+set.seed(67)
+library(workflows)
+library(tidymodels)
+library(tidyverse)
+
+#deler i test og treningssample
+delt_elv = initial_split(regn_produksjon_pris|>
+                           filter(produksjonskilde == "Elvekraft")|>
+                           select(-produksjonskilde),
+                          0.8, strata = prisomrade )
+trening_elv = training(delt_elv)
+test_elv= testing(delt_elv)
+
+#deler i test og treningssample
+delt_magasin= initial_split(regn_produksjon_pris|>
+                           filter(produksjonskilde == "Vannkraft med magasin")|>
+                           select(-produksjonskilde),
+                         0.8, strata = prisomrade )
+trening_magasin = training(delt_magasin)
+test_magasin= testing(delt_magasin)
+
+
+linear_model <- linear_reg()|>
+  set_engine("lm")
+
+
+
+rec_regn_magasin <- recipe(produksjon ~ nedbor, trening_magasin)
+rec_regn_elv <- recipe(produksjon ~ nedbor, trening_elv)
+
+
+
+wf_magasin <- workflow()|>
+  add_recipe(rec_regn_magasin)|>
+  add_model(linear_model)
+
+wf_elv <- workflow()|>
+  add_recipe(rec_regn_elv)|>
+  add_model(linear_model)
+
+fit_elv <- fit(wf_elv,test_elv)
+
+summary(
+  extract_fit_engine(fit_elv)
+)
+
+fit_magasin <- fit(wf_magasin,test_magasin)
+
+summary(
+  extract_fit_engine(fit_magasin)
+)
+
+
+## lager modell med akkumulert nedbør (da r-verdien er svært lav)
+

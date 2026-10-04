@@ -134,7 +134,7 @@ Det opprinnelige datasettet består av 421950 observasjoner. Ved å aggregere fr
 
 ```{r}
 
-View(strompris_norge_long_fra_2020_time)
+
 aggregert_dag_fra_2020 <- strompris_norge_long_fra_2020_time |>
   mutate(datetime = floor_date(datetime,"day")) |> #setter på dager 
   summarise(pris_dag = mean(times_pris, na.rm = TRUE) , .by = c(prisomrade, datetime))
