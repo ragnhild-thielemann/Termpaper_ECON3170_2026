@@ -3,7 +3,7 @@
 
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_1/sammenslaing_av_tibbels.R")
 
-
+View(total_produksjon_jobbing)
 soylediagram <- total_produksjon_jobbing|>
   ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
   geom_col(position = "dodge") + 
@@ -11,5 +11,9 @@ soylediagram <- total_produksjon_jobbing|>
   theme_bw()
 
 
-saveRDS(soylediagram,
-        "Plott/soylediagram.rds")
+soylediagram
+
+#lagrer plottet som et gg-objekt
+ggsave(
+       "Plott/soylediagram.png", soylediagram)
+

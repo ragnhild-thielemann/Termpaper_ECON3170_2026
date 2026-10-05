@@ -1,0 +1,12 @@
+---
+title: "regresjonsmodell"
+format: html
+---
+
+Av søyledagrammet som viser gjennomsnittlig produksjon fra  produksjonskildene i prissonene, ser vi at 
+
+{r}```
+
+
+```
+For å se på hvordan de ulike forklaringsvariablene påvirker strømproduksjonen, setter vi opp en linjær regresjonsmodell. 

@@ -335,6 +335,7 @@ knitr::include_graphics("pris_og_nedbor.png")
   
 ```
 
-Forbruk gjennom døgnet kan også være en forklaringsvariabel, da denne varierer
+Forbruk gjennom døgnet kan også være en forklaringsvariabel, da denne varierer.
+forbruk som faktisk forklaringsvaribel. 
 
 

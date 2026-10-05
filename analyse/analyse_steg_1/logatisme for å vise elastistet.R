@@ -6,16 +6,15 @@ library(docstring)
 # ---------------------------------------------------------
 # 1. Del data i trenings- og testsett
 # ---------------------------------------------------------
+source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_1/sammenslaing_av_tibbels.R")
 
 #henter inn tibbelsene fra sammenslåingen
-#source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_1/sammenslaing_av_tibbels.R")
 set.seed(67)
 
 #' Når vi deler dataen, ønsker vi å ha en lik andel av prisområdene i henholdsvis test-settet og trenignssettet
 delt_elv <- initial_split(
   regn_produksjon_pris_reservoar |>
-    filter(produksjonskilde == "Elvekraft") |>
-    select(-produksjonskilde),
+    filter(produksjonskilde == "Elvekraft"),
   prop = 0.8,
   strata = prisomrade
 )
@@ -25,9 +24,9 @@ test_elv <- testing(delt_elv)
 
 
 delt_magasin <- initial_split(
-  regn_produksjon_pris |>
+  regn_produksjon_pris_reservoar |>
     filter(produksjonskilde == "Vannkraft med magasin") |>
-    select(-produksjonskilde),
+   
   prop = 0.8,
   strata = prisomrade
 )
@@ -109,12 +108,12 @@ for (dager in antall_dager) {
   rec_elv <- recipe(
     
     #gjør antall dager som forkaringsvariablen tilhørende akkumulert nedbør
-    reformulate(c(dager,"faktisk_forbruk", "pris","fyllingsgrad "), response = "produksjon"),
+    reformulate(c(log(dager), log("faktisk_forbruk"),log("pris")), response =log( "produksjon")),
     data = trening_elv
   )
   
   rec_magasin <- recipe(
-    reformulate(c(dager, "faktisk_forbruk","pris","fyllingsgrad"), response = "produksjon"),
+    reformulate(c(log(dager), log("faktisk_forbruk"),log("pris")), response =log( "produksjon")),
     data = trening_magasin
   )
   
@@ -159,7 +158,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for magasinkraft
   resultat_magasin <- tidy(extract_fit_engine(fit_magasin)) |>
-    filter(term %in% c(dager, "pris","faktisk_forbruk","fyllingsgrad")) |>
+    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Magasin"
@@ -195,8 +194,7 @@ resultater <- resultater |>
     variabel = case_when(
       str_starts(term, "nedbor") ~ "Nedbor",
       term == "pris" ~ "Pris",
-      term == "faktisk_forbruk" ~ "Forbruk",
-      term == "fyllingsgrad" ~ "Fyllingsgrad"
+      term == "faktisk_forbruk" ~ "Forbruk"
     ),
     
     dager = case_when(
@@ -214,7 +212,7 @@ resultater <- resultater |>
     produksjonstype
   )
 
-View(resultater)
+
 # Plotter resulatet
 
 p1<- ggplot(
@@ -247,8 +245,7 @@ p1<- ggplot(
     values = c(
       "Pris" = 15,
       "Nedbor" = 16,
-      "Forbruk" = 17,
-      "Fyllingsgrad" = 18
+      "Forbruk" = 17
     )
   ) +
   labs(
@@ -260,10 +257,9 @@ p1<- ggplot(
   
   theme_minimal()
 
-saveRDS(p1,
-  "Plott/pris_og_nedbor.rds"
-  )
-p1
+ggsave("Plott/lm_model.png",p1)
+
+
 
 
 p2 <- ggplot(
@@ -290,4 +286,4 @@ p2 <- ggplot(
   ) +
   theme_minimal()
 
-p2
+ggsave("Plott/R_2.png",p2)

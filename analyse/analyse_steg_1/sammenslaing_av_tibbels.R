@@ -61,11 +61,11 @@ total_produksjon_time <-
   mutate(total_produksjon = sum(timeproduksjon, na.rm = TRUE),.by = c(datetime,prisomrade))|>
   filter(produksjonskilde == "Vannkraft med magasin") |>
   rename(vannkraft = timeproduksjon   )|>
-  
+  dplyr::select(-produksjonskilde)|>
   #vi trenger ikke lengre produksjonskilden, fordi den eneste produksjonskilden er spesifikt vannraft
-  select(-produksjonskilde)|>
   as_tibble()
 
+View(total_produksjon_time)
 # Gjør forbruket om til timesdata
 
 forventing_mot_forbruk_norge_2020_time <-
@@ -96,13 +96,6 @@ total_tibble <- total_produksjon_time |>
 
 
 
-p1 <- total_tibble |>
-  filter(prisomrade == "NO2")|>
-  ggplot(aes(x = times_pris, y = total_produksjon)) +
-  geom_point()
-
-
-p1
 
 vannreservoar <- vannreservoar |>
   mutate(datetime = as.Date(datetime))
@@ -122,20 +115,10 @@ vannresevorar_med_produksjon <- total_produksjon_time |>
   drop_na()|>
   as_tibble()
 
-p3 <- vannresevorar_med_produksjon |>
-  lazy_dt()|>
-  mutate(andel = vannkraft/total_produksjon) |>
-  filter(prisomrade == "NO2")|>
-  pivot_longer(cols = c(andel,fyllingsgrad),
-               names_to = "variabel",
-               values_to = "verdi")|>
-  as_tibble()|>
-  ggplot(aes(x = datetime, y = verdi, color = variabel)) + 
-  geom_smooth()
 
 
 
-p3
+
 
 p4 <- vannresevorar_med_produksjon |>
   mutate(andel = vannkraft/total_produksjon) |>
@@ -173,28 +156,7 @@ strompris_dag <- strompris_norge_long_fra_2020 |>
 
 summary(vannreservoar)
 library(janitor)
-regn_produksjon_pris_reservoar <- total_produksjon|>
-  
-  
-  summarise(produksjon = mean(production_MW), .by = c(datetime, prisomrade,produksjonskilde))|>
-  left_join(nedbor_total, by = join_by(datetime == dato, prisomrade) )|>
-  
-  #fyller ut, vi bare har dagsoppløsning på akkumulert nedbør (dette er ikke så sensitivt, fordi det tar tid før vannet når magasinet uansett)
-  fill(nedbor, .direction = "down", .by = c(prisomrade))|>
-  left_join(strompris_norge_long_fra_2020_time, by = join_by(datetime, prisomrade))|>
-  left_join(forventing_mot_forbruk_norge_2020_time|>
-              select(faktisk_forbruk, datetime, prisomrade),by = join_by(datetime, prisomrade))|>
-  mutate(datetime = as.Date(datetime))|>
-  left_join(vannreservoar|>
-              select(datetime, prisomrade, fyllingsgrad),by = join_by(datetime, prisomrade))|>
-  mutate(produksjonskilde = replace_na(produksjonskilde,"ukjent"))|>
-  fill(fyllingsgrad, .by = prisomrade, .direction = "down")|>
-  
-  rename(pris = times_pris)|>
-  
-  #fjerner der det mangler observasjoner, slik at dette ikke brukes unødig i modellen
-  drop_na() 
-View(regn_produksjon_pris_reservoar)
+
 
 
 ### Redigerer total_produksjon, slik at den er bedre å jobbe med. 

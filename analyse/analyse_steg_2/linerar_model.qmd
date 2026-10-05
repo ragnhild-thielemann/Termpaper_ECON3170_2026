@@ -1,0 +1,95 @@
+---
+title: "Utkast om produksjon av strøm"
+subtitle: ""
+author:
+  - name: kandidatnummer
+date: today
+date-format: D MMMM YYYY
+format: docx
+number-sections: true
+lang: nb
+citeproc: true
+
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+
+
+# Kraftproduksjonen i Norge
+For å danne et overordnet bilde av den norske kraftmiksen viser figuren gjennomsnittlig strømproduksjon per time (MW) fordelt på produksjonskilder og prisområder i perioden 2020–2026. Figuren viser tydelig at vannkraft med magasin utgjør en stor del av den norske strømproduksjonen i alle prisområder. Det er imidlertid geografiske forskjeller i sammensetningen. Mens prisområde NO1 kjennetegnes av en betydelig andel uregulert elvekraft, har NO2 og NO3 en større andel vindkraft på land. Samlet sett viser figuren at den norske kraftproduksjonen i stor grad er basert på regulerbare vannkraftressurser.
+```{r}
+library(knitr)
+#| label: fig-r-bilde
+#| fig-cap: "Bildetekst via R--4"
+#| out.width: "100%"
+
+
+a <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/soylediagram.png")
+
+print(a)
+
+```
+
+Basert på dette ønsker vi å gå videre med en formell økonometrisk analyse for å predikere produsert strømmengde. Vi konstruerer derfor en lineær regresjonsmodell med normalfordelte feilledd på formen
+
+$$
+P_{t,j}
+=
+\hat{b}_{0,j}
++
+\hat{b}_{1,j}D_{1,t}
++
+\hat{b}_{2,j}D_{2,t}
++
+\cdots
++
+\hat{b}_{k,j}D_{k,t}
++
+\varepsilon_{t,j},
+$$
+
+der \(P_{t,j}\) betegner produsert strømmengde for kraftverkstype \(j\) på tidspunkt \(t\). Her angir \(j=1,2\) de to kraftverkstypene som analyseres (elvekraft og vannkraft med magasin), mens \(t\) angir de observerte tidspunktene. \(D_{1,t},\ldots,D_{k,t}\) er de ulike forklaringsvariablene, og \(\hat{b}_{0,j},\ldots,\hat{b}_{k,j}\) er de estimerte regresjonskoeffisientene. Feilleddet \(\varepsilon_{t,j}\) representerer variasjon i produksjonen som ikke forklares av modellen.
+
+I modellen er produsert strøm (MW) responsvariabel, mens kovariatene vi ønsker å undersøke er:
+
+
+I modellen er produsert strøm, målt i MW, responsvariabel. Kovariatene vi ønsker å undersøke er:
+
+* **Spotpris:** Markedsprisen på det gitte tidspunktet. Ettersom spotprisen fastsettes dagen i forveien på kraftbørsen Nord Pool, er den kjent for produsentene når produksjonen for den påfølgende dagen planlegges.
+* **Forbruk:** Det samlede strømforbruket i det aktuelle prisområdet. Forbruket fungerer som et mål på etterspørselen etter elektrisitet og kan dermed bidra til å forklare variasjoner i produksjonen.
+* **Akkumulert nedbør:** Fanger opp de hydrologiske forholdene og tilgangen på vannressurser over tid.
+* **Nedbør:** Måler nedbørsmengden på det aktuelle tidspunktet, og kan særlig ha betydning for uregulerbar elvekraft.
+
+Vi setter opp modellen i et standard rammeverk for maskinlæring, der datasettet deles i et treningssett og et testsett med henholdsvis 80 og 20 prosent av observasjonene. Datasettet deles med hensyn på prisområde, slik at hvert prisområde er representert i både trenings- og testsettet. Deretter definerer vi en `recipe` der responsvariabelen og de ulike forklaringsvariablene konstrueres og klargjøres for modellering. Modellen trenes deretter på treningsdataene og evalueres på testdataene.
+
+Fra modellens *summary* får vi blant annet estimerte regresjonskoeffisienter for de ulike forklaringsvariablene, samt deres standardavvik. Vi får også en $R^2$-verdi, som angir hvor stor andel av variasjonen i den observerte produksjonen som modellen klarer å forklare.
+
+
+Akkumulert nedbør er én av flere forklaringsvariabler i modellen. For å undersøke betydningen av nedbør over ulike tidsperioder estimerer vi modellen med akkumulert nedbør beregnet over henholdsvis 1, 7, 14 og 30 dager. På denne måten kan vi undersøke hvordan estimatet for nedbørkoeffisienten endres når nedbør akkumuleres over lengre perioder.
+
+I plottet vises alle de estimerte parameterne i modellen for de ulike tidsperiodene, med et 95 prosent konfidensintervall rundt hvert estimat. Dette gjør det mulig å sammenligne både størrelsen og usikkerheten til de estimerte koeffisientene, samtidig som vi kan se hvordan effekten av akkumulert nedbør utvikler seg fra 1 til 30 dager.
+
+```{r}
+library(knitr)
+#| label: fig-r-bilde
+#| fig-cap: "Bildetekst via R"
+#| out.width: "100%"
+
+
+a <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/R_2.png")
+
+print(a)
+
+```
+
+
+
+
+
+
+
+
+
