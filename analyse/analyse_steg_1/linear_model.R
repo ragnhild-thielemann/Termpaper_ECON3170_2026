@@ -287,4 +287,5 @@ p2 <- ggplot(
   ) +
   theme_minimal()
 
+p2
 ggsave("Plott/R_2.png",p2)

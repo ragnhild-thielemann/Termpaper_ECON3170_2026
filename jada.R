@@ -4,47 +4,19 @@ library(tidymodels)
 library(docstring)
 
 # ---------------------------------------------------------
-# 1. Del data i trenings- og testsett
+# 1. Henter inn datasettene jeg trenger, samt relevante biblioteker
 # ---------------------------------------------------------
+
+
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_2/tibble_for_lm_modell.R")
-
-#henter inn tibbelsene fra sammenslåingen
 set.seed(67)
-
-#' Når vi deler dataen, ønsker vi å ha en lik andel av prisområdene i henholdsvis test-settet og trenignssettet
-delt_elv <- initial_split(
-  total_tibble |>
-    filter(produksjonskilde == "Elvekraft"),
-  prop = 0.8,
-  strata = prisomrade
-)
-View(total_tibble)
-trening_elv <- training(delt_elv)
-test_elv <- testing(delt_elv)
-colnames(delt_elv)
-
-delt_magasin <- initial_split(
-  total_tibble |>
-    filter(produksjonskilde == "Vannkraft med magasin"),
-   
-  prop = 0.8,
-  strata = prisomrade
-)
-
-trening_magasin <- training(delt_magasin)
-test_magasin <- testing(delt_magasin)
-
+library(tidyverse)
+library(dtplyr)
+library(tidymodels)
+library(docstring)
 
 # ---------------------------------------------------------
-# 2. Lag lineær modell
-# ---------------------------------------------------------
-
-linear_model <- linear_reg() |>
-  set_engine("lm")
-
-
-# ---------------------------------------------------------
-# 3. Funksjon for å lage lagget og akkumulert nedbør
+# 2. Funksjon for å lage lagget og akkumulert nedbør
 # ---------------------------------------------------------
 
 lagg_nedbor <- function(data) {
@@ -72,18 +44,43 @@ lagg_nedbor <- function(data) {
     collect()
 }
 
+total_tibble <- lagg_nedbor(total_tibble)
+
+
+
+#henter inn tibbelsene fra sammenslåingen
+
+#' Når vi deler dataen, ønsker vi å ha en lik andel av prisområdene i henholdsvis test-settet og trenignssettet
+delt_elv <- initial_split(
+  total_tibble |>
+    filter(produksjonskilde == "Elvekraft") |>
+    dplyr::select(-produksjonskilde),
+  prop = 0.8,
+  strata = prisomrade
+)
+
+trening_elv <- training(delt_elv)
+test_elv <- testing(delt_elv)
+
+
+delt_magasin <- initial_split(
+  total_tibble |>
+    filter(produksjonskilde == "Vannkraft med magasin") |>
+    dplyr::select(-produksjonskilde),
+  prop = 0.8,
+  strata = prisomrade
+)
+
+trening_magasin <- training(delt_magasin)
+test_magasin <- testing(delt_magasin)
+
 
 # ---------------------------------------------------------
-# 4. Setter henholdsvis trening-settet og test-settet som 
-#   variabler i lagg_nedbør(), slik at vi får retunert tibbles
-#   med akkumulert nedbør som variabler
+# 2. Lag lineær modell
 # ---------------------------------------------------------
 
-trening_elv <- lagg_nedbor(trening_elv)
-test_elv <- lagg_nedbor(test_elv)
-
-trening_magasin <- lagg_nedbor(trening_magasin)
-test_magasin <- lagg_nedbor(test_magasin)
+linear_model <- linear_reg() |>
+  set_engine("lm")
 
 
 # ---------------------------------------------------------
@@ -101,19 +98,19 @@ test_magasin <- lagg_nedbor(test_magasin)
 
 antall_dager <- c("nedbor_0d", "nedbor_7d", "nedbor_14d", "nedbor_30d")
 
+colnames(trening_elv)
 resultater <- tibble()
 r2_resultater <- tibble()
 for (dager in antall_dager) {
-  summary(total_tibble)
   rec_elv <- recipe(
     
     #gjør antall dager som forkaringsvariablen tilhørende akkumulert nedbør
-    reformulate(c(dager, "faktisk_forbruk","pris"), response = "produksjon"),
+    reformulate(c(dager,"forbruk", "pris"), response = "produksjon"),
     data = trening_elv
   )
   
   rec_magasin <- recipe(
-    reformulate(c(dager, "faktisk_forbruk","pris"), response = "produksjon"),
+    reformulate(c(dager, "forbruk","pris"), response = "produksjon"),
     data = trening_magasin
   )
   
@@ -131,14 +128,14 @@ for (dager in antall_dager) {
   fit_magasin <- fit(wf_magasin, trening_magasin)
   
   r2_elv <- glance(extract_fit_engine(fit_elv)) |>
-    select(r.squared) |>
+    dplyr::select(r.squared) |>
     mutate(
       dager = dager,
       produksjonstype = "Elv"
     )
   
   r2_magasin <- glance(extract_fit_engine(fit_magasin)) |>
-    select(r.squared) |>
+    dplyr::select(r.squared) |>
     mutate(
       dager = dager,
       produksjonstype = "Magasin"
@@ -150,7 +147,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for elvekraft
   resultat_elv <- tidy(extract_fit_engine(fit_elv)) |>
-    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
+    filter(term %in% c(dager, "pris","forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Elv"
@@ -158,7 +155,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for magasinkraft
   resultat_magasin <- tidy(extract_fit_engine(fit_magasin)) |>
-    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
+    filter(term %in% c(dager, "pris","forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Magasin"
@@ -194,7 +191,7 @@ resultater <- resultater |>
     variabel = case_when(
       str_starts(term, "nedbor") ~ "Nedbor",
       term == "pris" ~ "Pris",
-      term == "faktisk_forbruk" ~ "Forbruk"
+      term == "forbruk" ~ "Forbruk"
     ),
     
     dager = case_when(
@@ -204,18 +201,17 @@ resultater <- resultater |>
       dager == "nedbor_30d" ~ 30
     )
   ) |>
-  select(
+  dplyr::select(
     dager,
     mu,
     sigma,
     variabel,
     produksjonstype
-  )
+  ) |>
+  as_tibble()
 
-
-# Plotter resulatet
-
-p1<- ggplot(
+resultater
+plott <- ggplot(
   resultater,
   aes(
     x = dager,
@@ -257,7 +253,9 @@ p1<- ggplot(
   
   theme_minimal()
 
-ggsave("Plott/lm_model.png",p1)
+plott
+
+
 
 
 

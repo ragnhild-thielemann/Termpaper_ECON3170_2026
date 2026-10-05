@@ -41,7 +41,7 @@ P_{t,j}
 \varepsilon_{t,j},
 $$
 
-der $P_{t,j}$ betegner produsert strømmengde for kraftverkstype $j$ på tidspunkt $t$. Her angir $j=1,2$ de to kraftverkstypene som analyseres (elvekraft og vannkraft med magasin), mens $t$ angir de observerte tidspunktene. $x_{1,t},\ldots x_{k,t}$ er de ulike forklaringsvariablene, og $\hat{b}_{0,j},\ldots,\hat{b}_{k,j}$ er de estimerte regresjonskoeffisientene. Feilleddet \(\varepsilon_{t,j}\) representerer variasjon i produksjonen som ikke forklares av modellen.
+der $P_{t,j}$ betegner produsert strømmengde for kraftverkstype $j$ på  tidspunkt $t$. Her angir $j=1,2$ de to kraftverkstypene som analyseres (elvekraft og vannkraft med magasin), mens $t$ angir de observerte tidspunktene. $x_{1,t},\ldots x_{k,t}$ er de ulike forklaringsvariablene, og $\hat{b}_{0,j},\ldots,\hat{b}_{k,j}$ er de estimerte regresjonskoeffisientene. Feilleddet \(\varepsilon_{t,j}\) representerer variasjon i produksjonen som ikke forklares av modellen.
 
 
 I modellen er produsert strøm, målt i MW, responsvariabel. Kovariatene vi ønsker å undersøke er:
@@ -64,6 +64,12 @@ Akkumulert nedbør er én av flere forklaringsvariabler i modellen. For å under
 
 I plottet vises alle de estimerte parameterne i modellen for de ulike tidsperiodene, med et 95 prosent konfidensintervall rundt hvert estimat. Dette gjør det mulig å sammenligne både størrelsen og usikkerheten til de estimerte koeffisientene, samtidig som vi kan se hvordan effekten av akkumulert nedbør utvikler seg fra 1 til 30 dager.
 
+I plottet vises de estimerte parameterne i modellene for de ulike tidsperiodene, med et 95 prosent konfidensintervall rundt hvert estimat. Dette gjør det mulig å sammenligne både størrelsen og usikkerheten til koeffisientene, samtidig som vi kan se hvordan effekten av akkumulert nedbør utvikler seg fra 0 til 30 dager.
+
+For modellen for vannkraft med magasin er \(R^2\) mellom 0,02 og 0,05. Modellen forklarer dermed bare mellom 2 og 5 prosent av variasjonen i produksjonen, og forklaringskraften er svært begrenset. Det er derfor stor usikkerhet knyttet til modellens resultater, og vi bør være varsomme med å trekke sterke konklusjoner basert på denne modellen.
+
+Modellen for elvekraft har derimot en \(R^2\) på om lag 16 prosent. Selv om også denne forklaringskraften er begrenset, forklarer modellen en større andel av variasjonen i produksjonen og kan derfor brukes til å undersøke sammenhengene mellom variablene. Av plottet ser vi at nedbør samme dag har en positiv regresjonskoeffisient på omtrent 0,5 for elvekraft. Pris og forbruk fremstår også som signifikante forklaringsvariabler. Når nedbøren akkumuleres over lengre perioder, blir koeffisienten for nedbør mindre tydelig og konfidensintervallene overlapper i større grad med null. Dette tyder på at den direkte sammenhengen mellom nedbør og elvekraftproduksjon er sterkest for nedbør samme dag, og at effekten blir svakere når vi ser på lengre akkumulerte perioder.
+
 ```{r}
 library(knitr)
 #| label: fig-r-bilde
@@ -71,7 +77,7 @@ library(knitr)
 #| out.width: "100%"
 
 
-p2 <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/lm_model.png")
+p2 <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/lm_model_1.png")
 
 p2
 
