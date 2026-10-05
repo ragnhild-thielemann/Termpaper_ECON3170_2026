@@ -232,11 +232,12 @@ lm_model <- ggplot(
   ) +
   geom_point(size = 3) + 
   labs(x = "Akkumulert nedbor (dager)", y = "Estimert koefesient", colour = "Produksjonstype", shape = "Forklaringsvariabel",
-       title = "Estimerte koeffeisenter for pris, forbruk og nedbor")
+       title = "Estimerte koeffeisenter for pris, forbruk og nedbor") +
+  theme_bw()
 
 
 ggsave(
-       "Plott/lm_model_1.png", lm_model)
+       "Plott/lm_model_verson_2.png", lm_model)
 
 r2_model <- ggplot(
   r2_resultater,
@@ -253,8 +254,8 @@ r2_model <- ggplot(
     y = expression(R^2),
     title = "Modellenes forklarte varians"
   ) + 
-  scale_y_log10()
+  theme_bw()
 
 ggsave(
-       "Plott/R_2.png", r2_model)
+       "Plott/R_2_verson2.png", r2_model)
 r2_model

@@ -1,6 +1,9 @@
 ---
 title: "linjear_model_2"
-format: docx
+format:
+  pdf:
+    pdf-engine: xelatex
+    papersize: a4
 
 execute:
   echo: false
@@ -8,13 +11,14 @@ execute:
   message: false
 ---
  
-# Kraftproduksjonen i Norge
+# Kraftproduksjonen i Norge ^[Se analyse/analyse_steg_1/produksjonskilder_i_ulikeprisomrader.R]
 For å danne et overordnet bilde av den norske kraftmiksen viser figuren gjennomsnittlig strømproduksjon per time (MW) fordelt på produksjonskilder og prisområder i perioden 2020–2026. Figuren viser tydelig at vannkraft med magasin utgjør en stor del av den norske strømproduksjonen i alle prisområder. Det er imidlertid geografiske forskjeller i sammensetningen. Mens prisområde NO1 kjennetegnes av en betydelig andel uregulert elvekraft, har NO2 og NO3 en større andel vindkraft på land. Samlet sett viser figuren at den norske kraftproduksjonen i stor grad er basert på regulerbare vannkraftressurser.
 ```{r}
 library(knitr)
 #| label: soylediagram
 #| fig-cap: "Bildetekst via R--4"
-#| out.width: "100%"
+#| out.width: "70%"
+#| out.higth: "70%"
 
 
 p1 <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/soylediagram.png")
@@ -66,35 +70,30 @@ I plottet vises alle de estimerte parameterne i modellen for de ulike tidsperiod
 
 I plottet vises de estimerte parameterne i modellene for de ulike tidsperiodene, med et 95 prosent konfidensintervall rundt hvert estimat. Dette gjør det mulig å sammenligne både størrelsen og usikkerheten til koeffisientene, samtidig som vi kan se hvordan effekten av akkumulert nedbør utvikler seg fra 0 til 30 dager.
 
-For modellen for vannkraft med magasin er \(R^2\) mellom 0,02 og 0,05. Modellen forklarer dermed bare mellom 2 og 5 prosent av variasjonen i produksjonen, og forklaringskraften er svært begrenset. Det er derfor stor usikkerhet knyttet til modellens resultater, og vi bør være varsomme med å trekke sterke konklusjoner basert på denne modellen.
+For modellen for vannkraft med magasin er $R^2$ mellom 0,02 og 0,05. Modellen forklarer dermed bare mellom 2 og 5 prosent av variasjonen i produksjonen, og forklaringskraften til modellen er svært begrenset. 
 
-Modellen for elvekraft har derimot en \(R^2\) på om lag 16 prosent. Selv om også denne forklaringskraften er begrenset, forklarer modellen en større andel av variasjonen i produksjonen og kan derfor brukes til å undersøke sammenhengene mellom variablene. Av plottet ser vi at nedbør samme dag har en positiv regresjonskoeffisient på omtrent 0,5 for elvekraft. Pris og forbruk fremstår også som signifikante forklaringsvariabler. Når nedbøren akkumuleres over lengre perioder, blir koeffisienten for nedbør mindre tydelig og konfidensintervallene overlapper i større grad med null. Dette tyder på at den direkte sammenhengen mellom nedbør og elvekraftproduksjon er sterkest for nedbør samme dag, og at effekten blir svakere når vi ser på lengre akkumulerte perioder.
+Modellen for elvekraft har derimot en $R^2$ på om lag 16 prosent. Selv om også denne forklaringskraften er begrenset, forklarer modellen en større andel av variasjonen i produksjonen og kan derfor brukes til å undersøke sammenhengene mellom variablene. Av plottet ser vi at nedbør samme dag har en positiv regresjonskoeffisient på omtrent 0,5 for elvekraft. Pris og forbruk fremstår også som signifikante forklaringsvariabler. Når nedbøren akkumuleres over lengre perioder, blir koeffisienten for nedbør mindre tydelig og konfidensintervallene overlapper i større grad med null. Dette tyder på at den direkte sammenhengen mellom nedbør og elvekraftproduksjon er sterkest for nedbør samme dag, og at effekten blir svakere når vi ser på lengre akkumulerte perioder.
 
 ```{r}
+
+#| label: fig-modeller
+#| layout-ncol: 2
+#| out.width: "45%"
+#| out.height: "80%"
+#| fig-cap:
+#|   - "Estimerte regresjonskoeffisienter for de ulike modellene."
+#|   - "Modellenes forklarte varians målt ved R²."
+
 library(knitr)
-#| label: fig-r-bilde
-#| fig-cap: "Bildetekst via R"
-#| out.width: "100%"
 
-
-p2 <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/lm_model_1.png")
-
-p2
+knitr::include_graphics(
+  c(
+    "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/lm_model_verson_2.png",
+    "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/R_2_verson2.png"
+  )
+)
 
 ```
-
-```{r}
-library(knitr)
-#| label: fig-r-bilde
-#| fig-cap: "Bildetekst via R"
-#| out.width: "100%"
-
- 
-p3 <- knitr::include_graphics("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Plott/R_2.png")
-
-p3
-
-``` 
 
 ## Refereanser
 
