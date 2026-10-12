@@ -6,27 +6,44 @@ source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/hentin
 
 # Henter ut strømprisene i Norge fra 2020 til 2026
 
-prissoner <- c("NO1","NO2","NO3","NO4","NO5")
-strompris_norge <- tibble()
+# Prisomrader vi vil hente
+prissoner <- c(
+  "Norway NO1",
+  "Norway NO2",
+  "Norway NO3",
+  "Norway NO4",
+  "Norway NO5",
+  "Netherlands NL",
+  "Denmark DK1",
+  "Denmark DK2",
+  "Germany DE"
+)
+
+
+strompriser  <- tibble()
 
 
 for (sone in prissoner){
   
   priser_sone <- hent_markedspriser(
-    start_dato = "2020-01-01",
-    slutt_dato = Sys.Date(),
-    prisomrade= paste("Norway",sone),
+    start_dato = "2026-10-11",
+    slutt_dato = "2026-10-12",
+    prisomrade = sone,
     variabel = "A44",
     api_key = api_key
   )|>
     dplyr::select(datetime, price)|>
-    rename(!!paste0("pris_", sone) := price)
-  
-  if (nrow(strompris_norge) == 0) { #Dersom tibbelen er tom, opprettes den med utgangpunkt i den første oversikten over priser-sone
-    strompris_norge <- priser_sone
+    dplyr::rename(!!paste0("pris_",stringr::word(sone, -1)) := price)
+
+  if (nrow(priser_sone) == 0) {
+    warning("Ingen prisdata returnert for: ", sone)
+    next
+  }
+  if (nrow(strompriser) == 0) { #Dersom tibbelen er tom, opprettes den med utgangpunkt i den første oversikten over priser-sone
+    strompriser <- priser_sone
   } else {
-    strompris_norge <- strompris_norge |>
-      left_join(
+    strompriser  <- strompriser  |>
+      dplyr::full_join(
         priser_sone,
         by = "datetime"
       )
@@ -39,45 +56,53 @@ for (sone in prissoner){
 #'Derfor lager vi en funksjon som beregner dette gjennomsnittet for de tomme cellene
 #'
 #'Funksjonen fungerer bare på long-formater
-
-
-lag_pris_estimat <- function(pris_tibble) {
-  
-  pris_tibble |>
-    arrange(prisomrade, datetime) |>
-    group_by(prisomrade) |>
-    mutate(
-      pris_modellert = if_else(
-        is.na(pris),
-        (lag(pris, 1) + lag(pris, 2)) / 2,
-        pris
-      )
-    ) |>
-    ungroup()
-}
+strompriser
 
 
 #Vi lagrer to tibbler - en i wide og en i long format, da de har ulike bruksområder. 
 
-strompris_norge_wide <- strompris_norge|>
+strompris_wide <- strompriser |>
   arrange(datetime)
 
-strompris_norge_long <- strompris_norge |>
+strompris_long <- strompriser  |>
   pivot_longer(cols = -datetime,
                names_prefix = "pris_",
                names_to = "prisomrade",
                values_to = "pris") |>
   arrange(datetime)
-#lagrer hele datafilen som en RDS-fil på datamaskinen
 
-strompriser_norge_long <- lag_pris_estimat(strompriser_norge_long)
+View(strompriser)
+### Kontroll av datasettet
+
+glimpse(strompris_wide) #skjekker at de ser fornuftige ut, og at transformasjonen har gått bra
+glimpse(strompris_long)
+
+#Ser hvilke prisområder som er med
+strompris_long |>
+  count(prisomrade, name = "antall_observasjoner")
+
+## Kontrollerer mangelende priser
+
+
+strompris_long |>
+  group_by(prisomrade) |>
+  summarise(
+    antall = n(),
+    manglende_priser = sum(is.na(pris)),
+    andel_manglende = mean(is.na(pris)),
+    .groups = "drop"
+  )
+
+
+#lagrer  datafilene som en RDS-fil på datamaskinen
+
 
 saveRDS(
-  strompris_norge_wide,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_wide.rds")
+  strompris_wide,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_wide.rds")
 
 saveRDS(
-  strompris_norge_long,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_norge_long.rds")
+  strompris_long,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long.rds")
 
 

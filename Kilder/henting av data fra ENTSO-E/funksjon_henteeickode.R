@@ -2,6 +2,8 @@
 library(docstring)
 source("Kilder/henting av data fra ENTSO-E/funksjon_henteAPInokkel.R")
 
+
+
 hent_eic_kode <- function(land,omrade, api_key) {
   #' En funksjon som henter EIC-koden til landet/prisområdet.
   #' Funksjonen tar hensyn til både land og prisområde
@@ -29,7 +31,7 @@ hent_eic_kode <- function(land,omrade, api_key) {
     land == "Finland" & omrade == "FI" ~ "10YFI-1--------U",
     
     # Tyskland
-    land == "Germany" & omrade == "DE" ~ "10Y1001A1001A83F",
+    land == "Germany" & omrade == "DE" ~ "10Y1001A1001A82H",
     
     # Frankrike
     land == "France" & omrade == "FR" ~ "10YFR-RTE------C",
@@ -37,30 +39,7 @@ hent_eic_kode <- function(land,omrade, api_key) {
     # Nederland
     land == "Netherlands" & omrade == "NL" ~ "10YNL----------L",
     
-    # Belgia
-    land == "Belgium" & omrade == "BE" ~ "10YBE----------2",
-    
-    # Østerrike
-    land == "Austria" & omrade == "AT" ~ "10YAT-APG------L",
-    
-    # Polen
-    land == "Poland" & omrade == "PL" ~ "10YPL-AREA-----S",
-    
-    # Tsjekkia
-    land == "Czechia" & omrade == "CZ" ~ "10YCZ-CEPS-----N",
-    
-    # Slovakia
-    land == "Slovakia" & omrade == "SK" ~ "10YSK-SEPS-----K",
-    
-    # Ungarn
-    land == "Hungary" & omrade == "HU" ~ "10YHU-MAVIR----U",
-    
-    # Spania
-    land == "Spain" & omrade == "ES" ~ "10YES-REE------0",
-    
-    # Portugal
-    land == "Portugal" & omrade == "PT" ~ "10YPT-REN------W",
-    
+    land == "Great_Britain" & omrade == "GB" ~ "10YGB----------A",
     # Hvis ingen av alternativene passer
     TRUE ~ NA_character_
   )
