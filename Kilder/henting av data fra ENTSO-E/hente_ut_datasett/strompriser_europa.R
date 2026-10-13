@@ -1,23 +1,19 @@
 
 
+
 library(tidyverse)
-source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
+source("Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
 #her bør man bruke 
 
-# Henter ut strømprisene i Norge fra 2020 til 2026
-
-# Prisomrader vi vil hente
 prissoner <- c(
-  "Norway NO1",
-  "Norway NO2",
-  "Norway NO3",
-  "Norway NO4",
-  "Norway NO5",
   "Netherlands NL",
   "Denmark DK1",
   "Denmark DK2",
   "Germany DE"
 )
+
+
+
 
 
 strompriser  <- tibble()
@@ -34,7 +30,7 @@ for (sone in prissoner){
   )|>
     dplyr::select(datetime, price)|>
     dplyr::rename(!!paste0("pris_",stringr::word(sone, -1)) := price)
-
+  
   if (nrow(priser_sone) == 0) {
     warning("Ingen prisdata returnert for: ", sone)
     next
@@ -81,7 +77,8 @@ glimpse(strompris_long)
 strompris_long |>
   count(prisomrade, name = "antall_observasjoner")
 
-## Kontrollerer mangelende priser
+#' Kontrollerer mangelende priser. Tar deretter å oppretter en funksjon, 
+#' som finner gjennomsnittet av de to foregående prisene (som et estimat), for å gjøre analysen enklere
 
 
 strompris_long |>
@@ -93,16 +90,29 @@ strompris_long |>
     .groups = "drop"
   )
 
+lag_pris_estimat <- function(pris_tibble) {
+  
+  pris_tibble |>
+    arrange(prisomrade, datetime) |>
+    group_by(prisomrade) |>
+    mutate(
+      pris_modellert = if_else(
+        is.na(pris),
+        (lag(pris, 1) + lag(pris, 2)) / 2,
+        pris
+      )
+    ) |>
+    ungroup()
+}
 
+#lagrer for Norge
+strompris_long_europa <- lag_pris_estimat(strompris_long)
 #lagrer  datafilene som en RDS-fil på datamaskinen
 
 
-saveRDS(
-  strompris_wide,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_wide.rds")
 
 saveRDS(
-  strompris_long,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long.rds")
+  strompris_long_europa,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_europa.rds")
 
 

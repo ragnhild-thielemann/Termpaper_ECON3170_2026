@@ -2,7 +2,7 @@
 title: "README"
 output: html_document
 ---
-
+Vi må ha med kontrollvariabel, for analysen "alt annet likt"
 ## Beskrivelse av datainnhentingen 
 Datasettet over strømpriser er omfattende og krever derfor strukturert og effektiv kode for å kunne hentes ut og behandles på en hensiktsmessig måte. For å hente data fra API-et oppretter vi først en skjult fil som inneholder tilgangsnøkkelen. Denne hentes inn i R-koden uten at nøkkelen eksponeres. Deretter lager vi en testfunksjon som henter data fra Østerrike, slik at vi kan undersøke strukturen i API-et og forstå hvordan dataene er organisert. Dataene leveres som XML-filer, og må derfor parses og bearbeides før de kan struktureres som et datasett i R.
 

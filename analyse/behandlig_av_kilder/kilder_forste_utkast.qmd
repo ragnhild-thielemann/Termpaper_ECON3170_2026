@@ -8,7 +8,7 @@ date-format: D MMMM YYYY
 
 format: docx
 number-sections: true
-bibliography: referanser.bib 
+
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
 citeproc: true
 execute:
@@ -17,14 +17,40 @@ execute:
   message: false
 ---
 
-## Beskrivelse av  API-ene som er brukt
 
+## Datainnsamlingen
 
-NVE - JSON-filer
-ENSTO - XML 
-  - tekstbasert
+Datainnsamlignen har vært en stor del av prosjektet, da jeg har hentet data fra fire ulike API-er, levert i ulikt format. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut.
 
-2 Datainnsamling
-Prosjektet vil benytte timeoppløste strømpriser, kraftflyt- og produksjonsdata fra ENTSO-E, samt ukeoppløste data for magasinfylling fra NVE. I tillegg benyttes historiske nedbørsdata fra Meteorologisk institutt (MET Norway) gjennom Frost API-et for å undersøke hydrologiske forhold. Frost API-et gir tilgang til historiske meteorologiske observasjoner, blant annet nedbør.
-Dataene fra ENTSO-E hentes gjennom deres API og lagres som XML-filer, som deretter bearbeides og struktureres for videre analyse. For å gjøre det enklere å håndtere de komplekse datasettene er datainnhentingen og bearbeidingen bygget opp modulbasert. Dette gjør det mulig å dele arbeidet opp i mindre, gjenbrukbare deler, og gjør det enklere å arbeide med ulike datakilder og analysere dem samlet.
+I dette prosjeket har jeg brukt to kilder, ENSTO-E og NVE. 
 
+```{r}
+#| echo: false
+#| input: false
+
+library(tibble)
+library(flextable)
+
+datakilder <- tibble(
+  Kilde = c("ENTSO-E", "NVE"),
+  Forklaring = c(
+    "Europeisk datasett for strømpriser (spotpriser i kraftmarkedet), kraftflyt og produksjon fordelt på produksjonstype.",
+    "Norges vassdrags- og energidirektorat. Magasinstatistikk (fyllingsgrad) og tilsig."
+  ),
+  Format = c("XML", "JSON")
+)
+
+datakilder |>
+  flextable() |>
+  set_header_labels(
+    Kilde = "Kilde",
+    Forklaring = "Forklaring",
+    Format = "Format"
+  ) |>
+  width(j = 1, width = 1.2) |>
+  width(j = 2, width = 4) |>
+  width(j = 3, width = 1) |>
+  theme_booktabs() |>
+  align(align = "left", part = "all") |>
+  valign(valign = "top", part = "all")
+```

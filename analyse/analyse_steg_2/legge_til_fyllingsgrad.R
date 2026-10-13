@@ -1,10 +1,6 @@
-library(tidyverse)
-library(dtplyr)
-library(tidymodels)
-library(docstring)
-library(scales)
 
-# ---------------------------------------------------------
+
+#--------------------------------------------------------
 # 1. Henter inn datasettene jeg trenger, samt relevante biblioteker
 # ---------------------------------------------------------
 
@@ -14,6 +10,8 @@ library(tidyverse)
 library(dtplyr)
 library(tidymodels)
 library(docstring)
+library(scales)
+library(data.table)
 
 # ---------------------------------------------------------
 # 2. Funksjon for å lage lagget og akkumulert nedbør
@@ -36,10 +34,10 @@ lagg_nedbor <- function(data) {
       nedbor_lag30 = shift(nedbor, 30),
       
       # Akkumulert nedbør i løpet av  henholdsvis 7, 14 og 30 dager
-      nedbor_0d = frollsum(nedbor, 1, align = "right"),
-      nedbor_7d = frollsum(nedbor, 7, align = "right"),
-      nedbor_14d = frollsum(nedbor, 14, align = "right"),
-      nedbor_30d = frollsum(nedbor, 30, align = "right")
+      nedbor_0d = data.table::frollsum(nedbor, 1, align = "right"),
+      nedbor_7d = data.table::frollsum(nedbor, 7, align = "right"),
+      nedbor_14d = data.table::frollsum(nedbor, 14, align = "right"),
+      nedbor_30d = data.table::frollsum(nedbor, 30, align = "right")
     ) |>
     collect()
 }
@@ -330,3 +328,5 @@ lm_model #sier ingenting om kausale effekter, men kan gi oss en korrelasjon
 # av modellen kan vi si at alt er positivt korrelert, men at i modellen for vannkraft er det svært lav R**2. Derfor er det lite vi kan fastslå utifra modellen. 
 
 # Det er ikke pris som avgjør hvor mye vi bruker, men tilgjenlig strøm i markedet 
+
+#Konkluder med at det er støy, og et forsøk på å finne sammenhenger. 
