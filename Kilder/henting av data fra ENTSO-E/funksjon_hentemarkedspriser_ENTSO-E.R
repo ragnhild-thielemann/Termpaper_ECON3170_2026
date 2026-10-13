@@ -53,8 +53,7 @@ hent_markedspriser <- function(start_dato,
   maaneder <- seq(
     from = as.Date(format(start_dato, "%Y-%m-01")),
     to = as.Date(format(slutt_dato, "%Y-%m-01")),
-    by = "month"
-  )
+    by = "month")
   
   
   # ----------------------------------------------------------

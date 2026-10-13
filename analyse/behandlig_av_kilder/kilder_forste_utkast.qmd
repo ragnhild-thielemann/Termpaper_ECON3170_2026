@@ -6,7 +6,7 @@ author:
 date: today
 date-format: D MMMM YYYY
 
-format: docx
+format: typst
 number-sections: true
 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
@@ -20,7 +20,9 @@ execute:
 
 ## Datainnsamlingen
 
-Datainnsamlignen har vært en stor del av prosjektet, da jeg har hentet data fra fire ulike API-er, levert i ulikt format. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut.
+Datainnsamlignen har vært en stor del av prosjektet, da jeg har hentet data fra fire ulike API-er, levert i ulikt formater. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut. 
+
+I mappen *Kilder* gjennomføres API-kallende, før de lagres som RDS-filer i *Datasett*. Når vi skal analysere datasettene henter vi RDS-filene ut fra *Datasett*, slik at vi unngår å gjøre det tid- og resusskrevende API-kallet flere ganger enn nødvendig.
 
 I dette prosjeket har jeg brukt to kilder, ENSTO-E og NVE. 
 
@@ -44,7 +46,7 @@ datakilder |>
   flextable() |>
   set_header_labels(
     Kilde = "Kilde",
-    Forklaring = "Forklaring",
+    Forklaring = "Datasett",
     Format = "Format"
   ) |>
   width(j = 1, width = 1.2) |>
@@ -54,3 +56,36 @@ datakilder |>
   align(align = "left", part = "all") |>
   valign(valign = "top", part = "all")
 ```
+
+### ENTSTO-E 
+
+#### Formatet til API-et (XML)
+
+Dataene fra ENTSTO-E leveres i XML-format, som er et tekstbasert format der informasjonen er organisert i nestede elementer. Informasjonen må derfor hentes ut stegvis og bearbeides før de settes sammen i en tibble. Hvert prisområde identifiseres med en egen EIC-kode (*Energy Identification Code*), som må hentes eller defineres for å kunne etterspørre data for riktig område.
+
+
+
+"API-nøkkel" -> "EIC-kode" -> "Hente data" ->
+"Bearbeide XML" -> "Sette sammen tibble" -> "Lagre data"
+
+#### Behandling av store datasett
+
+Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse.
+
+
+```{r}
+#| echo: false
+#| results: asis
+
+kode <- readLines(
+  "../../Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R"
+)
+
+cat("```r\n")
+cat(kode[53:56], sep = "\n")
+cat("\n```\n")
+```
+
+### NVE
+
+Fyllingsgraden i vannmagasinene rapporteres ukentlig, mens tilsiget måles på dagsnivå. For å håndtere de ulike tidsoppløsningene og sikre en effektiv datauthenting hentes tilsiget separat for hver målestasjon. Dataene fra hver stasjon lagres i en egen fil, slik at innhentingen kan gjenopptas uten å måtte hente alle dataene på nytt dersom en enkelt forespørsel feiler.
