@@ -19,7 +19,7 @@ if (api_key == "") {
 
 hent_tilsig_stasjon <- function(
     station,
-    start_dato = "2026-10-10",
+    start_dato = "2020-01-01",
     slutt_dato = Sys.Date(),
     api_key = api_key
 ) {
@@ -93,3 +93,5 @@ saveRDS(
   tilsig_stasjoner,
   "Datasett/tilsig_alle_stasjoner.rds"
 )
+
+View(tilsig_stasjoner)

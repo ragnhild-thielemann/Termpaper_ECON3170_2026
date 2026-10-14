@@ -5,15 +5,14 @@ library(tidyverse)
 source("Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
 #her bør man bruke 
 
+#Prissonene jeg skal hente ut fra, 
 prissoner <- c(
   "Netherlands NL",
   "Denmark DK1",
   "Denmark DK2",
-  "Germany DE"
+  "Germany DE", 
+  "Great_Britain GB"
 )
-
-
-
 
 
 strompriser  <- tibble()

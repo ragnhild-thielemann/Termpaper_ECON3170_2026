@@ -61,16 +61,14 @@ datakilder |>
 
 #### Formatet til API-et (XML)
 
-Dataene fra ENTSTO-E leveres i XML-format, som er et tekstbasert format der informasjonen er organisert i nestede elementer. Informasjonen må derfor hentes ut stegvis og bearbeides før de settes sammen i en tibble. Hvert prisområde identifiseres med en egen EIC-kode (*Energy Identification Code*), som må hentes eller defineres for å kunne etterspørre data for riktig område.
-
-
+Dataene fra ENTSO-E leveres i XML-format, et tekstbasert format der informasjonen er organisert i en hierarkisk trestruktur. XML-responsen fra API-et leses inn og parses for å gjøre innholdet tilgjengelig for videre behandling. Ved hjelp av XML-parsing identifiseres relevante elementer og attributter som inneholder informasjon om blant annet tidspunkt, spotpriser (**A44**) , produksjon og forbruk(**A16**). For å hente data fra et bestemt prisområde benyttes en tilhørende EIC-kode (*Energy Identification Code*), som identifiserer området i kraftmarkedet. API-forespørselen spesifiserer dermed både hvilken EIC-kode og hvilken type data som skal hentes ut. Den samme overordnede kodestrukturen benyttes for all datainnsamling fra ENTSO-E, mens parameterne tilpasses etter hvilken informasjon som etterspørres. De relevante dataene hentes deretter ut av XML-strukturen, bearbeides og samles i en tibble for videre analyse.
 
 "API-nøkkel" -> "EIC-kode" -> "Hente data" ->
 "Bearbeide XML" -> "Sette sammen tibble" -> "Lagre data"
 
 #### Behandling av store datasett
 
-Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse.
+Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse. Ved å hente data én måned om gangen og lagre hovedtibbelen fortløpende, reduserer vi risikoen for å miste allerede innhentede data dersom et API-kall feiler. Dersom et API-kall feiler, fortsetter innhentingen med neste måned uten at tidligere innhentede data går tapt.
 
 
 ```{r}
@@ -88,4 +86,7 @@ cat("\n```\n")
 
 ### NVE
 
-Fyllingsgraden i vannmagasinene rapporteres ukentlig, mens tilsiget måles på dagsnivå. For å håndtere de ulike tidsoppløsningene og sikre en effektiv datauthenting hentes tilsiget separat for hver målestasjon. Dataene fra hver stasjon lagres i en egen fil, slik at innhentingen kan gjenopptas uten å måtte hente alle dataene på nytt dersom en enkelt forespørsel feiler.
+#### JSON-formatet
+Dataene fra NVE leveres i JSON-format (*JavaScript Object Notation*), et tekstbasert format der informasjonen er strukturert i nøstede objekter og arrayer. Dataene leses inn og parses slik at de kan bearbeides videre og organiseres i en tibble. 
+
+Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det mulig å hente data for hele perioden 2020 - 2026 i ett API-kall. Ved innhenting av tilsig er det imidlertid rundt 650 målestasjoner som skal behandles, noe som øker risikoen for at API-kallene overskrider tidsbegrensningen. For å redusere denne risikoen benyttes derfor samme fremgangsmåte som for ENTSO-E, der dataene hentes ut én målestasjon om gangen og lagres fortløpende underveis. Dataene fra de ulike målestasjonene samles deretter i én tibble ved hjelp av `bind_rows()`. Dette gjør innhentingen mer robust, ettersom en eventuell feil i et senere API-kall ikke fører til at tidligere innhentede data går tapt.
