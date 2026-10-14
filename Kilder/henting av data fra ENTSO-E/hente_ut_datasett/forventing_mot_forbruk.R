@@ -1,4 +1,5 @@
 
+
 library(dtplyr)
 library(dplyr)
 
@@ -83,5 +84,3 @@ saveRDS(
   forventing_mot_forbruk_norge_2020_time,
   "Datasett/forventing_mot_forbruk_time.rds"
 )
-
-

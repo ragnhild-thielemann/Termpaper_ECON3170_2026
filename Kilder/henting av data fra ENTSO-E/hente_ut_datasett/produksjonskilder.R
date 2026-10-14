@@ -9,7 +9,7 @@ source("Kilder/henting av data fra ENTSO-E/funksjon_produksjonstype.R")
 #Lager en oversikt over de ulike produksjonskildene for kraft
 psr_oversikt <- tibble(
   psr_type = c("B01","B04","B10", "B11", "B12",
-     "B15","B16", "B17","B18", "B19","B20"),
+               "B15","B16", "B17","B18", "B19","B20"),
   produksjonskilde = c(
     "Biomasse",
     "Gass",
@@ -22,7 +22,7 @@ psr_oversikt <- tibble(
     "Vindkraft til havs",
     "Vindkraft pa land",
     "Annet"
-    )
+  )
 )
 
 
@@ -61,7 +61,7 @@ total_produksjon <- bind_rows(resultater) |>
   
   # Fjern rader uten produksjonsdata
   filter(!is.na(production_MW)) |>
-
+  
   # Koble PSR-kode til produksjonskilde
   left_join(
     lazy_dt(psr_oversikt),

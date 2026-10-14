@@ -1,6 +1,5 @@
 
 
-
 library(tidyverse)
 source("Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
 #her bør man bruke 
@@ -94,5 +93,3 @@ strompris_europa_time <- strompris_long|>
 saveRDS(
   strompris_europa_time,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_europa_time.rds")
-
-

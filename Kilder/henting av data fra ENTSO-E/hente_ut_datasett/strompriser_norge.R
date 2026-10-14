@@ -1,5 +1,4 @@
 
-
 library(tidyverse)
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
 #her bør man bruke 
@@ -29,7 +28,7 @@ for (sone in prissoner){
   )|>
     dplyr::select(datetime, price)|>
     dplyr::rename(!!paste0("pris_",stringr::word(sone, -1)) := price)
-
+  
   if (nrow(priser_sone) == 0) {
     warning("Ingen prisdata returnert for: ", sone)
     next
@@ -105,5 +104,3 @@ strompris_norge_long_fra_2020_time <-
 saveRDS(
   strompris_norge_long_fra_2020_time,
   "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_norge_time.rds")
-
-
