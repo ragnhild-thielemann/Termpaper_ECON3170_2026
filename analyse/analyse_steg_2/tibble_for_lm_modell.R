@@ -51,4 +51,4 @@ total_tibble <- total_produksjon |>
   fill(fyllingsgrad, .by = prisomrade, .direction = "down")|>
   drop_na()|>
   rename(produksjon = production_MW)
-
+total_tibble

@@ -10,10 +10,7 @@ prissoner <- c(
   "Netherlands NL",
   "Denmark DK1",
   "Denmark DK2",
-  "Germany DE", 
-  "Great_Britain GB"
-)
-
+  "Germany DE" )
 
 strompriser  <- tibble()
 
@@ -21,8 +18,8 @@ strompriser  <- tibble()
 for (sone in prissoner){
   
   priser_sone <- hent_markedspriser(
-    start_dato = "2026-10-11",
-    slutt_dato = "2026-10-12",
+    start_dato = "2020-01-01",
+    slutt_dato = Sys.Date(),
     prisomrade = sone,
     variabel = "A44",
     api_key = api_key
@@ -51,7 +48,6 @@ for (sone in prissoner){
 #'Derfor lager vi en funksjon som beregner dette gjennomsnittet for de tomme cellene
 #'
 #'Funksjonen fungerer bare på long-formater
-strompriser
 
 
 #Vi lagrer to tibbler - en i wide og en i long format, da de har ulike bruksområder. 
@@ -69,18 +65,14 @@ strompris_long <- strompriser  |>
 View(strompriser)
 ### Kontroll av datasettet
 
-glimpse(strompris_wide) #skjekker at de ser fornuftige ut, og at transformasjonen har gått bra
-glimpse(strompris_long)
+glimpse(strompris_wide) 
+glimpse(strompris_long) #skjekker at de ser fornuftige ut, og at transformasjonen har gått bra
 
-#Ser hvilke prisområder som er med
+#Ser hvilke prisområder som er med, og antall observasjoner per prisområde
 strompris_long |>
   count(prisomrade, name = "antall_observasjoner")
 
-#' Kontrollerer mangelende priser. Tar deretter å oppretter en funksjon, 
-#' som finner gjennomsnittet av de to foregående prisene (som et estimat), for å gjøre analysen enklere
-
-
-strompris_long |>
+strompris_long |> #finner manglende observasjoner
   group_by(prisomrade) |>
   summarise(
     antall = n(),
@@ -89,29 +81,18 @@ strompris_long |>
     .groups = "drop"
   )
 
-lag_pris_estimat <- function(pris_tibble) {
-  
-  pris_tibble |>
-    arrange(prisomrade, datetime) |>
-    group_by(prisomrade) |>
-    mutate(
-      pris_modellert = if_else(
-        is.na(pris),
-        (lag(pris, 1) + lag(pris, 2)) / 2,
-        pris
-      )
-    ) |>
-    ungroup()
-}
 
-#lagrer for Norge
-strompris_long_europa <- lag_pris_estimat(strompris_long)
-#lagrer  datafilene som en RDS-fil på datamaskinen
 
+strompris_europa_time <- strompris_long|>
+  lazy_dt()|>
+  mutate(datetime = floor_date(datetime,"hour"))|>
+  summarise(pris = mean(pris, na.rm =TRUE), .by = c(datetime, prisomrade)
+  )|>
+  as_tibble()
 
 
 saveRDS(
-  strompris_long_europa,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_europa.rds")
+  strompris_europa_time,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_europa_time.rds")
 
 

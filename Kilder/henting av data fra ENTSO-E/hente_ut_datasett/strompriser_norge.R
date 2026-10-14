@@ -76,9 +76,6 @@ glimpse(strompris_long)
 strompris_long |>
   count(prisomrade, name = "antall_observasjoner")
 
-#' Kontrollerer mangelende priser. Tar deretter å oppretter en funksjon, 
-#' som finner gjennomsnittet av de to foregående prisene (som et estimat), for å gjøre analysen enklere
-
 
 strompris_long |>
   group_by(prisomrade) |>
@@ -89,32 +86,24 @@ strompris_long |>
     .groups = "drop"
   )
 
-lag_pris_estimat <- function(pris_tibble) {
-  
-  pris_tibble |>
-    arrange(prisomrade, datetime) |>
-    group_by(prisomrade) |>
-    mutate(
-      pris_modellert = if_else(
-        is.na(pris),
-        (lag(pris, 1) + lag(pris, 2)) / 2,
-        pris
-      )
-    ) |>
-    ungroup()
-}
 
-#lagrer for Norge
-strompris_long_norge <- lag_pris_estimat(strompris_long)
-#lagrer  datafilene som en RDS-fil på datamaskinen
+# Gjør strømprisen om til timesdata
+strompris_norge_long_fra_2020_time <-
+  strompris_long |>
+  lazy_dt() |>
+  mutate(
+    datetime = floor_date(datetime, "hour")
+  ) |>
+  summarise(
+    times_pris = mean(pris,na.rm = TRUE),
+    .by = c(datetime, prisomrade)
+  ) |>
+  drop_na()|>
+  as_tibble()
 
 
 saveRDS(
-  strompris_wide,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_wide.rds")
-
-saveRDS(
-  strompris_long_norge,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_norge.rds")
+  strompris_norge_long_fra_2020_time,
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/strompris_long_norge_time.rds")
 
 

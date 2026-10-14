@@ -70,6 +70,8 @@ Dataene fra ENTSO-E leveres i XML-format, et tekstbasert format der informasjone
 
 Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse. Ved å hente data én måned om gangen og lagre hovedtibbelen fortløpende, reduserer vi risikoen for å miste allerede innhentede data dersom et API-kall feiler. Dersom et API-kall feiler, fortsetter innhentingen med neste måned uten at tidligere innhentede data går tapt.
 
+Som tidligere nevnt leveres dataene fra ENTSO-E i XML-format, der hvert prisområde identifiseres ved hjelp av en egen EIC-kode. Dataene hentes inn måned for måned og separat for hvert prisområde, før datasettene sammenstilles ved hjelp av `left_join()`. Resultatet er et datasett på *wide format*, der variablene for de ulike prisområdene er organisert i separate kolonner. For å gjøre dataene mer egnet for videre analyse, transformeres de deretter til *long format* og lagres som RDS-filer. Ettersom datamengden omfatter flere millioner datapunkter, benyttes `dtplyr` for å effektivisere behandlingen av dataene og redusere ressursbruken.
+
 
 ```{r}
 #| echo: false
@@ -90,3 +92,7 @@ cat("\n```\n")
 Dataene fra NVE leveres i JSON-format (*JavaScript Object Notation*), et tekstbasert format der informasjonen er strukturert i nøstede objekter og arrayer. Dataene leses inn og parses slik at de kan bearbeides videre og organiseres i en tibble. 
 
 Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det mulig å hente data for hele perioden 2020 - 2026 i ett API-kall. Ved innhenting av tilsig er det imidlertid rundt 650 målestasjoner som skal behandles, noe som øker risikoen for at API-kallene overskrider tidsbegrensningen. For å redusere denne risikoen benyttes derfor samme fremgangsmåte som for ENTSO-E, der dataene hentes ut én målestasjon om gangen og lagres fortløpende underveis. Dataene fra de ulike målestasjonene samles deretter i én tibble ved hjelp av `bind_rows()`. Dette gjør innhentingen mer robust, ettersom en eventuell feil i et senere API-kall ikke fører til at tidligere innhentede data går tapt.
+
+### Behandling av dataene
+
+Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. 

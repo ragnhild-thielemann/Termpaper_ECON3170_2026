@@ -63,13 +63,25 @@ forbruk_norge_2020 <- forbruk_norge_2020 |>
 View(forbruk_norge_2020)
 
 
+forventing_mot_forbruk_norge_2020_time <-
+  forbruk_norge_2020 |>
+  lazy_dt() |>
+  mutate(
+    datetime = floor_date(datetime, "hour")
+  ) |>
+  summarise(
+    faktisk_forbruk = mean(faktisk_forbruk_MW), prognose_forbruk = mean(prognose_forbruk_MW),
+    .by = c(datetime, prisomrade)
+  ) |>
+  drop_na()|>
+  as_tibble()
 # ==========================================================
 # 5. Lagre datasettet
 # ==========================================================
 
 saveRDS(
-  forbruk_norge_2020,
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/forventing_mot_forbruk_norge_2020.rds"
+  forventing_mot_forbruk_norge_2020_time,
+  "Datasett/forventing_mot_forbruk_time.rds"
 )
 
 
