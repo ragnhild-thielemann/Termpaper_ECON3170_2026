@@ -4,7 +4,7 @@ library(tidyverse)
 library(lubridate)
 
 source(
-  "Kilder/henting_av_data_NVE/funksjon_henta_data.R"
+  "Kilder/henting_av_data_NVE/funksjon_magasinfylling.R"
 )
 
 vannreservoar <- hent_vannreservoar(start_date = "2020-09-02")|>

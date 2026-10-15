@@ -101,5 +101,5 @@ tilsig_behandlet |>
   )
 
 # Relativ sti, slik at skriptet fungerer uansett hvor prosjektet ligger
-saveRDS(tilsig_behandlet, "Datasett/tilsig_total.rds")
+saveRDS(tilsig_behandlet, "Datasett/tilsig_total_ferdig.rds")
 
