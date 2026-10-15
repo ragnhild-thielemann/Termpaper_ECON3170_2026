@@ -14,9 +14,6 @@ if (api_key == "") {
 }
 
 # --------------------------------------------------------
-# 1. Hent tilsig for én målestasjon
-# --------------------------------------------------------
-# --------------------------------------------------------
 # 1. Hent stasjoner og velg de nærmeste for hver prissone
 # --------------------------------------------------------
 
@@ -125,7 +122,7 @@ for (i in seq_len(nrow(stasjoner))) {
     data <- hent_vannforing(
       api_key = api_key,
       station = id,
-      start_date = "2026-10-10",
+      start_date = "2020-01-01",
       end_date = Sys.Date()
     )
     
@@ -228,4 +225,8 @@ tilsig_total |>
 tilsig_total |>
   distinct(station, prisomrade) |>
   count(prisomrade)
+View(tilsig_total)
 
+
+saveRDS(tilsig_total,
+        "Datasett/tilsig_total_denviskalbruke.rds")
