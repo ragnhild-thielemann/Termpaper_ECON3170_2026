@@ -14,7 +14,7 @@ total_produksjon <- readRDS(
 strompris_norge_time <- readRDS(
   "Datasett/strompris_norge_long_time.rds"
 ) |>
-  rename(pris_norge = times_pris)
+  mutate(pris_norge = times_pris)
 
 forventing_mot_forbruk <- readRDS(
   "Datasett/forventing_mot_forbruk_norge.rds"
@@ -34,6 +34,18 @@ strompris_europa_time <- readRDS(
     .by = datetime
   )
 
+
+nrow(total_produksjon)
+nrow(forventing_mot_forbruk)
+nrow(tilsig)
+nrow(strompris_norge_time)
+nrow(vannreservoar)
+nrow(strompris_europa_time)
+
+# Hvor mye minne bruker datasettene?
+format(object.size(total_produksjon), units = "MB")
+format(object.size(tilsig), units = "MB")
+format(object.size(strompris_norge_time), units = "MB")
 # Kobler sammen datasettene
 total_tibble <- total_produksjon |>
   dplyr::select(
