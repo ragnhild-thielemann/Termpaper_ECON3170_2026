@@ -1,14 +1,22 @@
-
 library(tidyverse)
 library(lubridate)
+library(dtplyr)
 
 # --------------------------------------------------
-# 1. Les inn data
+# 1. Les inn data og behandle den
 # --------------------------------------------------
 
 vannreservoar <- readRDS("Datasett/vannreservoar.rds")
 
-total_produksjon <- readRDS("Datasett/total_produksjon.rds")
+#Da det er flere produksjonsmåter med totalt lavt samlet produksjon, ser vi disse under ett. 
+total_produksjon <- readRDS("Datasett/total_produksjon.rds")|>
+  lazy_dt()|>
+  mutate(produksjonskilde = replace_na(produksjonskilde,"Annet"))|>
+  mutate(produksjonskilde = case_when(!produksjonskilde %in% c("Vannkraft med magasin","Elvekraft" ,"Vindkraft pa land" ) ~ "Annet",
+                                      produksjonskilde %in% c("Vannkraft med magasin","Elvekraft" ,"Vindkraft pa land" )~ produksjonskilde))|>
+  summarise(production_MW = mean(production_MW, na.rm = TRUE), .by = c(prisomrade,produksjonskilde,datetime))|>
+  arrange(datetime,prisomrade)|>
+  as_tibble()
 
 strompris_norge_time <- readRDS(
   "Datasett/strompris_norge_long_time.rds"
@@ -54,37 +62,32 @@ forbruk_time <- forventing_mot_forbruk |>
 
 
 # --------------------------------------------------
-# 4. Produksjon: dagsoppløst
-# Beholder én rad per produksjonskilde
+# 4. Produksjon: timesoppløst
 # --------------------------------------------------
 
-produksjon_dag <- total_produksjon |>
-  mutate(dato = as.Date(datetime)) |>
-  group_by(dato, prisomrade, produksjonskilde) |>
-  summarise(
-    produksjon = mean(production_MW, na.rm = TRUE),
-    .groups = "drop"
+unique(total_produksjon$produksjonskilde)
+produksjon_time <- total_produksjon |>
+  mutate(
+    produksjonskilde = if_else(
+      produksjonskilde == "Vannkraft med magasin",
+      "Magasinkraftverk",
+      produksjonskilde
+    )
   ) |>
   pivot_wider(
+    id_cols = c(datetime, prisomrade),
     names_from = produksjonskilde,
-    values_from = produksjon,
+    values_from = production_MW,
     names_prefix = "produksjon_"
   )
 
-
+colnames(produksjon_dag)
 # --------------------------------------------------
 # 5. Tilsig: dagsoppløst
 # --------------------------------------------------
 
-
 # Tilsig er dagsoppløst
-tilsig_dag <- tilsig |>
-  mutate(dato = as.Date(dato)) |>
-  group_by(dato, prisomrade) |>
-  summarise(
-    tilsig = mean(vannforing, na.rm = TRUE),
-    .groups = "drop"
-  )
+tilsig_dag <- tilsig 
 
 
 # --------------------------------------------------
@@ -134,8 +137,8 @@ total_tibble <- pris_norge |>
     by = c("datetime", "prisomrade")
   ) |>
   left_join(
-    produksjon_dag,
-    by = c("dato", "prisomrade")
+    produksjon_time,
+    by = c("datetime", "prisomrade")
   ) |>
   left_join(
     tilsig_dag,
@@ -151,7 +154,6 @@ total_tibble <- pris_norge |>
   ) |>
   arrange(prisomrade, datetime) |>
   as_tibble()
-
 # --------------------------------------------------
 # 9. Kontroller resultatet
 # --------------------------------------------------
@@ -168,4 +170,4 @@ summary(total_tibble)
 
 
 saveRDS(total_tibble,
-        "Datasett/total_tibble.rds")
+        "Datasett/total_tibble4.rds")

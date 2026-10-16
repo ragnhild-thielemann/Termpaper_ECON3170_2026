@@ -95,29 +95,43 @@ Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det m
 
 ### Behandling av dataene
 
-Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. 
+Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. I scriptet "sette_sasammen_til_en_tibble* ^[sette_sammen_til_en_tibble] tar vi hensyn til dette. alle datasettene settes sammen til 
 
 
 
 
-## Overblikk over produksjonsmønstre i Norge
+## Overblikk over kraftproduksjon i Norge
 
-
-
+For å gi et overordnet bilde av den norske kraftproduksjonen viser figuren gjennomsnittlig produksjon per time (MW), fordelt på produksjonskilder og prisområder i perioden 2020–2026. Figuren viser at vannkraft med magasin utgjør en betydelig del av produksjonen i samtlige prisområder. Samtidig fremgår det geografiske forskjeller i produksjonsmiksen. NO1 har et relativt stort bidrag fra uregulert elvekraft, mens vindkraft på land står for en større andel av produksjonen i NO2 og NO3. Samlet sett illustrerer figuren at norsk kraftproduksjon i hovedsak er basert på vannkraft, hvorav en betydelig del kan reguleres gjennom magasinering.
 ```{r}
 
 library(tidyverse)
+library(janitor)
+library(dtplyr)
 
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble.rds")|>
-  dplyr::select(datetime,starts_with("produksjon_"))|> 
-  pivot_longer(cols = -datetime, 
-               names_prefix = "produksjon_",
-               names_to = "kilde",
-               values_to = "MW")
-  
-p1 <- tibble |>
-  ggplot(aes(x = datetime, y = MW, fill = kilde)) +
-  geom_area()
-p1
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble2.rds")|>
+  lazy_dt()|>
+  dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
+  pivot_longer(-c(datetime,prisomrade), 
+                                                                    names_prefix = "produksjon_", 
+                                                                    names_to = "produksjonskilde",
+                                                                    values_to = "produksjon")|>
+  #aggregerer på dagsnivå, slik at plottet blir letter å gjennomføre
+  mutate(datetime = as.Date(datetime))|>
+  summarise(produksjon = mean(produksjon,na.rm = TRUE),.by = c(datetime,prisomrade,produksjonskilde))|>
+  as_tibble()
+
+
+soylediagram <- tibble|>
+  ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
+  geom_col(position = "dodge") + 
+  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW)", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
+  theme_bw() + 
+   theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+soylediagram
 
 ```
+

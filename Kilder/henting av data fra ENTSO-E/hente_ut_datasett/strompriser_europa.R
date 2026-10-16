@@ -1,6 +1,7 @@
 
 
 library(tidyverse)
+library(dtplyr)
 source("Kilder/henting av data fra ENTSO-E/funksjon_hentemarkedspriser_ENTSO-E.R")
 #her bør man bruke 
 
@@ -82,13 +83,14 @@ strompris_long |> #finner manglende observasjoner
 
 
 
+library(tidyverse)
+library(dtplyr)
 strompris_europa_time <- strompris_long|>
   lazy_dt()|>
   mutate(datetime = floor_date(datetime,"hour"))|>
   summarise(pris = mean(pris, na.rm =TRUE), .by = c(datetime, prisomrade)
   )|>
   as_tibble()
-
 
 saveRDS(
   strompris_europa_time,
