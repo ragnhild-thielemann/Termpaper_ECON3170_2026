@@ -230,3 +230,4 @@ View(tilsig_total)
 
 saveRDS(tilsig_total,
         "Datasett/tilsig_total_denviskalbruke.rds")
+

@@ -135,7 +135,7 @@ soylediagram <- tibble|>
   labs(
   x = "Produksjonskilde",
   y = "Gjennomsnittlig produksjon (MW)",
-  title = "Gjennomsnittlig kraftproduksjon etter kilde og prisomrade (2020–2026)",
+  title = "Gjennomsnittlig kraftproduksjon(2020–2026)",
   fill = "Prisomrade"
 ) +
   theme_bw() + 
@@ -148,19 +148,49 @@ soylediagram
 ```
 
 
+### Få skrevet om at det bare er støy, og at vi derfor ikke bør fokuesere på denne dataen. Få inn plott om dette
 
+Det ble forsøkt å predikere magasinfyllingen ved hjelp av nedbør, aggregert nedbør og tilsig. Analysene viste imidlertid betydelige utfordringer knyttet til støy og store forskjeller i størrelsesorden mellom observasjonene. Enkelte målestasjoner har svært høye vannføringsverdier, som dominerer variasjonen i datasettet. Tidsseriene viser heller ikke tydelige periodiske mønstre, og fordelingen av observasjonene avviker fra en normalfordeling. Dette gjør det vanskelig å identifisere stabile sammenhenger som kan utnyttes i prediksjonsmodellen. Et sammendrag av tilsigdataene er vedlagt for å illustrere disse utfordringene. På bakgrunn av dette ble de hydrologiske variablene utelatt fra det videre arbeidet.
 ```{r}
 
 library(tidyverse)
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble1.rds")
-View(tibble)
+library(lubridate)
 
-ggplot(tibble)+
-  geom_point(aes(x = fyllingsgrad, y = tilsig))
+tilsig_total <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds")|>
+  filter(vannforing %in% -10:1000) |>
+  drop_na(dato, vannforing, station)
 
+ggplot(tilsig_total) +
+  geom_line(
+    aes(x = dato, y = vannforing, color = station),
+    
+    linewidth = 0.25,
+    alpha = 0.65
+  ) +
+  labs(
+    title = "Stor variasjon i vannforing mellom malestasjoner",
+    subtitle = "Enkelte store observasjoner dominerer variasjonen i datasettet",
+    x = "Dato",
+    y = "Vannforing",
+    color = "Malestasjon"
+  )  +
+  scale_x_date(
+    date_breaks = "1 year",
+    date_labels = "%Y"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
 
-  
+```
 
+**Summary av vannføringsdataen**
+```{r}
 
+tilsig_summary<- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds")
+summary(tilsig_summary$vannforing)
 
 ```
