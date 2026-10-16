@@ -1,6 +1,7 @@
-```r
+
 library(tidyverse)
 library(lubridate)
+library(dtplyr)
 
 # --------------------------------------------------
 # 1. Les inn data
@@ -19,19 +20,26 @@ strompris_europa_time <- readRDS("Datasett/strompris_long_europa_time.rds")
 # Én rad per time og prisområde
 # --------------------------------------------------
 
+
 pris_norge <- strompris_norge_time |>
+  lazy_dt() |>
   mutate(
     datetime = as.POSIXct(datetime, tz = "UTC"),
     dato = as.Date(datetime)
   ) |>
-  group_by(datetime, prisomrade) |>
+  group_by(datetime, prisomrade, dato) |>
   summarise(
     pris_norge = mean(times_pris, na.rm = TRUE),
     .groups = "drop"
   ) |>
   mutate(
-    pris_norge = if_else(is.nan(pris_norge), NA_real_, pris_norge)
-  )
+    pris_norge = if_else(
+      is.nan(pris_norge),
+      NA_real_,
+      pris_norge
+    )
+  ) |>
+  as_tibble()
 
 # --------------------------------------------------
 # 3. Forbruk
@@ -198,4 +206,3 @@ tibble1 |>
 # --------------------------------------------------
 
 saveRDS(tibble1, "Datasett/tibble1.rds")
-```

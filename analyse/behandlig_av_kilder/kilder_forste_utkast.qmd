@@ -95,9 +95,7 @@ Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det m
 
 ### Behandling av dataene
 
-Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. I scriptet "sette_sasammen_til_en_tibble* ^[sette_sammen_til_en_tibble] tar vi hensyn til dette. alle datasettene settes sammen til 
-
-
+Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. For å sikre et sammenlignbart datagrunnlag aggregeres strømprisene til timesnivå. De utenlandske prisdataene behandles som én observasjon per time, slik at datasettet blir enklere og mer effektivt å håndtere datamessig. Dette innebærer samtidig at kortvarige prisvariasjoner innenfor hver time går tapt. Norske strømpriser, forbruksdata og produksjonsdata tilpasses tilsvarende tidsoppløsning, mens dags- og ukesbaserte data, som tilsig og magasinfylling, kobles til ved hjelp av dato og prisområde. I skriptet ferdig_til_tibble samles datasettene med de norske strømprisene som utgangspunkt. Resultatet er et felles og strukturert datasett som danner grunnlaget for den videre statistiske analysen.
 
 
 ## Overblikk over kraftproduksjon i Norge
@@ -109,11 +107,10 @@ library(tidyverse)
 library(janitor)
 library(dtplyr)
 
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble1.rds")
 
-View(tibble)
 
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble2.rds")|>
+
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble1.rds")|>
   lazy_dt()|>
   dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
   pivot_longer(-c(datetime,prisomrade), 
@@ -124,7 +121,6 @@ tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Da
   mutate(datetime = as.Date(datetime))|>
   summarise(produksjon = mean(produksjon,na.rm = TRUE),.by = c(datetime,prisomrade,produksjonskilde))|>
   as_tibble()
-
 
 
 soylediagram <- tibble|>
