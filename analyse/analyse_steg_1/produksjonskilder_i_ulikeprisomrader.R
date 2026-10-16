@@ -1,6 +1,6 @@
 
 #henter inn de datasettene jeg trenger
-
+library(tidyverse)
 source("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg_1/sammenslaing_av_tibbels.R")
 
 View(total_produksjon_jobbing)
