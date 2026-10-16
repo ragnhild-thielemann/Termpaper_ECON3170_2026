@@ -94,31 +94,35 @@ produksjon_time <- total_produksjon |>
     names_prefix = "produksjon_"
   )
 
+
 # --------------------------------------------------
 # 5. Tilsig
 # Én rad per dato og prisområde
 # --------------------------------------------------
 
 tilsig_dag <- tilsig |>
-  mutate(dato = as.Date(dato)) |>
+  mutate(
+    dato = as.Date(dato)
+  ) |>
   group_by(dato, prisomrade) |>
   summarise(
-    tilsig = mean(tilsig, na.rm = TRUE),
+    tilsig = mean(vannforing, na.rm = TRUE),
     .groups = "drop"
   ) |>
   mutate(
-    tilsig = if_else(is.nan(tilsig), NA_real_, tilsig)
+    tilsig = if_else(
+      is.nan(tilsig),
+      NA_real_,
+      tilsig
+    )
   )
 
 # --------------------------------------------------
 # 6. Magasinfylling
 # Én rad per dato og prisområde
 # --------------------------------------------------
-
 magasin_dag <- vannreservoar |>
-  mutate(
-    dato = as.Date(datetime)
-  ) |>
+  mutate(dato = as.Date(datetime)) |>
   group_by(dato, prisomrade) |>
   summarise(
     fyllingsgrad = mean(fyllingsgrad, na.rm = TRUE),
@@ -133,7 +137,11 @@ magasin_dag <- vannreservoar |>
   ) |>
   arrange(prisomrade, dato) |>
   group_by(prisomrade) |>
-  fill(fyllingsgrad, .direction = "down") |>
+  # Fyll inn ukene mellom observasjonene
+  tidyr::complete(
+    dato = seq.Date(min(dato), max(dato), by = "day")
+  ) |>
+  tidyr::fill(fyllingsgrad, .direction = "down") |>
   ungroup()
 
 # --------------------------------------------------
@@ -205,4 +213,6 @@ tibble1 |>
 # 10. Lagre
 # --------------------------------------------------
 
-saveRDS(tibble1, "Datasett/tibble1.rds")
+saveRDS(tibble1, "Datasett/tibble2.rds")
+
+View(tibble1)

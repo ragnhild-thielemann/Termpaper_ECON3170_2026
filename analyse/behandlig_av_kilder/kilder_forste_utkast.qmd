@@ -63,15 +63,13 @@ datakilder |>
 
 Dataene fra ENTSO-E leveres i XML-format, et tekstbasert format der informasjonen er organisert i en hierarkisk trestruktur. XML-responsen fra API-et leses inn og parses for å gjøre innholdet tilgjengelig for videre behandling. Ved hjelp av XML-parsing identifiseres relevante elementer og attributter som inneholder informasjon om blant annet tidspunkt, spotpriser (**A44**) , produksjon og forbruk(**A16**). For å hente data fra et bestemt prisområde benyttes en tilhørende EIC-kode (*Energy Identification Code*), som identifiserer området i kraftmarkedet. API-forespørselen spesifiserer dermed både hvilken EIC-kode og hvilken type data som skal hentes ut. Den samme overordnede kodestrukturen benyttes for all datainnsamling fra ENTSO-E, mens parameterne tilpasses etter hvilken informasjon som etterspørres. De relevante dataene hentes deretter ut av XML-strukturen, bearbeides og samles i en tibble for videre analyse.
 
-"API-nøkkel" -> "EIC-kode" -> "Hente data" ->
-"Bearbeide XML" -> "Sette sammen tibble" -> "Lagre data"
+**Arbeidsflyt:** API-nøkkel → EIC-kode → Datauthenting → XML-behandling → Sammenstilling av tibble → Lagring som RDS
+
+
 
 #### Behandling av store datasett
 
 Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse. Ved å hente data én måned om gangen og lagre hovedtibbelen fortløpende, reduserer vi risikoen for å miste allerede innhentede data dersom et API-kall feiler. Dersom et API-kall feiler, fortsetter innhentingen med neste måned uten at tidligere innhentede data går tapt.
-
-Som tidligere nevnt leveres dataene fra ENTSO-E i XML-format, der hvert prisområde identifiseres ved hjelp av en egen EIC-kode. Dataene hentes inn måned for måned og separat for hvert prisområde, før datasettene sammenstilles ved hjelp av `left_join()`. Resultatet er et datasett på *wide format*, der variablene for de ulike prisområdene er organisert i separate kolonner. For å gjøre dataene mer egnet for videre analyse, transformeres de deretter til *long format* og lagres som RDS-filer. Ettersom datamengden omfatter flere millioner datapunkter, benyttes `dtplyr` for å effektivisere behandlingen av dataene og redusere ressursbruken.
-
 
 ```{r}
 #| echo: false
@@ -86,6 +84,13 @@ cat(kode[53:56], sep = "\n")
 cat("\n```\n")
 ```
 
+Som tidligere nevnt leveres dataene fra ENTSO-E i XML-format, der hvert prisområde identifiseres ved hjelp av en egen EIC-kode. Dataene hentes inn måned for måned og separat for hvert prisområde, før datasettene sammenstilles ved hjelp av `left_join()`. Resultatet er et datasett på *wide format*, der variablene for de ulike prisområdene er organisert i separate kolonner. For å gjøre dataene mer egnet for videre analyse, transformeres de deretter til *long format* og lagres som RDS-filer.
+
+Databehandlingen gjøres hovedsakelig ved hjelp av *tidyverse*, som brukes til å filtrere, transformere og sammenstille dataene. For å håndtere de store datamengdene mer effektivt benyttes også *dtplyr*, som kombinerer den velkjente syntaksen fra dplyr med den mer effektive databehandlingen i *data.table*. Dette bidrar til å redusere behandlingstiden og ressursbruken når datasettene inneholder flere millioner observasjoner.
+
+
+
+
 ### NVE
 
 #### JSON-formatet
@@ -95,19 +100,20 @@ Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det m
 
 ### Behandling av dataene
 
-Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. For å sikre et sammenlignbart datagrunnlag aggregeres strømprisene til timesnivå. De utenlandske prisdataene behandles som én observasjon per time, slik at datasettet blir enklere og mer effektivt å håndtere datamessig. Dette innebærer samtidig at kortvarige prisvariasjoner innenfor hver time går tapt. Norske strømpriser, forbruksdata og produksjonsdata tilpasses tilsvarende tidsoppløsning, mens dags- og ukesbaserte data, som tilsig og magasinfylling, kobles til ved hjelp av dato og prisområde. I skriptet ferdig_til_tibble samles datasettene med de norske strømprisene som utgangspunkt. Resultatet er et felles og strukturert datasett som danner grunnlaget for den videre statistiske analysen.
+Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. For å sikre et sammenlignbart datagrunnlag aggregeres strømprisene til timesnivå. Dette innebærer at kortvarige prisvariasjoner innenfor hver time går tapt. Ettersom prosjektet undersøker langsiktige trender, vurderes dette som en hensiktsmessig metodisk avveining. De utenlandske strømprisene aggregeres dessuten til én felles pris per time, for å forenkle databehandlingen og redusere datamengden.
+
+Norske strømpriser, forbruksdata og produksjonsdata tilpasses tilsvarende tidsoppløsning. Dags- og ukesbaserte data, som tilsig og magasinfylling, kobles til ved hjelp av dato og prisområde. I skriptet `ferdig_til_tibble` sammenstilles datasettene med de norske strømprisene som utgangspunkt. Resultatet er et strukturert og sammenhengende datagrunnlag som benyttes i den videre statistiske analysen.
 
 
 ## Overblikk over kraftproduksjon i Norge
 
 For å gi et overordnet bilde av den norske kraftproduksjonen viser figuren gjennomsnittlig produksjon per time (MW), fordelt på produksjonskilder og prisområder i perioden 2020–2026. Figuren viser at vannkraft med magasin utgjør en betydelig del av produksjonen i samtlige prisområder. Samtidig fremgår det geografiske forskjeller i produksjonsmiksen. NO1 har et relativt stort bidrag fra uregulert elvekraft, mens vindkraft på land står for en større andel av produksjonen i NO2 og NO3. Samlet sett illustrerer figuren at norsk kraftproduksjon i hovedsak er basert på vannkraft, hvorav en betydelig del kan reguleres gjennom magasinering.
+
 ```{r}
 
 library(tidyverse)
 library(janitor)
 library(dtplyr)
-
-
 
 
 tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble1.rds")|>
@@ -126,7 +132,12 @@ tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Da
 soylediagram <- tibble|>
   ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
   geom_col(position = "dodge") + 
-  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW)", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
+  labs(
+  x = "Produksjonskilde",
+  y = "Gjennomsnittlig produksjon (MW)",
+  title = "Gjennomsnittlig kraftproduksjon etter kilde og prisomrade (2020–2026)",
+  fill = "Prisomrade"
+) +
   theme_bw() + 
    theme(
     axis.text.x = element_text(angle = 45, hjust = 1)
@@ -136,3 +147,20 @@ soylediagram
 
 ```
 
+
+
+```{r}
+
+library(tidyverse)
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble1.rds")
+View(tibble)
+
+ggplot(tibble)+
+  geom_point(aes(x = fyllingsgrad, y = tilsig))
+
+
+  
+
+
+
+```
