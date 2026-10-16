@@ -109,6 +109,10 @@ library(tidyverse)
 library(janitor)
 library(dtplyr)
 
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble1.rds")
+
+View(tibble)
+
 tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble2.rds")|>
   lazy_dt()|>
   dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
@@ -120,6 +124,7 @@ tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Da
   mutate(datetime = as.Date(datetime))|>
   summarise(produksjon = mean(produksjon,na.rm = TRUE),.by = c(datetime,prisomrade,produksjonskilde))|>
   as_tibble()
+
 
 
 soylediagram <- tibble|>
