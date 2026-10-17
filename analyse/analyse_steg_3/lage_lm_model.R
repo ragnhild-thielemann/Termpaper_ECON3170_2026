@@ -243,3 +243,74 @@ koeffisient_plot <- koeffisienter |>
   )
 
 koeffisient_plot
+
+library(tidyverse)
+
+r2_test <- prediksjoner |>
+  group_by(prisomrade) |>
+  summarise(
+    R2 = 1 - sum((observert_pris - predikert_pris)^2) /
+      sum((observert_pris - mean(observert_pris))^2),
+    .groups = "drop"
+  )
+
+print(r2_test)
+
+
+koeffisient_plot <- koeffisienter |>
+  filter(
+    term != "(Intercept)",
+    is.finite(estimate),
+    is.finite(std.error)
+  ) |>
+  mutate(
+    variabel = forcats::fct_recode(
+      factor(term),
+      "Europeisk pris" = "europeisk_pris",
+      "Forbruk" = "forbruk",
+      "Magasinfylling" = "fyllingsgrad",
+      "Magasinkraftproduksjon" =
+        "produksjon_Magasinkraftverk"
+    )
+  ) |>
+  ggplot(
+    aes(
+      x = variabel,
+      y = estimate,
+      colour = prisomrade
+    )
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    colour = "grey50"
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = estimate - 1.96 * std.error,
+      ymax = estimate + 1.96 * std.error
+    ),
+    width = 0.2,
+    position = position_dodge(width = 0.6)
+  ) +
+  geom_point(
+    position = position_dodge(width = 0.6),
+    size = 2.5
+  ) +
+  labs(
+    x = "Forklaringsvariabel",
+    y = "Standardisert regresjonskoeffisient",
+    colour = "Prisområde",
+    title = "Standardiserte regresjonskoeffisienter",
+    subtitle = "Punktestimater med tilnærmede 95 % konfidensintervaller"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+print(koeffisient_plot)
+

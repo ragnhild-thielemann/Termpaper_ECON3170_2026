@@ -13,8 +13,7 @@ strompris_norge_time <- readRDS("Datasett/strompris_norge_long_time.rds")
 forventing_mot_forbruk <- readRDS("Datasett/forventing_mot_forbruk_norge_2020.rds")
 tilsig <- readRDS("Datasett/tilsig_total_denviskalbruke.rds")
 strompris_europa_time <- readRDS("Datasett/strompris_long_europa_time.rds")
-
-
+strompris_gb <- readRDS("Datasett/strompris_gb_time.rds")
 # --------------------------------------------------
 # 2. Norske strømpriser
 # Én rad per time og prisområde
@@ -161,6 +160,23 @@ pris_europa <- strompris_europa_time |>
   )
 
 # --------------------------------------------------
+# 7. Britiske priser
+# Én rad per tidspunkt
+# --------------------------------------------------
+
+pris_gb <- strompris_gb |>
+  
+  #konverterer til samme tidssone
+  mutate(datetime = as.POSIXct(datetime, tz = "UTC")) |>
+  group_by(datetime) |>
+  summarise(
+    times_pris = mean(pris, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    britisk_pris = if_else(is.nan(times_pris), NA_real_, times_pris)
+  )
+# --------------------------------------------------
 # 8. Sett sammen tibble1
 # Utgangspunktet er norske timespriser
 # --------------------------------------------------
@@ -191,28 +207,150 @@ tibble1 <- pris_norge |>
     by = "datetime",
     relationship = "many-to-one"
   ) |>
+  left_join(
+    pris_gb,
+    by = "datetime",
+    relationship = "many-to-one"
+  ) |>
+  
   arrange(prisomrade, datetime)
 
 # --------------------------------------------------
 # 9. Kontroller resultatet
 # --------------------------------------------------
 
-glimpse(tibble1)
-
-nrow(tibble1)
-
-# Skal være TRUE
-nrow(tibble1) == nrow(pris_norge)
-
-# Sjekk at ingen kombinasjoner er duplisert
-tibble1 |>
-  count(datetime, prisomrade) |>
-  filter(n > 1)
-
 # --------------------------------------------------
-# 10. Lagre
+# 9. Undersok manglende observasjoner
 # --------------------------------------------------
 
-saveRDS(tibble1, "Datasett/tibble5.rds")
+variabler_sjekk <- c(
+  "pris_norge",
+  "forbruk",
+  "fyllingsgrad",
+  "tilsig",
+  "produksjon_Magasinkraftverk",
+  "produksjon_Elvekraft",
+  "produksjon_Vindkraft pa land",
+  "europeisk_pris",
+  "britisk_pris"
+)
+
+# Behold bare variabler som faktisk finnes i datasettet
+variabler_sjekk <- intersect(
+  variabler_sjekk,
+  names(tibble1)
+)
+
+# Manglende verdier fordelt pa prisomrade
+mangler_per_omrade <- tibble1 |>
+  group_by(prisomrade) |>
+  summarise(
+    across(
+      all_of(variabler_sjekk),
+      ~ sum(!is.finite(.x))
+    ),
+    antall_observasjoner = n(),
+    .groups = "drop"
+  ) |>
+  pivot_longer(
+    cols = all_of(variabler_sjekk),
+    names_to = "variabel",
+    values_to = "antall_mangler"
+  ) |>
+  mutate(
+    andel_mangler_prosent =
+      100 * antall_mangler / antall_observasjoner
+  ) |>
+  arrange(variabel, prisomrade)
+
+print(mangler_per_omrade, n = Inf)
+
+# --------------------------------------------------
+# 10. Manglende verdier totalt
+# --------------------------------------------------
+
+mangler_totalt <- tibble1 |>
+  summarise(
+    across(
+      all_of(variabler_sjekk),
+      ~ sum(!is.finite(.x))
+    ),
+    antall_observasjoner = n()
+  ) |>
+  pivot_longer(
+    cols = all_of(variabler_sjekk),
+    names_to = "variabel",
+    values_to = "antall_mangler"
+  ) |>
+  mutate(
+    andel_mangler_prosent =
+      100 * antall_mangler / antall_observasjoner
+  ) |>
+  arrange(desc(andel_mangler_prosent))
+
+print(mangler_totalt, n = Inf)
+
+# --------------------------------------------------
+# 11. Undersok hvor mange observasjoner som gjenstar
+# etter at modellvariablene er brukt
+# --------------------------------------------------
+
+observasjoner_modell <- tibble1 |>
+  group_by(prisomrade) |>
+  summarise(
+    antall_opprinnelig = n(),
+    
+    komplett_med_britisk_pris = sum(
+      if_all(
+        all_of(c(
+          "pris_norge",
+          "britisk_pris",
+          "forbruk",
+          "fyllingsgrad",
+          "produksjon_Magasinkraftverk"
+        )),
+        ~ is.finite(.x)
+      )
+    ),
+    
+    komplett_med_europeisk_pris = sum(
+      if_all(
+        all_of(c(
+          "pris_norge",
+          "europeisk_pris",
+          "forbruk",
+          "fyllingsgrad",
+          "produksjon_Magasinkraftverk"
+        )),
+        ~ is.finite(.x)
+      )
+    ),
+    
+    komplett_uten_utlandsk_pris = sum(
+      if_all(
+        all_of(c(
+          "pris_norge",
+          "forbruk",
+          "fyllingsgrad",
+          "produksjon_Magasinkraftverk"
+        )),
+        ~ is.finite(.x)
+      )
+    ),
+    
+    .groups = "drop"
+  )
+
+print(observasjoner_modell, n = Inf)
+
+# --------------------------------------------------
+# 12. Lagre datasett og mangelanalyser
+# --------------------------------------------------
+
+saveRDS(tibble1, "Datasett/tibble7.rds")
 
 View(tibble1)
+
+View(mangler_per_omrade)
+View(mangler_totalt)
+View(observasjoner_modell)

@@ -116,8 +116,6 @@ soylediagram
 
 ## Datainnsamlingen
 
-@fig-strompriser
-
 Datainnsamlignen har vært en stor del av prosjektet, da jeg har hentet data fra fire ulike API-er, levert i ulikt formater. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut. 
 
 I mappen *Kilder* gjennomføres API-kallende, før de lagres som RDS-filer i *Datasett*. Når vi skal analysere datasettene henter vi RDS-filene ut fra *Datasett*, slik at vi unngår å gjøre det tid- og resusskrevende API-kallet flere ganger enn nødvendig.
@@ -191,17 +189,14 @@ Dataene fra NVE leveres i JSON-format (*JavaScript Object Notation*), et tekstba
 
 Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det mulig å hente data for hele perioden 2020 - 2026 i ett API-kall. Ved innhenting av tilsig er det imidlertid rundt 650 målestasjoner som skal behandles, noe som øker risikoen for at API-kallene overskrider tidsbegrensningen. For å redusere denne risikoen benyttes derfor samme fremgangsmåte som for ENTSO-E, der dataene hentes ut én målestasjon om gangen og lagres fortløpende underveis. Dataene fra de ulike målestasjonene samles deretter i én tibble ved hjelp av `bind_rows()`. Dette gjør innhentingen mer robust, ettersom en eventuell feil i et senere API-kall ikke fører til at tidligere innhentede data går tapt.
 
-### Behandling av dataene
+### Utelating av forklaringsvariabler
 
-Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. I scriptet "sette_sasammen_til_en_tibble* ^[sette_sammen_til_en_tibble] tar vi hensyn til dette. alle datasettene settes sammen til 
+Det ble vurdert å inkludere britisk strømpris, nedbør og tilsig som forklaringsvariabler i regresjonsmodellene. Britisk strømpris var imidlertid bare tilgjengelig for 2020, noe som ville ha redusert datagrunnlaget betydelig. For nedbør og tilsig viste analysene større utfordringer. @fig-malestasjoner  viser betydelig støy og store forskjeller i målt vannføring, noe som gjør det vanskelig å identifisere tydelige mønstre over tid og sammenhenger med magasinfyllingen. Det var også utfordrende å finne representative nedbørsmålinger for de ulike prisområdene. Dette gjorde det vanskelig å konstruere pålitelige forklaringsvariabler for de endelige modellene. Britisk strømpris, nedbør og tilsig ble derfor utelatt fra den videre analysen.
 
-
-
-## Støy i hydrologiske forhold
-Det ble forsøkt å predikere magasinfyllingen ved hjelp av nedbør, aggregert nedbør og tilsig fra ulike målestasjoner. Tilsigsdataene viste store forskjeller i målt vannføring mellom stasjonene. Enkelte stasjoner hadde betydelig høyere verdier enn andre og dominerte dermed variasjonen i datasettet. Samtidig var det vanskelig å følge utviklingen i vannføringen over tid og identifisere tydelige sammenhenger mellom tilsig og magasinfylling. Dette gjorde det utfordrende å aggregere målingene til representative verdier for de ulike prisområdene og bruke dem som forklaringsvariabler i prediksjonsmodellen. Et sammendrag av tilsigdataene er vedlagt for å illustrere variasjonen mellom målestasjonene. På bakgrunn av disse utfordringene ble de hydrologiske variablene utelatt fra de videre analysene.
 
 ```{r}
-
+#| label: fig-malestasjoner
+#| fig-cap: "Støy i hydrologiske forhold"
 
 library(tidyverse)
 library(scales)
@@ -237,13 +232,119 @@ ggplot(tilsig_total) +
 
 
 ```
-**Summary av vannføringsdataen**
+####Summary av vannføringsdataen
+Som vist i @fig-summary har vannføringsdataene svært stor variasjon mellom målestasjonene. Vi har ikke tilstrekkelig grunnlag for å forklare de store forskjellene i målt tilsig eller avgjøre hvordan målingene best kan aggregeres til representative verdier. Det er derfor vanskelig å bruke dataene som pålitelige forklaringsvariabler, og tilsig utelates fra den endelige modellen.
 ```{r}
-
+#| label: fig-summary
+#| fig-cap: "Svært stor varians vi ikke klarer å addresssere"
 tilsig_summary<- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds")
 summary(tilsig_summary$vannforing)
 
 ```
 
 
+### Databehandling og valg av forklaringsvariabler
+## Metode: Databehandling og regresjonsanalyse
 
+### Databehandling og valg av forklaringsvariabler
+For å undersøke hvilke faktorer som kan forklare variasjonen i norske strømpriser, sammenstilles data fra flere kilder i én felles tibble. Datasettet inneholder strømpriser, strømforbruk, kraftproduksjon og magasinfylling, og gjør det mulig å analysere hvordan disse faktorene henger sammen. Siden datakildene har ulik tidsoppløsning, må dataene tilpasses før de kan sammenstilles. Prisobservasjonene fra Norge og Tyskland registreres opprinnelig hvert 15. minutt, mens Danmark og Nederland har timesobservasjoner. Prisene aggregeres derfor til timesnivå, slik at de får en felles tidsoppløsning. De norske dataene for strømforbruk og kraftproduksjon behandles også på timesnivå, mens magasinfylling og tilsig har daglig tidsoppløsning. Datasettene kobles sammen ved hjelp av tidspunkt, dato og prisområde, slik at de ulike variablene kan undersøkes i sammenheng. Den samlede tibblen danner grunnlaget for den videre analysen.
+
+På bakgrunn av det sammenstilte datasettet estimeres separate lineære regresjonsmodeller for hvert av de fem norske prisområdene, NO1–NO5, med strømpris som avhengig variabel. Alle modellene inkluderer strømforbruk, magasinfylling og produksjon fra magasinkraftverk som forklaringsvariabler. For NO1 og NO2 inkluderes også europeisk strømpris for å undersøke hvilken sammenheng prisnivået på det europeiske kontinentet har med norske strømpriser. Tilsig undersøkes først som en mulig forklaringsvariabel, men utelates fra de endelige modellene på grunn av utfordringer med datagrunnlaget (se forklaring ovenfor).
+
+
+
+### Manglende observasjoner og klargjøring av data
+
+Før modellene ble estimert, ble observasjoner med manglende eller ugyldige verdier fjernet separat for hvert prisområde, ettersom regresjonsmodellene krever gyldige verdier for både den avhengige variabelen og alle forklaringsvariablene. Av @tbl-observasjoner ser vi at filtreringen beholder rundt 99% av observasjonene i alle prisområdene. 
+
+Deretter ble dataene delt kronologisk i et treningssett på 80 prosent og et testsett på 20 prosent ved hjelp av initial_time_split(). Av @tbl-observasjoner kontrollerer vi at treningssettet utgjør 80 prosent av observasjonene og testsettet de resterende 20 prosentene. 
+
+Den kronologiske inndelingen er egnet for tidsseriedata fordi modellene estimeres på historiske observasjoner og evalueres på senere data. Dermed unngås det at fremtidige observasjoner brukes til å predikere fortiden.
+
+
+```{r}
+#| label: tbl-observasjoner
+#| tbl-cap: "Antall observasjoner før og etter rensing per prisområde."
+
+library(tidyverse)
+library(gt)
+library(scales)
+
+tabell <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/observasjoner_lm.rds"
+) |>
+  mutate(
+    andel_beholdt = antall_beholdt / antall_for_rensing
+  ) |>
+  dplyr::select(
+    prisomrade,
+    andel_beholdt,
+    antall_test,
+    antall_trening)
+
+tabell |>
+  gt() |>
+  cols_label(
+    prisomrade = "Prisomrade",
+    andel_beholdt = "Andel beholdt",
+    antall_trening = "Antall i treningsettet",
+    antall_test = "Antall i testsettet")|>
+  fmt_number(
+    columns = c(antall_trening, antall_test),
+    decimals = 0,
+    use_seps = TRUE
+  ) |>
+  fmt_percent(
+    columns = andel_beholdt,
+    decimals = 1
+  ) |>
+  cols_align(
+    align = "center",
+    columns = -prisomrade
+  )
+```
+
+### Oppdeling av data og estimering av modellene
+
+
+Forklaringsvariablene og den avhengige variabelen ble standardisert ved hjelp av gjennomsnitt og standardavvik beregnet fra treningssettet. De samme verdiene ble deretter brukt til å standardisere testsettet. Dette sikrer at informasjon fra testperioden ikke brukes ved beregningen av standardiseringsparametrene. Standardiseringen gjør dessuten regresjonskoeffisientene mer sammenlignbare, siden variablene uttrykkes i standardavvik i stedet for sine opprinnelige måleenheter.
+
+Det ble estimert en lineær regresjonsmodell for hvert prisområde ved hjelp av minste kvadraters metode. Modellene ble deretter brukt til å predikere strømprisene i testperioden. Prediksjonene ble konvertert tilbake til den opprinnelige prisskalaen før evalueringen.
+
+### Evaluering av prediksjonene
+
+Modellenes prediksjonsevne ble evaluert ved hjelp av tre mål: RMSE, MAE og \(R^2\).
+
+- **RMSE (root mean squared error)** måler størrelsen på prediksjonsfeilene og gir større vekt til store feil. En lavere verdi indikerer bedre prediksjonsevne.
+- **MAE (mean absolute error)** måler den gjennomsnittlige absolutte forskjellen mellom observert og predikert strømpris. En lavere verdi indikerer at prediksjonene i gjennomsnitt ligger nærmere de observerte prisene.
+- **\(R^2\)** beregnet på testsettet viser hvor godt prediksjonene samsvarer med variasjonen i de observerte prisene, sammenlignet med et referansenivå basert på gjennomsnittet i testperioden. En høyere verdi indikerer bedre samsvar. Verdien kan også være negativ dersom modellen predikerer dårligere enn dette referansenivået.
+
+*Sett inn Tabell Y: RMSE, MAE og \(R^2\) for testsettet i hvert prisområde.*
+
+Tabellen gir grunnlag for å sammenligne prediksjonsevnen mellom prisområdene. Sammenligningen må imidlertid tolkes med forsiktighet, ettersom prisområdene kan ha ulik prisvolatilitet og forskjellige markedsforhold. Det er derfor nyttig å vurdere både RMSE og MAE sammen med \(R^2\), fremfor å basere vurderingen på ett enkelt mål.
+
+### Regresjonskoeffisienter og sammenhenger
+
+For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med strømprisen, ble de standardiserte regresjonskoeffisientene hentet ut fra hver modell. Koeffisientene viser hvordan den predikerte strømprisen endres, målt i standardavvik, når en forklaringsvariabel øker med ett standardavvik, mens de øvrige variablene holdes konstante.
+
+**Figur X** viser de estimerte standardiserte regresjonskoeffisientene for de ulike prisområdene. Figuren inkluderer også tilnærmede 95 prosent konfidensintervaller. Koeffisienter over null indikerer en positiv betinget sammenheng, mens koeffisienter under null indikerer en negativ betinget sammenheng. Konfidensintervallene gir informasjon om usikkerheten i koeffisientestimatene.
+
+*Sett inn Figur X: Standardiserte regresjonskoeffisienter med tilnærmede 95 prosent konfidensintervaller.*
+
+Figuren kan brukes til å undersøke om sammenhengene varierer mellom prisområdene. Siden NO1 og NO2 inkluderer europeisk strømpris, mens NO3–NO5 ikke gjør det, må sammenligninger av koeffisientene ta hensyn til at modellspesifikasjonene er forskjellige. Koeffisientene viser statistiske sammenhenger gitt variablene i modellen, og kan ikke uten videre tolkes som kausale effekter.
+
+### Observert og predikert strømpris
+
+For å vurdere hvordan modellene følger den faktiske prisutviklingen, ble predikerte strømpriser sammenlignet med observerte priser i testperioden. Figur Y viser denne sammenligningen for NO3, mens Figur Z viser resultatene for alle fem prisområdene.
+
+*Sett inn Figur Y: Observert og predikert strømpris i NO3.*
+
+*Sett inn Figur Z: Observert og predikert strømpris for alle prisområdene.*
+
+Disse figurene gjør det mulig å undersøke om modellene fanger opp den overordnede prisutviklingen, og om de klarer å følge perioder med store prisendringer. Avstanden mellom de observerte og predikerte kurvene illustrerer prediksjonsfeilene. Det bør særlig undersøkes om modellene systematisk undervurderer eller overvurderer høye pristopper, ettersom en lineær modell kan ha begrenset evne til å fange opp brå og ekstreme prisbevegelser.
+
+### Oppsummering av fremgangsmåten
+
+Analysen følger dermed en trinnvis prosess der data fra flere kilder først ble sammenstilt og kontrollert, før forklaringsvariablene ble valgt og separate regresjonsmodeller ble estimert for hvert prisområde. Manglende observasjoner ble håndtert før dataene ble delt kronologisk i trenings- og testsett. Modellene ble estimert på treningsdataene, og prediksjonsevnen ble vurdert på senere observasjoner ved hjelp av RMSE, MAE og \(R^2\). Til slutt ble de standardiserte regresjonskoeffisientene og forholdet mellom observerte og predikerte priser undersøkt grafisk.
+
+Denne fremgangsmåten gir grunnlag for å vurdere både hvilke variabler som har statistiske sammenhenger med strømprisen, og hvor godt modellene predikerer priser i testperioden. Resultatene må tolkes i lys av modellspesifikasjonene, tilgjengeligheten av data og at viktige faktorer som kan påvirke strømprisen, ikke nødvendigvis er inkludert.
