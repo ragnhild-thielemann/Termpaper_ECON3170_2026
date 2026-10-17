@@ -6,19 +6,117 @@ author:
 date: today
 date-format: D MMMM YYYY
 
-format: typst
+
 number-sections: true
 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
-citeproc: true
+format: typst
+fig-cap-location: bottom
+
 execute:
   echo: false
   warning: false
   message: false
+  cache: false
+  freeze: false
 ---
+
+## Motivasjon
+## Motivasjon
+
+Strømprissjokket i 2021–2022 aktualiserte spørsmålet om hva som driver strømprisene i Norge, og hvorfor prisutviklingen varierer mellom prisområdene. Som vist i @fig-strompriser er det betydelige forskjeller i både prisnivå og prisvariasjon mellom områdene. Dette gjør det relevant å undersøke om prisene i det europeiske kraftmarkedet kan bidra til å forklare utviklingen i Norge, og hvilken betydning prisområdenes tilknytning til det europeiske kontinentet har. 
+```{r}
+#| label: fig-strompriser
+#| fig-cap: "Utvikling i strømpriser i norske prisområder fra 2020 til 2026."
+#| height: 3
+#| length: 6
+
+
+library(tidyverse)
+library(scales)
+
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble5.rds")|>
+  dplyr::select(datetime, prisomrade, pris_norge)|>
+  mutate(datetime = as.Date(datetime))
+
+p1 <- tibble |>
+  ggplot(aes(x = datetime, y = pris_norge, color = prisomrade)) + 
+  geom_line(alpha = 0.5) + 
+  labs(
+    title = "Strompriser i norske prisomrader",
+    
+    x = "Tidspunkt",
+    y = "Strompris (ore/kWh)",
+    color = "Prisomrade")+
+  
+ 
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y" ) + 
+  scale_y_continuous(
+    labels = label_number(
+      big.mark = " ",
+      decimal.mark = ","
+    )) + 
+  theme(
+    plot.title = element_text(size = 25),
+    
+    axis.text.y = element_text(size = 12),
+    axis.title.y = element_text(size = 14),
+    axis.title.x = element_text(angle = 45,hjust = 1)) +
+  theme_bw()
+
+p1
+
+```
+
+Samtidig varierer kraftproduksjonen mellom prisområdene, både når det gjelder produksjonskilder og muligheten til å regulere produksjonen. Som vist i @fig-kraftprodukjson utgjør vannkraft en betydelig del av kraftproduksjonen i alle prisområdene. Vannkraft med magasiner skiller seg fra mange andre fornybare energikilder ved at produksjonen kan reguleres ved å styre hvor mye vann som slippes gjennom turbinene. 
+
+Dette gjør det relevant å undersøke om magasinfylling og hydrologiske forhold, som nedbør og tilsig, henger sammen med variasjoner i kraftproduksjon og strømpriser. I tillegg undersøkes strømforbruket, ettersom etterspørselen etter kraft også kan påvirke prisdannelsen.
+
+Prosjektet har en utforskende datavitenskapelig tilnærming, der jeg undersøker mulige sammenhenger gjennom innsamling, bearbeiding og statistisk analyse av data. Flere hypoteser knyttet til kraftproduksjon, strømpriser, forbruk og hydrologiske forhold er undersøkt. Underveis i arbeidet utelates imidlertid enkelte forklaringsvariabler for strømprisen, grunnet støy, dårlig datakvalitet og utfordringer med å sammenstille data fra andre kilder. 
+
+
+
+
+```{r}
+#| label: fig-kraftprodukjson
+#| fig-cap: "Sammensetning av kraftprosuksjonen i ulike prisområder"
+
+library(tidyverse)
+library(janitor)
+library(dtplyr)
+
+
+tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble5.rds")|>
+  lazy_dt()|>
+  dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
+  pivot_longer(-c(datetime,prisomrade), 
+                                                                    names_prefix = "produksjon_", 
+                                                                    names_to = "produksjonskilde",
+                                                                    values_to = "produksjon")|>
+  #aggregerer på dagsnivå, slik at plottet blir letter å gjennomføre
+  mutate(datetime = as.Date(datetime))|>
+  summarise(produksjon = mean(produksjon,na.rm = TRUE),.by = c(datetime,prisomrade,produksjonskilde))|>
+  as_tibble()
+
+
+
+soylediagram <- tibble|>
+  ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
+  geom_col(position = "dodge") + 
+  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW)", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
+  theme_bw() + 
+   theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+soylediagram
+
+```
 
 
 ## Datainnsamlingen
+
+@fig-strompriser
 
 Datainnsamlignen har vært en stor del av prosjektet, da jeg har hentet data fra fire ulike API-er, levert i ulikt formater. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut. 
 
@@ -100,48 +198,8 @@ Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge o
 
 
 
-## Overblikk over kraftproduksjon i Norge
-
-For å gi et overordnet bilde av den norske kraftproduksjonen viser figuren gjennomsnittlig produksjon per time (MW), fordelt på produksjonskilder og prisområder i perioden 2020–2026. Figuren viser at vannkraft med magasin utgjør en betydelig del av produksjonen i samtlige prisområder. Samtidig fremgår det geografiske forskjeller i produksjonsmiksen. NO1 har et relativt stort bidrag fra uregulert elvekraft, mens vindkraft på land står for en større andel av produksjonen i NO2 og NO3. Samlet sett illustrerer figuren at norsk kraftproduksjon i hovedsak er basert på vannkraft, hvorav en betydelig del kan reguleres gjennom magasinering.
-```{r}
-
-library(tidyverse)
-library(janitor)
-library(dtplyr)
-
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble1.rds")
-
-
-
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/total_tibble2.rds")|>
-  lazy_dt()|>
-  dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
-  pivot_longer(-c(datetime,prisomrade), 
-                                                                    names_prefix = "produksjon_", 
-                                                                    names_to = "produksjonskilde",
-                                                                    values_to = "produksjon")|>
-  #aggregerer på dagsnivå, slik at plottet blir letter å gjennomføre
-  mutate(datetime = as.Date(datetime))|>
-  summarise(produksjon = mean(produksjon,na.rm = TRUE),.by = c(datetime,prisomrade,produksjonskilde))|>
-  as_tibble()
-
-
-
-soylediagram <- tibble|>
-  ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
-  geom_col(position = "dodge") + 
-  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW)", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
-  theme_bw() + 
-   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-soylediagram
-
-```
-
 ## Støy i hydrologiske forhold
-Det ble forsøkt å predikere magasinfyllingen ved hjelp av nedbør, aggregert nedbør og tilsig. Analysene viste imidlertid betydelige utfordringer knyttet til støy og store forskjeller i størrelsesorden mellom observasjonene. Enkelte målestasjoner har svært høye vannføringsverdier, som dominerer variasjonen i datasettet og gjør det vanskelig å identifisere tydelige sammenhenger. Et sammendrag av tilsigdataene er vedlagt for å illustrere disse utfordringene. På bakgrunn av dette ble de hydrologiske variablene utelatt fra det videre arbeidet.
+Det ble forsøkt å predikere magasinfyllingen ved hjelp av nedbør, aggregert nedbør og tilsig fra ulike målestasjoner. Tilsigsdataene viste store forskjeller i målt vannføring mellom stasjonene. Enkelte stasjoner hadde betydelig høyere verdier enn andre og dominerte dermed variasjonen i datasettet. Samtidig var det vanskelig å følge utviklingen i vannføringen over tid og identifisere tydelige sammenhenger mellom tilsig og magasinfylling. Dette gjorde det utfordrende å aggregere målingene til representative verdier for de ulike prisområdene og bruke dem som forklaringsvariabler i prediksjonsmodellen. Et sammendrag av tilsigdataene er vedlagt for å illustrere variasjonen mellom målestasjonene. På bakgrunn av disse utfordringene ble de hydrologiske variablene utelatt fra de videre analysene.
 
 ```{r}
 
@@ -187,4 +245,6 @@ tilsig_summary<- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_
 summary(tilsig_summary$vannforing)
 
 ```
+
+
 

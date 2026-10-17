@@ -18,7 +18,6 @@ delt_elv <- initial_split(
   prop = 0.8,
   strata = prisomrade
 )
-View(total_tibble)
 trening_elv <- training(delt_elv)
 test_elv <- testing(delt_elv)
 colnames(delt_elv)
@@ -108,12 +107,12 @@ for (dager in antall_dager) {
   rec_elv <- recipe(
     
     #gjør antall dager som forkaringsvariablen tilhørende akkumulert nedbør
-    reformulate(c(dager, "faktisk_forbruk","pris"), response = "produksjon"),
+    reformulate(c(dager, "forbruk","pris"), response = "produksjon"),
     data = trening_elv
   )
   
   rec_magasin <- recipe(
-    reformulate(c(dager, "faktisk_forbruk","pris"), response = "produksjon"),
+    reformulate(c(dager, "forbruk","pris"), response = "produksjon"),
     data = trening_magasin
   )
   
@@ -150,7 +149,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for elvekraft
   resultat_elv <- tidy(extract_fit_engine(fit_elv)) |>
-    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
+    filter(term %in% c(dager, "pris","forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Elv"
@@ -158,7 +157,7 @@ for (dager in antall_dager) {
   
   # Hent koeffisienter for magasinkraft
   resultat_magasin <- tidy(extract_fit_engine(fit_magasin)) |>
-    filter(term %in% c(dager, "pris","faktisk_forbruk")) |>
+    filter(term %in% c(dager, "pris","forbruk")) |>
     mutate(
       dager = dager,
       produksjonstype = "Magasin"
@@ -194,7 +193,7 @@ resultater <- resultater |>
     variabel = case_when(
       str_starts(term, "nedbor") ~ "Nedbor",
       term == "pris" ~ "Pris",
-      term == "faktisk_forbruk" ~ "Forbruk"
+      term == "forbruk" ~ "Forbruk"
     ),
     
     dager = case_when(
@@ -215,7 +214,7 @@ resultater <- resultater |>
 
 # Plotter resulatet
 
-p1<- ggplot(
+svar <- ggplot(
   resultater,
   aes(
     x = dager,
@@ -257,8 +256,6 @@ p1<- ggplot(
   
   theme_minimal()
 
-ggsave("Plott/lm_model.png",p1)
-
 
 
 
@@ -287,3 +284,4 @@ p2 <- ggplot(
   theme_minimal()
 
 ggsave("Plott/R_2.png",p2)
+

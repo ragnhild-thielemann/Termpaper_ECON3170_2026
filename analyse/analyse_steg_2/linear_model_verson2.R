@@ -211,7 +211,7 @@ resultater <- resultater |>
   ) |>
   as_tibble()
 
-
+lm_model
 
 lm_model <- ggplot(
   resultater,

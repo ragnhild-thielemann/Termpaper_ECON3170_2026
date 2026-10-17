@@ -157,7 +157,7 @@ pris_europa <- strompris_europa_time |>
     .groups = "drop"
   ) |>
   mutate(
-    times_pris = if_else(is.nan(times_pris), NA_real_, times_pris)
+    europeisk_pris = if_else(is.nan(times_pris), NA_real_, times_pris)
   )
 
 # --------------------------------------------------
@@ -213,6 +213,6 @@ tibble1 |>
 # 10. Lagre
 # --------------------------------------------------
 
-saveRDS(tibble1, "Datasett/tibble2.rds")
+saveRDS(tibble1, "Datasett/tibble5.rds")
 
 View(tibble1)
