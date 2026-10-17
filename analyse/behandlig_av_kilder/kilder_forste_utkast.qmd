@@ -21,7 +21,7 @@ execute:
   freeze: false
 ---
 
-## Motivasjon
+
 ## Motivasjon
 
 Strømprissjokket i 2021–2022 aktualiserte spørsmålet om hva som driver strømprisene i Norge, og hvorfor prisutviklingen varierer mellom prisområdene. Som vist i @fig-strompriser er det betydelige forskjeller i både prisnivå og prisvariasjon mellom områdene. Dette gjør det relevant å undersøke om prisene i det europeiske kraftmarkedet kan bidra til å forklare utviklingen i Norge, og hvilken betydning prisområdenes tilknytning til det europeiske kontinentet har. 
@@ -194,7 +194,6 @@ Dataene fra NVE er tilgjengelige på dags- eller ukesformat, noe som gjør det m
 ### Behandling av dataene
 
 Prosjektet benytter data fra flere kilder med ulik tidsoppløsning. Mens Norge og Tyskland har prisobservasjoner hvert 15. minutt, har Danmark og Nederland timesobservasjoner. For å sikre et sammenlignbart datagrunnlag aggregerer vi derfor prisene til timesnivå. Dette gir et mer konsistent datagrunnlag for analysen, men innebærer at variasjoner i prisene innad i hver time går tapt.Da vi ønsker dataen på samme format, aggregerer vi også strømdataen for Norge til timesnivå. I scriptet "sette_sasammen_til_en_tibble* ^[sette_sammen_til_en_tibble] tar vi hensyn til dette. alle datasettene settes sammen til 
-
 
 
 
