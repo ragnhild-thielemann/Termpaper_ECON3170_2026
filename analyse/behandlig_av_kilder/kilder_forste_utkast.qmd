@@ -277,6 +277,39 @@ summary(tilsig_summary$vannforing)
 ### Databehandling og valg av forklaringsvariabler
 ## Metode: Databehandling og regresjonsanalyse
 
+#### Valg av  modell
+
+Kontinuerlige variabler kan modelleres med flere metoder, deriblant random forest, XGBoost, OLS og LASSO. Mens trebaserte modeller kan fange opp komplekse og ikke-lineære sammenhenger, gir lineær regresjon mer tolkbare koeffisienter. Målet med prosjektet er å identifisere overordenede sammenhenger mellom strømpriser og murlige forklaringsvariabler, fremfor å maksimere predijsjonsnøyaktigheten til modellen, har vi valgt OLS som modell. Modellen gjør det mulig å undersøke hvordan hver variabel henger sammen med strømprisen, når de øvrige variablene holdes konstante. Den relativt lave kompleksiteten gjør modellen enkel å tolke, men begrenser samtidig evnen til å fange opp ikke-lineære sammenhenger og ekstreme prisbevegelser. 
+
+
+I dette prosjektet benyttes ordinær lineær regresjon (OLS), ettersom målet er å identifisere overordnede sammenhenger mellom strømpris og mulige forklaringsvariabler, fremfor å maksimere prediksjonsnøyaktigheten. Vi kontruerer dermed en linjær regresjonsmodell med normalfordelte feilledd på formen 
+
+
+For hvert prisområde $j$ og tidspunkt $t$ estimeres følgende lineære regresjonsmodell:
+
+$$
+P_{t,j} = \beta_{0,j}
++ \beta_{1,j} F_{t,j}
++ \beta_{2,j} M_{t,j}
++ \beta_{3,j} V_{t,j}
++ \varepsilon_{t,j},
+$$
+
+for prisområdene NO3, NO4 og NO5. For NO1 og NO2 inkluderes også europeisk strømpris som forklaringsvariabel:
+
+$$
+P_{t,j} = \beta_{0,j}
++ \beta_{1,j} F_{t,j}
++ \beta_{2,j} M_{t,j}
++ \beta_{3,j} V_{t,j}
++ \beta_{4,j} E_t
++ \varepsilon_{t,j}.
+$$
+
+Her betegner $P_{t,j}$ strømprisen i prisområde $j$ på tidspunkt $t$, $F_{t,j}$ strømforbruket, $M_{t,j}$ produksjonen fra magasinkraftverk, $V_{t,j}$ øvrige produksjonsvariabler og $E_t$ europeisk strømpris. Konstantleddet betegnes med $\beta_{0,j}$, mens $\hat{\beta}_{1,j}  \ldots, \hat{\beta}_{4,j}$ er regresjonskoeffisientene. Det normalfordelte feilleddet betegnes med $\varepsilon_{t,j}$.
+
+
+
 ### Databehandling og valg av forklaringsvariabler ^[Se *analyse/analyse_steg4/ferdig_til_tibble.R* ]
 
 For å gjennomføre analysen ønsker vi å sammenstille alle datakildene i én felles tibble. Siden dataene har ulik tidsoppløsning, må de først bearbeides slik at de kan kobles sammen på en konsistent måte. Strømpriser, forbruk og kraftproduksjon aggregeres til én observasjon per time og prisområde. Dette innebærer at dersom det finnes flere målinger innenfor samme time, beregnes gjennomsnittet. Tilsig og magasinfylling behandles separat og aggregeres til én observasjon per dag og prisområde. Deretter sammenstilles datasettene ved hjelp av left_join(), med norske strømpriser som utgangspunkt.
@@ -285,7 +318,7 @@ For å gjennomføre analysen ønsker vi å sammenstille alle datakildene i én f
 
 #### Manglende observasjoner og klargjøring av data ^[Se *analyse/analyse_steg4/analysen_vi_skal_bruke.R*]
 
-Før modellene estimeres, fjernes observasjoner med manglende eller ugyldige verdier separat for hvert prisområde. Dette er nødvendig fordi regresjonsmodellene krever gyldige verdier for både den avhengige variabelen og samtlige forklaringsvariabler. Som vist i @tbl-observasjoner, beholdes omtrent 99 % av observasjonene i samtlige prisområder etter filtreringen.
+Før vi trener modellen på datasettet, fjernes observasjoner med manglende eller ugyldige verdier separat for hvert prisområde. Dette er nødvendig fordi regresjonsmodellene krever gyldige verdier for både den avhengige variabelen og samtlige forklaringsvariabler. Som vist i @tbl-observasjoner, beholdes omtrent 99 % av observasjonene i samtlige prisområder etter filtreringen.
 
 Deretter deles dataene kronologisk i et treningssett med 80 prosent av observasjonene og et testsett med de resterende 20 prosentene ved hjelp av initial_time_split(). Som vist i @tbl-observasjoner, utgjør treningssettet 80 prosent av observasjonene, mens testsettet utgjør de resterende 20 prosentene.
 
@@ -349,7 +382,7 @@ Modellenes prediksjonsevne ble evaluert ved hjelp av tre mål: RMSE, MAE og \(R^
 - **MAE (mean absolute error)** måler den gjennomsnittlige absolutte forskjellen mellom observert og predikert strømpris. En lavere verdi indikerer at prediksjonene i gjennomsnitt ligger nærmere de observerte prisene.
 - **\(R^2\)** beregnet på testsettet viser hvor godt prediksjonene samsvarer med variasjonen i de observerte prisene, sammenlignet med et referansenivå basert på gjennomsnittet i testperioden. En høyere verdi indikerer bedre samsvar. Verdien kan også være negativ dersom modellen predikerer dårligere enn dette referansenivået.
 
-*Sett inn Tabell Y: RMSE, MAE og \(R^2\) for testsettet i hvert prisområde.*
+
 
 Tabellen gir grunnlag for å sammenligne prediksjonsevnen mellom prisområdene. Sammenligningen må imidlertid tolkes med forsiktighet, ettersom prisområdene kan ha ulik prisvolatilitet og forskjellige markedsforhold. Det er derfor nyttig å vurdere både RMSE og MAE sammen med \(R^2\), fremfor å basere vurderingen på ett enkelt mål.
 
