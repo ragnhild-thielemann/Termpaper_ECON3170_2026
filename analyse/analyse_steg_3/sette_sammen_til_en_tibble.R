@@ -19,6 +19,7 @@ total_produksjon <- readRDS("Datasett/total_produksjon.rds")|>
   arrange(datetime,prisomrade)|>
   as_tibble()
 
+View(total_produksjon)
 strompris_norge_time <- readRDS(
   "Datasett/strompris_norge_long_time.rds"
 )

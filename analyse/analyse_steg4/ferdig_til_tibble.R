@@ -14,6 +14,7 @@ forventing_mot_forbruk <- readRDS("Datasett/forventing_mot_forbruk_norge_2020.rd
 tilsig <- readRDS("Datasett/tilsig_total_denviskalbruke.rds")
 strompris_europa_time <- readRDS("Datasett/strompris_long_europa_time.rds")
 strompris_gb <- readRDS("Datasett/strompris_gb_time.rds")
+
 # --------------------------------------------------
 # 2. Norske strømpriser
 # Én rad per time og prisområde
@@ -57,7 +58,8 @@ forbruk_time <- forventing_mot_forbruk |>
 
 # --------------------------------------------------
 # 4. Produksjon
-# Beholder de tre viktigste produksjonskildene
+# Beholder de tre viktigste produksjonskildene,
+# Resten lagres som "annet"
 # --------------------------------------------------
 
 produksjon_time <- total_produksjon |>
@@ -215,12 +217,9 @@ tibble1 <- pris_norge |>
   
   arrange(prisomrade, datetime)
 
-# --------------------------------------------------
-# 9. Kontroller resultatet
-# --------------------------------------------------
 
 # --------------------------------------------------
-# 9. Undersok manglende observasjoner
+# 9. Undersoke manglende observasjoner
 # --------------------------------------------------
 
 variabler_sjekk <- c(
@@ -344,13 +343,9 @@ observasjoner_modell <- tibble1 |>
 print(observasjoner_modell, n = Inf)
 
 # --------------------------------------------------
-# 12. Lagre datasett og mangelanalyser
+# 12. Lagre det samlede datasettet
 # --------------------------------------------------
 
 saveRDS(tibble1, "Datasett/tibble7.rds")
 
-View(tibble1)
 
-View(mangler_per_omrade)
-View(mangler_totalt)
-View(observasjoner_modell)
