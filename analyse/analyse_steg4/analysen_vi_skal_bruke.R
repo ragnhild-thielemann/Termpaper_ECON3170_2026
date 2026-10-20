@@ -76,6 +76,10 @@ observasjoner_liste <- list()
 # 5. Estimer en modell for hvert prisomrade
 # =========================================================
 
+#Liste for å estimere delingsdatoer
+delingsdatoer <- list()
+
+
 for (omrade in c("NO1", "NO2", "NO3", "NO4", "NO5")) {
   
   message("Tilpasser modell for ", omrade)
@@ -165,7 +169,10 @@ for (omrade in c("NO1", "NO2", "NO3", "NO4", "NO5")) {
   
   trening <- training(delt)
   test <- testing(delt)
+  delingsdatoer[[omrade]] <- min(test$datetime)
   
+  
+  #Dersom det er for få verdier i test-resulatet vårt 
   if (nrow(test) < 2) {
     warning("For fa testobservasjoner for ", omrade)
     next
@@ -233,17 +240,18 @@ for (omrade in c("NO1", "NO2", "NO3", "NO4", "NO5")) {
   # 9. Tilpass lineaer regresjon
   # -------------------------------------------------------
   
+  
   formel <- reformulate(
     forklaringsvariabler,
     response = "pris_norge"
   )
   
-  arbeidsflyt <- workflow() |>
+  wf <- workflow() |>
     add_model(modell) |>
     add_formula(formel)
   
   tilpasset <- fit(
-    arbeidsflyt,
+    wf,
     data = trening_std
   )
   
@@ -298,11 +306,8 @@ for (omrade in c("NO1", "NO2", "NO3", "NO4", "NO5")) {
     prisomrade = omrade,
     antall_trening = nrow(trening),
     antall_testobservasjoner = nrow(test),
-    RMSE = sqrt(mean(
+    MSE = mean(
       (pred$observert_pris - pred$predikert_pris)^2
-    )),
-    MAE = mean(
-      abs(pred$observert_pris - pred$predikert_pris)
     ),
     R2 = R2_test
   )
@@ -330,6 +335,11 @@ print(koeffisienter)
 # Antall observasjoner i hvert prisomrade
 print(observasjoner)
 
+oversikt_metrikker <- test_resultater |>
+  dplyr::select(prisomrade, MSE, R2) |>
+  arrange(prisomrade)
+
+print(oversikt_metrikker)
 
 # =========================================================
 # 13. Plott standardiserte regresjonskoeffisienter
@@ -422,7 +432,7 @@ plot_NO3 <- prediksjoner |>
   ) +
   theme_bw()
 
-print(plot_NO3)
+
 
 
 # =========================================================
@@ -460,30 +470,47 @@ print(plot_alle)
 # =========================================================
 # 16. Lagre resultater
 # =========================================================
+mappe <- "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett"
 
 saveRDS(
   koeffisienter,
-  "Datasett/koeffisienter_lm.rds"
+  file.path(mappe, "koeffisienter_lm.rds")
 )
 
 saveRDS(
   test_resultater,
-  "Datasett/test_resultater_lm.rds"
+  file.path(mappe, "test_resultater_lm.rds")
 )
 
 saveRDS(
   prediksjoner,
-  "Datasett/prediksjoner_lm.rds"
+  file.path(mappe, "prediksjoner_lm.rds")
 )
 
 saveRDS(
   observasjoner,
-  "Datasett/observasjoner_lm.rds"
+  file.path(mappe, "observasjoner_lm.rds")
+)
+saveRDS(
+  oversikt_metrikker,
+  file.path(mappe, "oversikt_metrikker.rds")
 )
 
-observasjoner_tabell <- bind_rows(observasjoner_liste)
+# =========================================================
+# 17. Finner gjennomsittlig delingsdato
+# =========================================================
+# Hent ut delingsdatoene fra listen
+# Hent ut datoene fra listen
 
-print(observasjoner)
+datoer <- as.POSIXct(
+  unlist(delingsdatoer, use.names = FALSE),
+  tz = "UTC"
+)
 
-
+# Beregn gjennomsnittlig delingstidspunkt
+gjennomsnittlig_dato <- as.POSIXct(
+  mean(as.numeric(datoer)),
+  origin = "1970-01-01",
+  tz = "UTC"
+)
 
