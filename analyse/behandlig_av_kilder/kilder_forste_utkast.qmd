@@ -75,25 +75,24 @@ Strømprissjokket i 2021–2022 satte derfor strømprisene på den politiske dag
 #| label: tbl-prisomrader
 #| echo: false
 #| input: false
-
 library(tibble)
 library(flextable)
 
 prisomrader <- tibble(
   Prisomrade = c("NO1", "NO2", "NO3", "NO4", "NO5"),
   Omrade = c(
-    "Østlandet, inkludert Oslo-området",
+    "Ostlandet",
     "Sorvestlandet",
-    "Midt-Norge, innkludert Trondheim",
+    "Midt-Norge",
     "Nord-Norge",
-    "Vestlandet, innkludert Bergen"
-  ), 
+    "Vestlandet"
+  ),
   Kjennetegn = c(
-    "Hoyt forbruk og tett befolkning. Lite egen strøm produksjon",
-    "Mye vannkraft og  overføringskabler forbindelser til utlandet (Danmark, Storbritannia og Tyskland)",
-    "Mye vannkraft, men begrenset overforingskapasitet mot sor. Relativt høyt forbruk, grunnet mange inbyggere og mye industri",
-    "Mye vannkraft og relativt lavt forbruk, grunnet få mennesker. Noe kraftkrevende industri etablerer seg, grunnet de lave prisene",
-    "Vestland og omradet rundt Bergen. Mye vannkraft og store variasjoner i produksjon."
+    "Hoyt forbruk og stor befolkning.",
+    "Mye vannkraft og flere utenlandsforbindelser.",
+    "Mye vannkraft og begrenset overforingskapasitet sorover.",
+    "Mye vannkraft og relativt lavt forbruk.",
+    "Mye vannkraft og varierende produksjon."
   )
 )
 
@@ -102,15 +101,15 @@ prisomrader |>
   set_header_labels(
     Prisomrade = "Prisomrade",
     Omrade = "Geografisk omrade",
-    Kjennetegn = "Kjennetegn"
+    Kjennetegn = "Sentrale kjennetegn"
   ) |>
   width(j = 1, width = 1) |>
-  width(j = 2, width = 1.8) |>
-  width(j = 3, width = 4) |>
+  width(j = 2, width = 1.5) |>
+  width(j = 3, width = 3.5) |>
   theme_booktabs() |>
   align(align = "left", part = "all") |>
-  valign(valign = "top", part = "all")
-
+  valign(valign = "top", part = "all") |>
+  autofit()
 
 ```
 
@@ -374,27 +373,27 @@ tabell |>
 ```
 Dataene deles kronologisk ved hjelp av `initial_time_split()`, der de første 80 prosentene av observasjonene utgjør treningssettet, mens de resterende 20 prosentene utgjør testsettet, som vist i @tbl-observasjoner.
 
-En kronologisk inndeling er hensiktsmessig for tidsseriedata, ettersom modellene estimeres på historiske observasjoner og evalueres på senere data. Dermed unngår man at fremtidige observasjoner brukes til å predikere fortidige verdier. Ettersom modellen estimeres separat for de fem prisområdene, kan delingsdatoen variere noe mellom områdene som følge av ulik datadekning og filtrering av observasjoner. For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.
+For tidsseriedata er en kronologisk splitting hensiktsmessig, da modellene estimeres på historiske observasjoner og evalueres på senere data. Dermed unngår man at fremtidige observasjoner brukes til å predikere fortidige verdier. Ettersom modellene for de ulike prissonene estimeres separat, varierer delingsdatoen noe, som følge av ulik datadekning og filtrering av observasjoner. 
+For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.
 ```{r}
 
+min_date <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/min_date1.rds")
 
-
-fil <- "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg4/analysen_vi_skal_bruke.R"
-
-source(fil)
-
-min <- as.Date(test$datetime)
-
-sprintf("Delingsdatoen er %s",format(gjennomsnittlig_dato, "%d.%m.%Y"))
+sprintf("Splitten skjer %s",min_date)
 
 
 ```
 
+Da forklaringsvariablene har ulik størrelsesorden, standardiseres de for å gjøre dem lettere å sammenligne. Dette gjøres ved hjelp av funksjonen standardiser(), som sentrerer hver variabel rundt gjennomsnittet og skalerer den med standardavviket. Variablene får dermed gjennomsnitt lik null og standardavvik lik én, slik at de uttrykkes på samme skala uavhengig av opprinnelig måleenhet.
+
+```{r}
+linjer <- readLines("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg4/analysen_vi_skal_bruke.R")
+
+cat(linjer[223:228],sep = "\n")
 
 
-Før modelltilpasningen standardiseres variablene ved hjelp av gjennomsnitt og standardavvik beregnet fra treningssettet, slik at de uttrykkes på samme skala og regresjonskoeffisientene blir lettere å sammenligne. Dette gjør det mulig å estimere standardiserte regresjonskoeffisienter, som viser hvordan én standardavviks økning i en forklaringsvariabel henger sammen med endringen i strømprisen, målt i standardavvik, når de øvrige variablene holdes konstante.
-
-Modelleringen gjennomføres i tidymodels, der en workflow kombinerer regresjonsmodellen med en formel som angir hvilke forklaringsvariabler som skal brukes. Det estimeres separate lineære regresjonsmodeller ved hjelp av minste kvadraters metode (OLS) for hvert av de fem prisområdene. Modellene tilpasses i en løkke, siden NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3, NO4 og NO5 ikke gjør det.
+```
+Modelleringen gjennomføres i tidymodels, der en workflow kombinerer regresjonsmodellen med en formel som spesifiserer hvilke forklaringsvariabler som inngår. Det estimeres separate lineære regresjonsmodeller med minste kvadraters metode (OLS) for hvert av de fem norske prisområdene. Modellene tilpasses i en løkke, der det tas hensyn til at NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens denne variabelen utelates for NO3, NO4 og NO5.
 
 De tilpassede modellene brukes til å predikere strømprisene i testsettet. Prediksjonene transformeres deretter fra standardisert format tilbake til den opprinnelige prisskalaen, slik at de kan sammenlignes med de observerte strømprisene. Modellens prediksjonsevne evalueres ved hjelp av MSE og $R^2$, basert på prisobservasjonene i testperioden, som for de ulike prisområdene strekker seg fra mai 2025 og frem til i dag.
 
@@ -416,7 +415,19 @@ knitr::kable(
 
 ```
 
-Tabellen gir grunnlag for å sammenligne prediksjonsevnen mellom prisområdene. Sammenligningen må imidlertid tolkes med forsiktighet, ettersom prisområdene kan ha ulik prisvolatilitet og forskjellige markedsforhold. Det er derfor nyttig å vurdere både RMSE og MAE sammen med \(R^2\), fremfor å basere vurderingen på ett enkelt mål.
+Som vist i @tbl-metrikker har NO1 og NO2 $R^2$-verdier på henholdsvis 0,52 og 0,60, noe som indikerer at modellene forklarer en betydelig del av variasjonen i strømprisene. Dette gjenspeiles i @fig-predikert, der de predikerte prisene i stor grad følger de observerte prisene i disse områdene. For NO4 og NO5 predikerer modellene derimot priser nær gjennomsnittet og fanger i liten grad opp svingningene i markedet. NO3 har en negativ $R^2$-verdi, som innebærer at modellen presterer dårligere enn en modell som alltid predikerer gjennomsnittsprisen i testperioden. Samlet tyder resultatene på at modellene har størst prediksjonsevne for NO1 og NO2, der europeiske strømpriser er inkludert som forklaringsvariabler. 
+
+
+```{r}
+#| label: fig-predikert
+#| fig-cap: "Predikerte verdier mot observerte verdier"
+
+alle <- readRDS(
+  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/plott_all.rds"
+) 
+alle
+
+```
 
 ### Regresjonskoeffisienter og sammenhenger
 

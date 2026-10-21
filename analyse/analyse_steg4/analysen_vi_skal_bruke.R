@@ -223,14 +223,14 @@ for (omrade in c("NO1", "NO2", "NO3", "NO4", "NO5")) {
   standardiser <- function(data) {
     data |>
       mutate(
-        across(
-          all_of(variabler),
-          ~ (
-            .x - gjennomsnitt[[cur_column()]]
-          ) / standardavvik[[cur_column()]]
-        )
-      )
-  }
+        across(all_of(variabler),~ 
+                 (.x - gjennomsnitt[[cur_column()]])/standardavvik[[cur_column()]]
+               ))}
+  
+    
+          
+       
+  
   
   trening_std <- standardiser(trening)
   test_std <- standardiser(test)
@@ -433,8 +433,6 @@ plot_NO3 <- prediksjoner |>
   theme_bw()
 
 
-
-
 # =========================================================
 # 15. Plott observert og predikert pris for alle omrader
 # =========================================================
@@ -453,7 +451,7 @@ plot_alle <- prediksjoner |>
     )
   ) |>
   ggplot(aes(x = datetime, y = pris, colour = serie)) +
-  geom_line(linewidth = 0.45) +
+  geom_line(linewidth = 0.3,alpha = 0.6) +
   facet_wrap(~ prisomrade, scales = "free_y") +
   labs(
     title = "Observert og predikert norsk strompris",
@@ -464,7 +462,7 @@ plot_alle <- prediksjoner |>
   ) +
   theme_bw()
 
-print(plot_alle)
+
 
 
 # =========================================================
@@ -496,6 +494,12 @@ saveRDS(
   file.path(mappe, "oversikt_metrikker.rds")
 )
 
+saveRDS(
+  plot_alle,
+  file.path(mappe, "plott_all.rds")
+)
+
+
 # =========================================================
 # 17. Finner gjennomsittlig delingsdato
 # =========================================================
@@ -512,5 +516,12 @@ gjennomsnittlig_dato <- as.POSIXct(
   mean(as.numeric(datoer)),
   origin = "1970-01-01",
   tz = "UTC"
+)
+min_date <- as.Date(gjennomsnittlig_dato)
+
+
+saveRDS(
+  min_date,
+  file.path(mappe, "min_date1.rds")
 )
 
