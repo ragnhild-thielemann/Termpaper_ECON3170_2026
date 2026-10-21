@@ -449,6 +449,17 @@ plot
 
 Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3–NO5 ikke gjør det. Prisene i NO3 begynte dessuten å stige etter at modellen var tilpasset, noe som kan begrense modellens evne til å predikere den videre prisutviklingen. Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonometrisk analyse av de underliggende økonomiske mekanismene. Koeffisientene brukes derfor til å undersøke statistiske sammenhenger og mønstre i dataene, og kan ikke uten videre tolkes som kausale effekter.
 
+
 ## Konklusjon
+
+## Bruk av AI
+
+Jeg har brukt AI som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE API-ene har omfattende dokumentasjon og komplekse strukturer, og dette er svært tid- og resusskrevende å  å finne  riktig syntaks og utforme dataforespørsler. AI har derfor vært nyttig for å forstå API-ene, utforme forespørsler og feilsøke kode.
+
+Jeg har ikke brukt AI-agenter til verken API-kallene eller utforming av analysen. All kode er gjennomgått av meg, og jeg har selv arbeidet med optimalisering, debugging og strukturering av koden. Jeg har dermed hatt kontroll over både
+datainnhentingen og den videre analysen, og kan derfor forstå og forklare
+all kode i prosjektet.
+
+AI har dermed vært et hjelpemiddel for å effektivisere det tekniske arbeidet, ikke en erstatning for min egen faglige vurdering. 
 
 ## Kilder
