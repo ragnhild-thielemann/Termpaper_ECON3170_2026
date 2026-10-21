@@ -94,7 +94,7 @@ total_tibble <- total_produksjon_time |>
   ) |>
   as_tibble()
 
-
+total_tibble
 
 
 vannreservoar <- vannreservoar |>

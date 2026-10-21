@@ -431,27 +431,24 @@ alle
 
 ### Regresjonskoeffisienter og sammenhenger
 
-For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med strømprisen, ble de standardiserte regresjonskoeffisientene hentet ut fra hver modell. Koeffisientene viser hvordan den predikerte strømprisen endres, målt i standardavvik, når en forklaringsvariabel øker med ett standardavvik, mens de øvrige variablene holdes konstante.
 
-**Figur X** viser de estimerte standardiserte regresjonskoeffisientene for de ulike prisområdene. Figuren inkluderer også tilnærmede 95 prosent konfidensintervaller. Koeffisienter over null indikerer en positiv betinget sammenheng, mens koeffisienter under null indikerer en negativ betinget sammenheng. Konfidensintervallene gir informasjon om usikkerheten i koeffisientestimatene.
+For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med strømprisen, henter vi ut de standardiserte regresjonskoeffisientene fra hver modell. Koeffisientene angir hvor mange standardavvik den predikerte strømprisen endres når en forklaringsvariabel øker med ett standardavvik, gitt at de øvrige variablene holdes konstante.
 
-I prissone 3 begynte prisene å stige etter modellen var ferdig
-*Sett inn Figur X: Standardiserte regresjonskoeffisienter med tilnærmede 95 prosent konfidensintervaller.*
+```{r}
+#| label: fig-plott
+#| fig-cap: "Plott av standardiserte regresjonskoefesienter"
 
-Figuren kan brukes til å undersøke om sammenhengene varierer mellom prisområdene. Siden NO1 og NO2 inkluderer europeisk strømpris, mens NO3–NO5 ikke gjør det, må sammenligninger av koeffisientene ta hensyn til at modellspesifikasjonene er forskjellige. Koeffisientene viser statistiske sammenhenger gitt variablene i modellen, og kan ikke uten videre tolkes som kausale effekter.
+plot <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/koeffisient_plot.rds"
+) 
+plot
 
-### Observert og predikert strømpris
 
-For å vurdere hvordan modellene følger den faktiske prisutviklingen, ble predikerte strømpriser sammenlignet med observerte priser i testperioden. Figur Y viser denne sammenligningen for NO3, mens Figur Z viser resultatene for alle fem prisområdene.
+```
 
-*Sett inn Figur Y: Observert og predikert strømpris i NO3.*
+@fig-plot viser de estimerte koeffisientene med tilnærmede 95 prosent konfidensintervaller. Den europeiske strømprisen har en standardisert koeffisient på omtrent 0,8 i NO1 og NO2, noe som indikerer en sterk positiv sammenheng med norske strømpriser i disse områdene. Forbruk har gjennomgående positive, men svakere koeffisienter i intervallet $[0,0.25]$  med de laveste verdiene i NO4 og NO5. Magasinfylling har en svakt negativ sammenheng med strømprisen, mens magasinkraftproduksjon har en positiv sammenheng i NO3 og NO4, en tilnærmet null sammenheng i NO5 og en negativ sammenheng i NO1 og NO2.
 
-*Sett inn Figur Z: Observert og predikert strømpris for alle prisområdene.*
+Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3–NO5 ikke gjør det. Prisene i NO3 begynte dessuten å stige etter at modellen var tilpasset, noe som kan begrense modellens evne til å predikere den videre prisutviklingen. Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonometrisk analyse av de underliggende økonomiske mekanismene. Koeffisientene brukes derfor til å undersøke statistiske sammenhenger og mønstre i dataene, og kan ikke uten videre tolkes som kausale effekter.
 
-Disse figurene gjør det mulig å undersøke om modellene fanger opp den overordnede prisutviklingen, og om de klarer å følge perioder med store prisendringer. Avstanden mellom de observerte og predikerte kurvene illustrerer prediksjonsfeilene. Det bør særlig undersøkes om modellene systematisk undervurderer eller overvurderer høye pristopper, ettersom en lineær modell kan ha begrenset evne til å fange opp brå og ekstreme prisbevegelser.
+## Konklusjon
 
-### Oppsummering av fremgangsmåten
-
-Analysen følger dermed en trinnvis prosess der data fra flere kilder først ble sammenstilt og kontrollert, før forklaringsvariablene ble valgt og separate regresjonsmodeller ble estimert for hvert prisområde. Manglende observasjoner ble håndtert før dataene ble delt kronologisk i trenings- og testsett. Modellene ble estimert på treningsdataene, og prediksjonsevnen ble vurdert på senere observasjoner ved hjelp av RMSE, MAE og \(R^2\). Til slutt ble de standardiserte regresjonskoeffisientene og forholdet mellom observerte og predikerte priser undersøkt grafisk.
-
-Denne fremgangsmåten gir grunnlag for å vurdere både hvilke variabler som har statistiske sammenhenger med strømprisen, og hvor godt modellene predikerer priser i testperioden. Resultatene må tolkes i lys av modellspesifikasjonene, tilgjengeligheten av data og at viktige faktorer som kan påvirke strømprisen, ikke nødvendigvis er inkludert.
+## Kilder

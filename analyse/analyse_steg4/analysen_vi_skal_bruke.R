@@ -399,7 +399,7 @@ koeffisient_plot <- koeffisienter |>
     )
   )
 
-print(koeffisient_plot)
+
 
 
 # =========================================================
@@ -475,6 +475,9 @@ saveRDS(
   file.path(mappe, "koeffisienter_lm.rds")
 )
 
+saveRDS(koeffisient_plot,
+  file.path(mappe,"koeffisient_plot.rds")
+)
 saveRDS(
   test_resultater,
   file.path(mappe, "test_resultater_lm.rds")
