@@ -1,6 +1,6 @@
 ---
-title: "Første utkast for kildebeskrivelse"
-subtitle: ""
+title: ""
+subtitle: "Termpaper ECON3170"
 author:
   - name: kandidatnummer
 date: today
@@ -10,9 +10,11 @@ bibliography: referanser.bib
 number-sections: true
 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
-format: typst
 fig-cap-location: bottom
+abstract: |
+  I dette prosjektet har jeg innhentet og bearbeidet store datasett fra ENTSO-E og NVE, og utviklet en strukturert kodeflyt for å analysere strømpriser i norske prisområder. Ved hjelp av lineære regresjonsmodeller undersøker jeg hvilke variabler som bidrar til å forklare og predikere prisutviklingen. Modellene oppnår best prediksjonsevne i NO1 og NO2, med test-R² på henholdsvis 0,52 og 0,60, der europeiske strømpriser er sentrale forklaringsvariabler. I NO3 presterer modellen dårligere enn en enkel modell som predikerer gjennomsnittsprisen, blant annet fordi den ikke fanger opp den kraftige prisøkningen i testperioden. Prosjektet har gitt erfaring med API-er, effektiv databehandling, kodeorganisering og statistisk modellering.
 
+format: typst
 execute:
   echo: false
   warning: false
@@ -22,9 +24,9 @@ execute:
 ---
 
 
-## Motivasjon
+## Motivasjon for prosjektet
 
-Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt lave strømregninger, til tross for kalde vintre i dårlig isolerte hjem.
+Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt strømregninger, til tross for kalde vintre i dårlig isolerte hjem.
 
 ```{r}
 #| label: fig-strompriser
@@ -73,6 +75,7 @@ p1
 Strømprissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. Disse forskjellene reiser spørsmål om hvilke faktorer som kan forklare variasjonen i strømprisene mellom prisområdene og over tid. @tbl-prisomrader gir en rask oversikt over de ulike prisområdene, og hva som kjennetegner dem.
 ```{r}
 #| label: tbl-prisomrader
+#| tbl-cap: "Beskrivelse av de ulike prisområdene"
 #| echo: false
 #| input: false
 library(tibble)
@@ -103,9 +106,9 @@ prisomrader |>
     Omrade = "Geografisk omrade",
     Kjennetegn = "Sentrale kjennetegn"
   ) |>
-  width(j = 1, width = 1) |>
-  width(j = 2, width = 1.5) |>
-  width(j = 3, width = 3.5) |>
+  width(j = 1, width = 0.8) |>
+  width(j = 2, width = 1.3) |>
+  width(j = 3, width = 3.4) |>
   theme_booktabs() |>
   align(align = "left", part = "all") |>
   valign(valign = "top", part = "all") |>
@@ -224,12 +227,9 @@ Datasettene inneholder opptil 1,5 millioner datapunkter. For å effektivisere be
 
 Ettersom prosjektet har en utforskende tilnærming og undersøker et bredt utvalg av mulige forklaringsvariabler, ble også britisk strømpris, nedbør og tilsig vurdert inkludert i regresjonsmodellene. Britisk strømpris var imidlertid bare tilgjengelig for 2020. Inkludering av denne variabelen ville derfor ha redusert datagrunnlaget betydelig for NO3 (prissonen som har utenlandskabler til Storbritannia). 
 
-Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere data om hydrologiske forhold i analysen. Det viste seg imidlertid å være utfordrende å finne målestasjoner som var representative for de aktuelle vannmagasinene. I tillegg var det betydelig variasjon i målt vannføring mellom målestasjonene, og måledataene inneholdt mye støy. Dette skapte usikkerhet knyttet til både datakvaliteten og dataenes representativitet. Som vist i figur @fig-malestasjoner varierer målt vannføring betydelig mellom målestasjonene. På bakgrunn av disse utfordringene ble det vurdert som lite hensiktsmessig å inkludere de hydrologiske variablene i den videre analysen.
+Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å være utfordrende å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til magasinene på en hensiktsmessig måte. I tillegg var det betydelig variasjon i målt vannføring mellom målestasjonene. Som vist i figur @fig-malestasjoner varierer vannføringen på tvers av målestasjonene, mens figur @fig-summary illustrerer den store spredningen i de observerte verdiene. Variasjonen gjorde det vanskelig å skille mellom reelle hydrologiske forskjeller og støy i målingene, og dermed også å avgjøre hvordan dataene burde aggregeres for å gi et representativt mål på tilsiget i de ulike prisområdene. 
 
-
-
-
-
+I tillegg var det utfordrene å koble målestasjonene til de relevante vannmagasinene på en geografisk hensiktsmessig måte. Målestasjonenes geografiske plassering gjorde det vanskelig å avgjøre hvilke magasiner målingene kunne representere, og dermed hvor godt vannføringsdataene fanget opp tilsiget som påvirker kraftproduksjonen i de ulike prisområdene. På bakgrunn av dette, er tilsigsdataene utelatt som forklaringsvariabel i den endelige modellen.
 
 ```{r}
 #| label: fig-malestasjoner
@@ -269,14 +269,38 @@ ggplot(tilsig_total) +
 
 
 ```
-####Summary av vannføringsdataen
-Som vist i @fig-summary har vannføringsdataene svært stor variasjon mellom målestasjonene. Vi har ikke tilstrekkelig grunnlag for å forklare de store forskjellene i målt tilsig eller avgjøre hvordan målingene best kan aggregeres til representative verdier. Det er derfor vanskelig å bruke dataene som pålitelige forklaringsvariabler, og tilsig utelates fra den endelige modellen.
+
 ```{r}
-#| label: fig-summary
+library(tidyverse)
+#| label: tbl-summary
 #| fig-cap: "Svært stor varians vi ikke klarer å addresssere"
 tilsig_summary<- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds")
-summary(tilsig_summary$vannforing)
 
+
+tilsig_summary |>
+  summarise(
+    Q1 = quantile(vannforing, 0.25, na.rm = TRUE),
+    Q2 = quantile(vannforing, 0.50, na.rm = TRUE),
+    Q3 = quantile(vannforing, 0.75, na.rm = TRUE),
+    Maks = max(vannforing, na.rm = TRUE)
+  )
+
+tilsig_summary |>
+  filter(!is.na(vannforing)) |>
+  mutate(kategori = ntile(vannforing, 4)) |>
+  group_by(kategori) |>
+  summarise(
+    Nedre_grense = round( min(vannforing),3),
+    Øvre_grense = round(max(vannforing),3),
+    Antall = n(),
+    .groups = "drop"
+  ) |>
+  mutate(kategori = c("Lavest", "Lav-middels", "Middels-hoy", "Hoyest")) |>
+  knitr::kable(
+    col.names = c("Kategori", "Nedre grense", "Ovre grense", "Antall observasjoner"),
+    digits = 2,
+    caption = "Observasjoner fordelt på vannføringsintervaller"
+  )
 ```
 
 
@@ -445,7 +469,7 @@ plot
 
 ```
 
-@fig-plot viser de estimerte koeffisientene med tilnærmede 95 prosent konfidensintervaller. Den europeiske strømprisen har en standardisert koeffisient på omtrent 0,8 i NO1 og NO2, noe som indikerer en sterk positiv sammenheng med norske strømpriser i disse områdene. Forbruk har gjennomgående positive, men svakere koeffisienter i intervallet $[0,0.25]$  med de laveste verdiene i NO4 og NO5. Magasinfylling har en svakt negativ sammenheng med strømprisen, mens magasinkraftproduksjon har en positiv sammenheng i NO3 og NO4, en tilnærmet null sammenheng i NO5 og en negativ sammenheng i NO1 og NO2.
+@fig-plott viser de estimerte koeffisientene med tilnærmede 95 prosent konfidensintervaller. Den europeiske strømprisen har en standardisert koeffisient på omtrent 0,8 i NO1 og NO2, noe som indikerer en sterk positiv sammenheng med norske strømpriser i disse områdene. Forbruk har gjennomgående positive, men svakere koeffisienter i intervallet $[0,0.25]$  med de laveste verdiene i NO4 og NO5. Magasinfylling har en svakt negativ sammenheng med strømprisen, mens magasinkraftproduksjon har en positiv sammenheng i NO3 og NO4, en tilnærmet null sammenheng i NO5 og en negativ sammenheng i NO1 og NO2.
 
 Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3–NO5 ikke gjør det. Prisene i NO3 begynte dessuten å stige etter at modellen var tilpasset, noe som kan begrense modellens evne til å predikere den videre prisutviklingen. Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonometrisk analyse av de underliggende økonomiske mekanismene. Koeffisientene brukes derfor til å undersøke statistiske sammenhenger og mønstre i dataene, og kan ikke uten videre tolkes som kausale effekter.
 
