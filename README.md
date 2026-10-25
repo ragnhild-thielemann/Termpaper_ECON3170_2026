@@ -8,6 +8,6 @@ Datagrunnlaget hentes hovedsakelig fra ENTSO-E Transparency Platform og Norges v
 
 Prosjektet har en utforskende og prediktiv tilnærming. Målet er å undersøke statistiske sammenhenger i dataene og vurdere hvor godt utvalgte variabler kan forklare eller predikere norske strømpriser over tid. Analysen er ikke ment å identifisere kausale sammenhenger.
 
-Mappestruktur og arbeidsflyt
+## Mappestruktur og arbeidsflyt
 
 Prosjektet er organisert slik at datainnsamling, databehandling og analyse gjennomføres i separate skript. Dette gjør det enklere å holde oversikt over datakildene, vedlikeholde koden og unngå unødvendig gjentakelse av beregninger og API-kall.
