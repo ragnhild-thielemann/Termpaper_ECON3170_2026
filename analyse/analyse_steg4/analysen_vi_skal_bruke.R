@@ -402,39 +402,9 @@ koeffisient_plot <- koeffisienter |>
 
 
 
-# =========================================================
-# 14. Plott observert og predikert pris for NO3
-# =========================================================
-
-plot_NO3 <- prediksjoner |>
-  filter(prisomrade == "NO3") |>
-  ggplot(aes(x = datetime)) +
-  geom_line(
-    aes(y = observert_pris, colour = "Observert"),
-    linewidth = 0.5
-  ) +
-  geom_line(
-    aes(y = predikert_pris, colour = "Predikert"),
-    linewidth = 0.5
-  ) +
-  scale_colour_manual(
-    values = c(
-      "Observert" = "black",
-      "Predikert" = "red"
-    )
-  ) +
-  labs(
-    title = "Observert og predikert strompris i NO3",
-    subtitle = "Prediksjoner for de siste 20 % av tidsperioden",
-    x = "Tid",
-    y = "Strompris",
-    colour = "Serie"
-  ) +
-  theme_bw()
-
 
 # =========================================================
-# 15. Plott observert og predikert pris for alle omrader
+# 14. Plott observert og predikert pris for alle omrader
 # =========================================================
 
 plot_alle <- prediksjoner |>
@@ -460,13 +430,20 @@ plot_alle <- prediksjoner |>
     y = "Strompris",
     colour = "Serie"
   ) +
-  theme_bw()
+  scale_x_datetime(
+    date_breaks = "6 month",
+    date_labels = "%b %Y"
+  ) +
+  theme_bw() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
-
+plot_alle
 
 
 # =========================================================
-# 16. Lagre resultater
+# 15. Lagre resultatene, slik at de enkelt kan hentes ut igjen
 # =========================================================
 mappe <- "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett"
 
@@ -499,7 +476,7 @@ saveRDS(
 
 saveRDS(
   plot_alle,
-  file.path(mappe, "plott_all.rds")
+  file.path(mappe, "plott_all1.rds")
 )
 
 
