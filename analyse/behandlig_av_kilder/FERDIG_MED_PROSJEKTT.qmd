@@ -26,8 +26,9 @@ execute:
 ```{r}
 #| label: fig-strompriser
 #| fig-cap: "Utvikling i strømpriser i norske prisområder fra 2020 til 2026."
-#| height: 3
+#| height: 2.5
 #| length: 6
+#| out-width: 70%
 
 
 library(tidyverse)
@@ -68,16 +69,16 @@ p1
 ```
 # Motivasjon for prosjektet
 
-Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt strømregninger, til tross for kalde vintre i dårlig isolerte hjem.
+Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt strømregninger, til tross for kalde vintre i dårlig isolerte hjem og oppvarmede badebaseng. 
 
 
+Prissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. 
+Utenlandskablene ble raskt fremstilt som en folkefiende i den norske offentligheten. Motstanden ble ikke bare drevet av høye strømpriser, men også av en opplevelse av at Norge eksporterte ren, fornybar vannkraft til Europa, samtidig som norske forbrukere måtte betale mer for strømmen, og at vi fikk skitten, forurenset kullkraft i stikkkontakten. 
 
-Prissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. Disse forskjellene reiser spørsmål om hvilke faktorer som kan forklare variasjonen i strømprisene mellom prisområdene og over tid. @tbl-prisomrader gir en rask oversikt over de ulike prisområdene, og hva som kjennetegner dem.
 ```{r}
 #| label: tbl-prisomrader
 #| tbl-cap: "Beskrivelse av de ulike prisområdene"
-#| echo: false
-#| input: false
+
 library(tibble)
 library(flextable)
 
@@ -116,12 +117,13 @@ prisomrader |>
 
 ```
 
-
-
-I tilegg til spotprisen, varierer også kraftproduksjonen mellom prisområdene, både når det gjelder produksjonskilder og muligheten til å regulere produksjonen. Som vist i @fig-kraftprodukjson utgjør vannkraft en betydelig del av kraftproduksjonen i alle prisområdene. Vannkraft med magasiner skiller seg fra mange andre fornybare energikilder ved at produksjonen kan reguleres ved å styre hvor mye vann som slippes gjennom turbinene. 
+I tillegg til spotprisen varierer kraft-produksjonen og forbruk mellom prisområdene, som vist i @tbl-prisomrader. @fig-kraftprodukjson viser fordelingen av kraftproduksjonen i de ulike prisområdene, og det er tydelig at vannkraft utgjør en betydelig del produksjonen. Vannkraft med magasiner skiller seg fra mange andre fornybare energikilder ved at produksjonen til en viss grad kan reguleres ved å styre hvor mye vann som slippes gjennom turbinene.
 ```{r}
 #| label: fig-kraftprodukjson
 #| fig-cap: "Sammensetning av kraftprosuksjonen i ulike prisområder"
+#|height: 2.5
+#| length: 6
+#| out-width: 70%
 
 library(tidyverse)
 library(janitor)
@@ -155,11 +157,13 @@ soylediagram
 
 ```
 
+## Om prosjektet
+
 Prosjektet har en utforskende datavitenskapelig tilnærming. Innledningsvis kartlegger jeg og samler inn data for et bredt utvalg av mulige forklaringsvariabler for strømprisen; vannkraftsproduksjon, strømforbruk i den enkelte prissone, magasinfylling, tilsig, europeiske priser og nedbør. Dataene bearbeides og analyseres utforskende for å undersøke datakvalitet, tidsmessig dekning og mulige sammenhenger mellom variablene. Formålet er å kartlegge hvilke data som egner seg for videre analyse, og å etablere et datagrunnlag for statistisk modellering. Deretter utvikles en regresjonsmodell som trenes på historiske data for å predikere fremtidige strømpriser. 
 
 # Datainnsamlingen
 
-Datainnsamlignen har vært en stor del av prosjektet, da jeg har innhentet data fra fire ulike API-er, levert i ulikt formater. Da dataen har høy tidsoppløsning (15 minutter til dagsoppløsning) er dette svært store datasett, som krever strukturert og effektiv kode å hente ut. 
+Datainnsamlingen har vært en stor del av prosjektet. Jeg har hentet inn data fra fire ulike API-er (grensesnitt som gjør det mulig for programmer å hente data direkte fra andre systemer), med ulike dataformater. Siden dataene har høy tidsoppløsning, fra 15-minuttersintervaller til dagsoppløsning, er datamengdene store. Dette har stilt krav til strukturert og effektiv kode for å hente ut og bearbeide dataene.
 
 I mappen *Kilder* gjennomføres API-kallene og dataen bearbeides til rds-filer, før de lagres i *Datasett*. Når jeg senere utfører analyser på datasettene, hentes de ut som RDS-filer, slik at de tid- og resusskrevende API-kallene ikke gjennomføres flere ganger enn nødvendig. Prosjektet bruker to kilder for data, ENTSO-E [@entsoe] og NVE[@nve], som leverer API-ene i to ulike formater.
 
@@ -200,8 +204,6 @@ datakilder |>
 
 Dataene fra ENTSO-E leveres i XML-format, et tekstbasert format der informasjonen er organisert i en hierarkisk trestruktur. XML-responsen fra API-et leses inn og parses for å gjøre innholdet tilgjengelig for videre behandling. Ved hjelp av XML-parsing identifiseres relevante elementer og attributter som inneholder informasjon om blant annet tidspunkt, spotpriser (A44), produksjon og forbruk (A16).
 
-For å hente data fra et bestemt prisområde benyttes en tilhørende EIC-kode (*Energy Identification Code*), som identifiserer området i kraftmarkedet. API-forespørselen spesifiserer dermed både hvilken EIC-kode og hvilken type data som skal hentes ut.
-
 Datainnsamlingen er strukturert modulbasert, med separate filer for ulike deler av prosessen. Denne organiseringen gjør koden mer oversiktlig og vedlikeholdbar ved å samle funksjonalitet knyttet til ulike datakilder og datatyper i egne moduler. Det bidrar også til å avgrense kompleksiteten og gjør det enklere å videreutvikle og feilsøke de enkelte delene av datainnsamlingen uavhengig av hverandre. Siden dataene fra ENTSO-E leveres i en hierarkisk XML-struktur og behandles som nestede lister, kan den samme overordnede kodestrukturen gjenbrukes for flere datatyper, blant annet spotpriser og kraftproduksjon. Selv om innholdet og enkelte elementer varierer, følger innlesing, parsing og uttrekk av data de samme grunnleggende prinsippene.
 
 De relevante dataene hentes deretter ut av XML-strukturen, bearbeides og samles i en tibble, før de som nevnt lagres som RDS-filer i *Datasett*.
@@ -225,13 +227,14 @@ Datasettene inneholder opptil 1,5 millioner datapunkter. For å effektivisere be
 
 Ettersom prosjektet har en utforskende tilnærming og undersøker et bredt utvalg av mulige forklaringsvariabler, ble også britisk strømpris, nedbør og tilsig vurdert inkludert i regresjonsmodellene. Britisk strømpris var imidlertid bare tilgjengelig for 2020. Inkludering av denne variabelen ville derfor ha redusert datagrunnlaget betydelig for NO3 (prissonen som har utenlandskabler til Storbritannia). 
 
-Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å være utfordrende å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til magasinene på en hensiktsmessig måte. I tillegg var det betydelig variasjon i målt vannføring mellom målestasjonene. Som vist i figur @fig-malestasjoner varierer vannføringen på tvers av målestasjonene, mens figur @tbl-summary illustrerer den store spredningen i de observerte verdiene. Variasjonen gjorde det vanskelig å skille mellom reelle hydrologiske forskjeller og støy i målingene, og dermed også å avgjøre hvordan dataene burde aggregeres for å gi et representativt mål på tilsiget i de ulike prisområdene. 
-
-I tillegg var det utfordrene å koble målestasjonene til de relevante vannmagasinene på en geografisk hensiktsmessig måte. Målestasjonenes geografiske plassering gjorde det vanskelig å avgjøre hvilke magasiner målingene kunne representere, og dermed hvor godt vannføringsdataene fanget opp tilsiget som påvirker kraftproduksjonen i de ulike prisområdene. På bakgrunn av dette, er tilsigsdataene utelatt som forklaringsvariabel i den endelige modellen.
+Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å være utfordrende å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til magasinene på en hensiktsmessig måte. I tillegg var det betydelig variasjon i målt vannføring mellom målestasjonene. Som vist i figur @fig-malestasjoner varierer vannføringen på tvers av målestasjonene, mens figur @tbl-summary illustrerer den store spredningen i de observerte verdiene. Variasjonen gjorde det vanskelig å skille mellom reelle hydrologiske forskjeller og støy i målingene, og dermed også å avgjøre hvordan dataene burde aggregeres for å gi et representativt mål på tilsiget i de ulike prisområdene. På bakgrunn av dette, er tilsigsdataene utelatt som forklaringsvariabel i den endelige modellen.
 
 ```{r}
 #| label: fig-malestasjoner
 #| fig-cap: "Støy i hydrologiske forhold"
+#| height: 2.5
+#| length: 6
+#| out-width: 70%
 
 library(tidyverse)
 library(scales)
@@ -273,6 +276,7 @@ ggplot(tilsig_total) +
 #| tbl-cap: "Observasjoner fordelt på vannføringsintervaller"
 
 
+
 library(tidyverse)
 
 tilsig_summary <- readRDS(
@@ -281,16 +285,47 @@ tilsig_summary <- readRDS(
 
 tilsig_summary |>
   filter(!is.na(vannforing)) |>
-  mutate(kategori = ntile(vannforing, 4)) |>
+  mutate(
+    kategori = ntile(vannforing, 10),
+    kategori = case_when(
+      kategori <= 4 ~ 1L,
+      kategori <= 7 ~ 2L,
+      kategori <= 9 ~ 3L,
+      TRUE ~ 4L
+    )
+  ) |>
   group_by(kategori) |>
   summarise(
-    nedre_grense = round(min(vannforing), 3),
-    ovre_grense = round(max(vannforing), 3),
+    nedre_grense = min(vannforing),
+    ovre_grense = max(vannforing),
     antall = n(),
     .groups = "drop"
   ) |>
   mutate(
-    kategori = c("Lavest", "Lav-middels", "Middels-hoy", "Hoyest")
+    Kategori = c(
+      "Lav",
+      "Lav-middels",
+      "Middels-hoy",
+      "Hoy"
+    ),
+    `Nedre grense` = format(
+      round(nedre_grense, 3),
+      nsmall = 3,
+      scientific = FALSE,
+      trim = TRUE
+    ),
+    `Ovre grense` = format(
+      round(ovre_grense, 3),
+      nsmall = 3,
+      scientific = FALSE,
+      trim = TRUE
+    )
+  ) |>
+  select(
+    Kategori,
+    `Nedre grense`,
+    `Ovre grense`,
+    antall
   ) |>
   knitr::kable(
     col.names = c(
@@ -298,10 +333,9 @@ tilsig_summary |>
       "Nedre grense",
       "Ovre grense",
       "Antall observasjoner"
-    ),
-    digits = 3
+    )
   )
-  
+
 ```
 
 
@@ -339,6 +373,7 @@ $$
 
 Her betegner $P_{t,j}$ strømprisen i prisområde $j$ på tidspunkt $t$, $F_{t,j}$ strømforbruket, $M_{t,j}$ produksjonen fra magasinkraftverk, $V_{t,j}$ øvrige produksjonsvariabler og $E_t$ europeisk strømpris. Konstantleddet betegnes med $\beta_{0,j}$, mens $\hat{\beta}_{1,j}  \ldots, \hat{\beta}_{4,j}$ er regresjonskoeffisientene. Det normalfordelte feilleddet betegnes med $\varepsilon_{t,j} \overset{\text{iid}}{\sim} N(0,\sigma^2)$.
 
+Modellen antar at feilleddene $\varepsilon_{t,j} {\sim} N(0,\sigma^2)$. Antagelsen om konstant varians innebarer at variasjonen i feilleddene er den samme pa tvers av tidspunkter og prisomrader. Det er mulig at denne antagelsen ikke holder for strompriser, men testing for heteroskedastisitet ligger utenfor prosjektets omfang.
 
 
 ## Valg av forklaringsvariabler ^[Se *analyse/analyse_steg4/ferdig_til_tibble.R* ]
@@ -420,7 +455,7 @@ cat(linjer[223:228],sep = "\n")
 ```
 Modelleringen gjennomføres i `tidymodels`, der en workflow kombinerer regresjonsmodellen med en formel som spesifiserer hvilke forklaringsvariabler som inngår. Det estimeres separate lineære regresjonsmodeller med minste kvadraters metode (OLS) for hvert av de fem norske prisområdene. Modellene tilpasses i en løkke, der det tas hensyn til at NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens denne variabelen utelates for NO3, NO4 og NO5.
 
-De tilpassede modellene brukes til å predikere strømprisene i testsettet. Prediksjonene transformeres deretter fra standardisert format tilbake til den opprinnelige prisskalaen, slik at de kan sammenlignes med de observerte strømprisene. Modellens prediksjonsevne evalueres ved hjelp av MSE og $R^2$, basert på prisobservasjonene i testperioden, som for de ulike prisområdene strekker seg fra mai 2025 og frem til i dag.
+De tilpassede modellene brukes til å predikere strømprisene i testsettet. Prediksjonene transformeres deretter fra standardisert format tilbake til den opprinnelige prisskalaen, slik at de kan sammenlignes med de observerte strømprisene. Modellens prediksjonsevne evalueres ved hjelp av MSE og $R^2$, beregnet på testsettet og ikke treningssettet som modellen har tilpasset seg til. $R^2$ beregnes som $R^2 = \frac{SSR}{SST}$, der $SSR$ er summen av kvadrerte prediksjonsfeil i testsettet, mens $SST$ er summen av kvadrerte avvik mellom de observerte prisene i testsettet og gjennomsnittsprisen i samme periode, altså fra mai 2025.
 
 ```{r}
 #| label: tbl-metrikker
@@ -440,7 +475,9 @@ knitr::kable(
 
 ```
 
-Som vist i @tbl-metrikker har NO1 og NO2 $R^2$-verdier på henholdsvis 0,52 og 0,60, noe som indikerer at modellene forklarer en betydelig del av variasjonen i strømprisene. Dette kommer tydelig frem i @fig-predikert, der de predikerte prisene i NO1 og NO2 i stor grad følger utviklingen i de observerte prisene. For NO4 og NO5 ligger prediksjonene derimot nær gjennomsnittsnivået og fanger i liten grad opp variasjonene i strømprisene. Modellen for NO3 presterer enda svakere, med en negativ $R^2$-verdi. Dette innebærer at modellen gir dårligere prediksjoner enn en enkel referansemodell som predikerer gjennomsnittsprisen i testperioden. Samlet sett oppnår modellene best prediksjonsevne i NO1 og NO2, der europeisk strømpris inngår som forklaringsvariabel.
+Som vist i @tbl-metrikker oppnår modellene for NO1 og NO2 $R^2$-verdier på henholdsvis 0,52 og 0,60. Dette gjenspeiles i @fig-predikert, der de predikerte prisene i stor grad følger utviklingen i de observerte prisene. For NO4 og NO5 ligger prediksjonene derimot nær gjennomsnittsnivået og fanger i liten grad opp prisvariasjonene. Modellen for NO3 presterer svakest, med en negativ $R^2$-verdi på -0,26. Dette innebærer at modellens kvadrerte prediksjonsfeil er 26 prosent høyere enn for en referansemodell som predikerer gjennomsnittsprisen i testperioden.
+
+En viktig forklaring på de svake resultatene er at strømprisene steg i NO3 etter mai 2025, uten at modellen klarte å fange opp denne utviklingen. Modellene er basert på historiske sammenhenger og tar ikke høyde for nye markedsforhold som ikke er representert i treningsdataene. Dermed viderefører de i liten grad prisoppgangen i prediksjonene. Dette illustrerer en sentral svakhet ved å predikere langt frem i tid basert på dagens kunnskapsgrunnlag: Når markedsforholdene endrer seg, kan historiske sammenhenger bli mindre representative, og prediksjonsevnen svekkes betydelig.
 
 
 ```{r}
@@ -474,7 +511,7 @@ Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeis
 
 # Konklusjon
 
-Prosjektets hovedfunn er at europeiske strømpriser er en sentral forklaringsvariabel for prisutviklingen i NO1 og NO2, der modellene oppnår test-$R^2$ på henholdsvis 0,52 og 0,60. For NO3, NO4 og NO5 er prediksjonsevnen betydelig svakere, og modellene fanger i liten grad opp de observerte prissvingningene. Særlig viser den negative $R^2$-verdien for NO3 at modellen presterer dårligere enn en enkel prediksjon basert på gjennomsnittsprisen i testperioden. Resultatene viser dermed at en lineær modell med de valgte forklaringsvariablene fungerer bedre i noen prisområder enn i andre. Prosjektet har også vist hvor viktig datakvalitet, representativitet og valg av forklaringsvariabler er for å utvikle modeller som kan beskrive og predikere strømpriser.
+Prosjektets hovedfunn er at europeiske strømpriser er en sentral forklaringsvariabel for prisutviklingen i NO1 og NO2, der modellene oppnår test-$R^2$ på henholdsvis 0,52 og 0,60. For NO3, NO4 og NO5 er prediksjonsevnen betydelig svakere, og modellene fanger i liten grad opp de observerte prissvingningene. Særlig viser den negative $R^2$-verdien for NO3 at modellen presterer dårligere enn en enkel prediksjon basert på gjennomsnittsprisen i testperioden. Resultatene viser dermed at en lineær modell med de valgte forklaringsvariablene fungerer bedre i noen prisområder enn i andre. Prosjektet har også vist hvor viktig datakvalitet, representativitet og valg av forklaringsvariabler er for å utvikle modeller som kan beskrive og predikere strømpriser. 
 
 # Bruk av AI{.unnumbered}
 
