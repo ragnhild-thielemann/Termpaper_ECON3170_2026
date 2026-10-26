@@ -1,12 +1,13 @@
 ---
 title: "En kraftanalyse"
 subtitle: "Semesteroppgave i ECON3170/4170, Høst 2026"
-author: "Kandidatnummer"
+author: "Kandidatnummer: 170032"
 
 date: today
 date-format: D MMMM YYYY
 bibliography: referanser.bib
-
+nocite: '@*'
+citeproc: true
 number-sections: true
 
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
@@ -69,11 +70,11 @@ p1
 ```
 # Motivasjon for prosjektet
 
-Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt strømregninger, til tross for kalde vintre i dårlig isolerte hjem og oppvarmede badebaseng. 
+Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).^[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt lave strømregninger, til tross for kalde vintre i dårlig isolerte hjem og oppvarmede badebaseng. 
 
 
 Prissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. 
-Utenlandskablene ble raskt fremstilt som en folkefiende i den norske offentligheten. Motstanden ble ikke bare drevet av høye strømpriser, men også av en opplevelse av at Norge eksporterte ren, fornybar vannkraft til Europa, samtidig som norske forbrukere måtte betale mer for strømmen, og at vi fikk skitten, forurenset kullkraft i stikkkontakten. 
+Utenlandskablene ble raskt fremstilt som en folkefiende i den norske offentligheten.^[@hoye_priser] Motstanden ble ikke bare drevet av høye strømpriser, men også av en opplevelse av at Norge eksporterte ren, fornybar vannkraft til Europa, samtidig som norske forbrukere måtte betale mer for strømmen, og at vi fikk skitten, forurenset kullkraft i stikkontakten. 
 
 ```{r}
 #| label: tbl-prisomrader
@@ -165,7 +166,7 @@ Prosjektet har en utforskende datavitenskapelig tilnærming. Innledningsvis kart
 
 Datainnsamlingen har vært en stor del av prosjektet. Jeg har hentet inn data fra fire ulike API-er (grensesnitt som gjør det mulig for programmer å hente data direkte fra andre systemer), med ulike dataformater. Siden dataene har høy tidsoppløsning, fra 15-minuttersintervaller til dagsoppløsning, er datamengdene store. Dette har stilt krav til strukturert og effektiv kode for å hente ut og bearbeide dataene.
 
-I mappen *Kilder* gjennomføres API-kallene og dataen bearbeides til rds-filer, før de lagres i *Datasett*. Når jeg senere utfører analyser på datasettene, hentes de ut som RDS-filer, slik at de tid- og resusskrevende API-kallene ikke gjennomføres flere ganger enn nødvendig. Prosjektet bruker to kilder for data, ENTSO-E [@entsoe] og NVE[@nve], som leverer API-ene i to ulike formater.
+I mappen *Kilder* gjennomføres API-kallene og dataen bearbeides til rds-filer, før de lagres i *Datasett*. Når jeg senere utfører analyser på datasettene, hentes de ut som RDS-filer, slik at de tid- og resusskrevende API-kallene ikke gjennomføres flere ganger enn nødvendig. Prosjektet bruker to kilder for data, ENTSO-E ^[@entsoe] og NVE^[@nve], som leverer API-ene i to ulike formater.
 
 ## Beskrivelse av kildene
 
@@ -520,3 +521,8 @@ Jeg har brukt AI som et hjelpemiddel i programmeringsarbeidet, særlig ved innhe
 Jeg har ikke brukt AI-agenter til verken API-kallene eller utforming av analysen. All kode er gjennomgått av meg, og jeg har selv arbeidet med optimalisering, debugging og strukturering av koden. Jeg har dermed hatt kontroll over både
 datainnhentingen og den videre analysen, og kan derfor forstå og forklare
 all kode i prosjektet.
+
+# Referanser{.unnumbered}
+
+::: {#refs}
+:::
