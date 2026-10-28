@@ -70,7 +70,7 @@ p1
 ```
 # Motivasjon for prosjektet
 
-Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (ekslusive nettleie og avgifter).^[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminumumskraftverk), og husholdninger har vært vant til relativt lave strømregninger, til tross for kalde vintre i dårlig isolerte hjem og oppvarmede badebaseng. 
+Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotprisen mellom 20 - 45 øre/kWh (eksklusive nettleie og avgifter).^[@lave_priser] Dette har ført til at mye kraftkrevende industri er etablert i Norge (aluminiumskraftverk), og husholdninger har vært vant til relativt lave strømregninger, til tross for kalde vintre i dårlig isolerte hjem og oppvarmede badebasseng. 
 
 
 Prissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. 
@@ -86,16 +86,16 @@ library(flextable)
 prisomrader <- tibble(
   Prisomrade = c("NO1", "NO2", "NO3", "NO4", "NO5"),
   Omrade = c(
-    "Ostlandet",
-    "Sorvestlandet",
+    "Østlandet",
+    "Sørvestlandet",
     "Midt-Norge",
     "Nord-Norge",
     "Vestlandet"
   ),
   Kjennetegn = c(
-    "Hoyt forbruk og stor befolkning.",
+    "Høyt forbruk og stor befolkning.",
     "Mye vannkraft og flere utenlandsforbindelser.",
-    "Mye vannkraft og begrenset overforing sorover.",
+    "Mye vannkraft og begrenset overforing sørover.",
     "Mye vannkraft og relativt lavt forbruk.",
     "Mye vannkraft og varierende produksjon."
   )
@@ -103,11 +103,11 @@ prisomrader <- tibble(
 
 prisomrader |>
   flextable() |>
-  set_header_labels(
-    Prisomrade = "Prisomrade",
-    Omrade = "Geografisk omrade",
-    Kjennetegn = "Sentrale kjennetegn"
-  ) |>
+ set_header_labels(
+  Prisomrade = "Prisområde",
+  Omrade = "Geografisk område",
+  Kjennetegn = "Sentrale kjennetegn"
+)|>
   width(j = 1, width = 0.8) |>
   width(j = 2, width = 1.3) |>
   width(j = 3, width = 3) |>
@@ -160,17 +160,19 @@ soylediagram
 
 ## Om prosjektet
 
-Prosjektet har en utforskende datavitenskapelig tilnærming. Innledningsvis kartlegger jeg og samler inn data for et bredt utvalg av mulige forklaringsvariabler for strømprisen; vannkraftsproduksjon, strømforbruk i den enkelte prissone, magasinfylling, tilsig, europeiske priser og nedbør. Dataene bearbeides og analyseres utforskende for å undersøke datakvalitet, tidsmessig dekning og mulige sammenhenger mellom variablene. Formålet er å kartlegge hvilke data som egner seg for videre analyse, og å etablere et datagrunnlag for statistisk modellering. Deretter utvikles en regresjonsmodell som trenes på historiske data for å predikere fremtidige strømpriser. 
+Prosjektet har en utforskende datavitenskapelig tilnærming. Innledningsvis kartlegger jeg og samler inn data for et bredt utvalg av mulige forklaringsvariabler for strømprisen; vannkraftproduksjon, strømforbruk i den enkelte prissone, magasinfylling, tilsig, europeiske priser og nedbør. Dataene bearbeides og analyseres utforskende for å undersøke datakvalitet, tidsmessig dekning og mulige sammenhenger mellom variablene. Formålet er å kartlegge hvilke data som egner seg for videre analyse, og å etablere et datagrunnlag for statistisk modellering. Deretter utvikles en regresjonsmodell som trenes på historiske data for å predikere fremtidige strømpriser. 
 
 # Datainnsamlingen
 
 Datainnsamlingen har vært en stor del av prosjektet. Jeg har hentet inn data fra fire ulike API-er (grensesnitt som gjør det mulig for programmer å hente data direkte fra andre systemer), med ulike dataformater. Siden dataene har høy tidsoppløsning, fra 15-minuttersintervaller til dagsoppløsning, er datamengdene store. Dette har stilt krav til strukturert og effektiv kode for å hente ut og bearbeide dataene.
 
-I mappen *Kilder* gjennomføres API-kallene og dataen bearbeides til rds-filer, før de lagres i *Datasett*. Når jeg senere utfører analyser på datasettene, hentes de ut som RDS-filer, slik at de tid- og resusskrevende API-kallene ikke gjennomføres flere ganger enn nødvendig. Prosjektet bruker to kilder for data, ENTSO-E ^[@entsoe] og NVE^[@nve], som leverer API-ene i to ulike formater.
+I mappen *Kilder* gjennomføres API-kallene og dataen bearbeides til rds-filer, før de lagres i *Datasett*. Når jeg senere utfører analyser på datasettene, hentes de ut som RDS-filer, slik at de tid- og ressuskrevende API-kallene ikke gjennomføres flere ganger enn nødvendig. Prosjektet bruker to kilder for data, ENTSO-E ^[@entsoe] og NVE^[@nve], som leverer API-ene i to ulike formater.
 
 ## Beskrivelse av kildene
 
 ```{r}
+#| label: tbl-beskrivelse
+#| tbl-cap: "Beskrivelse av kildene"
 #| echo: false
 #| input: false
 
@@ -180,7 +182,7 @@ library(flextable)
 datakilder <- tibble(
   Kilde = c("ENTSO-E", "NVE"),
   Forklaring = c(
-    "Europeisk datasett for strømpriser (spotpriser i kraftmarkedet), kraftflyt og produksjon fordelt på produksjonstype.",
+    "Europeisk datasett for strømpriser (spotpriser i kraftmarkedet), forbruk og produksjon i de ulike prissonene",
     "Norges vassdrags- og energidirektorat. Magasinstatistikk (fyllingsgrad) og tilsig."
   ),
   Format = c("XML", "JSON")
@@ -205,13 +207,13 @@ datakilder |>
 
 Dataene fra ENTSO-E leveres i XML-format, et tekstbasert format der informasjonen er organisert i en hierarkisk trestruktur. XML-responsen fra API-et leses inn og parses for å gjøre innholdet tilgjengelig for videre behandling. Ved hjelp av XML-parsing identifiseres relevante elementer og attributter som inneholder informasjon om blant annet tidspunkt, spotpriser (A44), produksjon og forbruk (A16).
 
-Datainnsamlingen er strukturert modulbasert, med separate filer for ulike deler av prosessen. Denne organiseringen gjør koden mer oversiktlig og vedlikeholdbar ved å samle funksjonalitet knyttet til ulike datakilder og datatyper i egne moduler. Det bidrar også til å avgrense kompleksiteten og gjør det enklere å videreutvikle og feilsøke de enkelte delene av datainnsamlingen uavhengig av hverandre. Siden dataene fra ENTSO-E leveres i en hierarkisk XML-struktur og behandles som nestede lister, kan den samme overordnede kodestrukturen gjenbrukes for flere datatyper, blant annet spotpriser og kraftproduksjon. Selv om innholdet og enkelte elementer varierer, følger innlesing, parsing og uttrekk av data de samme grunnleggende prinsippene.
+Datainnsamlingen er strukturert modulbasert, med separate filer for ulike deler av prosessen. Denne organiseringen gjør koden mer oversiktlig, ved å samle funksjonalitet knyttet til ulike datakilder og datatyper i egne moduler. Det bidrar også til å avgrense kompleksiteten og gjør det enklere å videreutvikle og feilsøke de enkelte delene av datainnsamlingen uavhengig av hverandre. Siden dataene fra ENTSO-E leveres i en hierarkisk XML-struktur og behandles som nestede lister, kan den samme overordnede kodestrukturen gjenbrukes for flere datatyper, blant annet spotpriser og kraftproduksjon. Selv om innholdet og enkelte elementer varierer, følger innlesing, parsing og uttrekk av data de samme grunnleggende prinsippene.
 
 De relevante dataene hentes deretter ut av XML-strukturen, bearbeides og samles i en tibble, før de som nevnt lagres som RDS-filer i *Datasett*.
 
 Ettersom datamengden er stor, med rundt én million observasjoner per datasett i perioden 2020–2026, kan det oppstå tidsavbrudd dersom hele perioden hentes ut i ett enkelt API-kall. For å redusere denne risikoen deles tidsperioden derfor opp i månedlige intervaller. En løkke henter deretter data for én måned om gangen. De månedlige datasettene settes sammen til én samlet tibble ved hjelp av `bind_rows()`, før det ferdige datasettet lagres for videre analyse. Ved å hente data én måned om gangen og lagre hovedtibbelen fortløpende, reduserer vi risikoen for å miste allerede innhentede data dersom et API-kall feiler. Dersom et API-kall feiler, fortsetter innhentingen med neste måned uten at tidligere innhentede data går tapt.
 
-### NVE (JSON) ^[Se *Kilder/henting_av_data_NVE* for uthenting av tilsigsdata og magaisnfylling.]
+### NVE (JSON) ^[Se *Kilder/henting_av_data_NVE* for uthenting av tilsigsdata og magasinfylling]
 
 Dataene fra NVE leveres i JSON-format (*JavaScript Object Notation*), et tekstbasert format der informasjonen er strukturert i nøstede objekter og arrayer. Dataene leses inn og parses slik at de kan bearbeides videre og organiseres i en tibble. 
 
@@ -227,8 +229,19 @@ Datasettene inneholder opptil 1,5 millioner datapunkter. For å effektivisere be
 ## Utelating av forklaringsvariabler
 
 Ettersom prosjektet har en utforskende tilnærming og undersøker et bredt utvalg av mulige forklaringsvariabler, ble også britisk strømpris, nedbør og tilsig vurdert inkludert i regresjonsmodellene. Britisk strømpris var imidlertid bare tilgjengelig for 2020. Inkludering av denne variabelen ville derfor ha redusert datagrunnlaget betydelig for NO3 (prissonen som har utenlandskabler til Storbritannia). 
+Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å være vanskelig å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til de relevante prisområdene. 
 
-Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen, ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å være utfordrende å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til magasinene på en hensiktsmessig måte. I tillegg var det betydelig variasjon i målt vannføring mellom målestasjonene. Som vist i figur @fig-malestasjoner varierer vannføringen på tvers av målestasjonene, mens figur @tbl-summary illustrerer den store spredningen i de observerte verdiene. Variasjonen gjorde det vanskelig å skille mellom reelle hydrologiske forskjeller og støy i målingene, og dermed også å avgjøre hvordan dataene burde aggregeres for å gi et representativt mål på tilsiget i de ulike prisområdene. På bakgrunn av dette, er tilsigsdataene utelatt som forklaringsvariabel i den endelige modellen.
+
+Ettersom magasinkraftverk er avhengige av nedbør og tilsig for å opprettholde magasinfyllingen,
+ble det forsøkt å inkludere hydrologiske data i analysen. Formålet var å undersøke om informasjon
+om vanntilgangen kunne bidra til å forklare variasjoner i strømprisene. Det viste seg imidlertid å
+være utfordrende å identifisere målestasjoner som var representative for de aktuelle vannmagasinene, og å koble målingene til magasinene på en hensiktsmessig måte.
+
+Som vist i @fig-malestasjoner varierer vannføringen
+på tvers av målestasjonene, mens figur @tbl-summary illustrerer den store spredningen i de observerte
+verdiene, samt støyet fra ekstremverdiene. Variasjonen gjorde det vanskelig å skille mellom reelle hydrologiske forskjeller og støy i
+målingene, og dermed også å avgjøre hvordan dataene burde aggregeres for å gi et representativt
+mål på tilsiget i de ulike prisområdene. Ekstremverdiene kunne vært utelatt ved å begrense analysen til de midterste 95 % av observasjonene. Usikkerheten knyttet til målestasjonenes representativitet ville imidlertid fortsatt vært til stede, så de hydrologiske variablene utelates derfor fra den endelige modellen.
 
 ```{r}
 #| label: fig-malestasjoner
@@ -348,7 +361,7 @@ Det finnes flere maskinlæringsmetoder for å modellere kontinuerlige variabler,
 
 Formålet med prosjektet er å undersøke overordnede sammenhenger mellom strømpriser og mulige forklaringsvariabler, snarere enn å maksimere modellens prediksjonsnøyaktighet. Derfor velger vi å sette opp en linjær regresjonsmodell, som gjør det mulig å undersøke sammenhengen mellom hver forklaringsvariabel og strømprisen, gitt at de øvrige variablene i modellen holdes konstante. Den relativt enkle modellstrukturen gjør resultatene lettere å tolke, men begrenser samtidig modellens evne til å fange opp ikke-lineære sammenhenger og ekstreme prisbevegelser.
 
-Vi kontruerer dermed en linjær regresjonsmodell med normalfordelte feilledd på formen 
+Vi konstruerer dermed en linjær regresjonsmodell med normalfordelte feilledd på formen 
 
 
 For hvert prisområde $j$ og tidspunkt $t$ estimeres følgende lineære regresjonsmodell:
@@ -372,9 +385,9 @@ P_{t,j} = \beta_{0,j}
 + \varepsilon_{t,j}.
 $$
 
-Her betegner $P_{t,j}$ strømprisen i prisområde $j$ på tidspunkt $t$, $F_{t,j}$ strømforbruket, $M_{t,j}$ produksjonen fra magasinkraftverk, $V_{t,j}$ øvrige produksjonsvariabler og $E_t$ europeisk strømpris. Konstantleddet betegnes med $\beta_{0,j}$, mens $\hat{\beta}_{1,j}  \ldots, \hat{\beta}_{4,j}$ er regresjonskoeffisientene. Det normalfordelte feilleddet betegnes med $\varepsilon_{t,j} \overset{\text{iid}}{\sim} N(0,\sigma^2)$.
+Her betegner $P_{t,j}$ strømprisen i prisområde $j$ på tidspunkt $t$, $F_{t,j}$ strømforbruket, $M_{t,j}$ produksjonen fra magasinkraftverk, $V_{t,j}$ fyllingsgraden i vannmagasinene og $E_t$ europeisk strømpris. Konstantleddet betegnes med $\beta_{0,j}$, mens $\hat{\beta}_{1,j}  \ldots, \hat{\beta}_{4,j}$ er regresjonskoeffisientene. Det normalfordelte feilleddet betegnes med $\varepsilon_{t,j} \overset{\text{iid}}{\sim} N(0,\sigma^2)$.
 
-Modellen antar at feilleddene $\varepsilon_{t,j} {\sim} N(0,\sigma^2)$. Antagelsen om konstant varians innebarer at variasjonen i feilleddene er den samme pa tvers av tidspunkter og prisomrader. Det er mulig at denne antagelsen ikke holder for strompriser, men testing for heteroskedastisitet ligger utenfor prosjektets omfang.
+Modellen antar at feilleddene $\varepsilon_{t,j} {\sim} N(0,\sigma^2)$. Antagelsen om konstant varians innebærer at variasjonen i feilleddene er den samme på tvers av tidspunkter og prisområder. Det er mulig at denne antagelsen ikke holder for strømpriser, men testing for heteroskedastisitet ligger utenfor prosjektets omfang.
 
 
 ## Valg av forklaringsvariabler ^[Se *analyse/analyse_steg4/ferdig_til_tibble.R* ]
@@ -382,7 +395,7 @@ Modellen antar at feilleddene $\varepsilon_{t,j} {\sim} N(0,\sigma^2)$. Antagels
 For å gjennomføre analysen ønsker vi å sammenstille alle datakildene i én felles tibble. Siden dataene har ulik tidsoppløsning, må de først bearbeides slik at de kan kobles sammen på en konsistent måte. Strømpriser, forbruk og kraftproduksjon aggregeres til én observasjon per time og prisområde. Dette innebærer at dersom det finnes flere målinger innenfor samme time, beregnes gjennomsnittet. Tilsig og magasinfylling behandles separat og aggregeres til én observasjon per dag og prisområde. Deretter sammenstilles datasettene ved hjelp av left_join(), med norske strømpriser som utgangspunkt.
 
 
-#### Manglende observasjoner og klargjøring av data ^[Se *analyse/analyse_steg4/analysen_vi_skal_bruke.R* for hele scriptet.]
+### Manglende observasjoner og klargjøring av data ^[Se *analyse/analyse_steg4/analysen_vi_skal_bruke.R* for hele scriptet.]
 
 Før vi trener modellen på datasettet, fjernes observasjoner med manglende eller ugyldige verdier separat for hvert prisområde. Dette er nødvendig, da regresjonsmodellene krever gyldige verdier for både den avhengige variabelen og samtlige forklaringsvariabler. Som vist i @tbl-observasjoner, beholdes omtrent 99 % av observasjonene i samtlige prisområder etter filtreringen.
 
@@ -435,7 +448,7 @@ tabell |>
 Dataene deles kronologisk ved hjelp av `initial_time_split()`, der de første 80 prosentene av observasjonene utgjør treningssettet, mens de resterende 20 prosentene utgjør testsettet, som vist i @tbl-observasjoner.
 
 For tidsseriedata er en kronologisk splitting hensiktsmessig, da modellene estimeres på historiske observasjoner og evalueres på senere data. Dermed unngår man at fremtidige observasjoner brukes til å predikere fortidige verdier. Ettersom modellene for de ulike prissonene estimeres separat, varierer delingsdatoen noe, som følge av ulik datadekning og filtrering av observasjoner. 
-For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.
+For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.^[Vi merker oss at splitten skjer på nasjonaldagen, der vi feirer landet vi er så glade i. Landet med demokrati, frihet og lave produksjonskostnader ved strømproduksjon.]
 ```{r}
 
 min_date <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/min_date1.rds")
@@ -499,7 +512,7 @@ For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med st
 
 ```{r}
 #| label: fig-plott
-#| fig-cap: "Plott av standardiserte regresjonskoefesienter"
+#| fig-cap: "Plott av standardiserte regresjonskoeffisienter"
 
 plot <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/koeffisient_plot.rds"
 ) 
@@ -508,7 +521,9 @@ plot
 
 @fig-plott viser de estimerte koeffisientene med tilnærmede 95 prosent konfidensintervaller. Den europeiske strømprisen har en standardisert koeffisient på omtrent 0,8 i NO1 og NO2, noe som indikerer en sterk positiv sammenheng med norske strømpriser i disse områdene. Forbruk har gjennomgående positive, men svakere koeffisienter i intervallet $[0,0.25]$  med de laveste verdiene i NO4 og NO5. Magasinfylling har en svak negativ sammenheng med strømprisen, mens magasinkraftproduksjon har en positiv sammenheng i NO3 og NO4, en tilnærmet null sammenheng i NO5 og en negativ sammenheng i NO1 og NO2.
 
-Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3–NO5 ikke gjør det. Prisene i NO3 begynte dessuten å stige etter at modellen var tilpasset, noe som begrenser modellens evne til å predikere den videre prisutviklingen. Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonometrisk analyse av de underliggende økonomiske mekanismene. Koeffisientene brukes derfor til å undersøke statistiske sammenhenger og mønstre i dataene, og kan ikke uten videre tolkes som kausale effekter.
+Resultatene må tolkes med forsiktighet, ettersom NO1 og NO2 inkluderer europeisk strømpris som forklaringsvariabel, mens NO3–NO5 ikke gjør det. Prisene i NO3 begynte dessuten å stige etter at modellen var tilpasset, noe som begrenser modellens evne til å predikere den videre prisutviklingen. Da de estimerte koeffisientene for europeisk pris $\approx 0.8$ for NO2 og NO1, er det påfallende å tro at modellen for NO3 ville hatt vesentlig rediksjonsevne  dersom vi hadde hatt nok prisdata for Storbritannia (som tidligere nevnt hadde vi bare prisdata for 2020).
+
+Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonomitresk analyse av de underliggende økonomiske mekanismene. Koeffisientene brukes derfor til å undersøke statistiske sammenhenger og mønstre i dataene, og kan ikke uten videre tolkes som kausale effekter.
 
 # Konklusjon
 
@@ -516,11 +531,13 @@ Prosjektets hovedfunn er at europeiske strømpriser er en sentral forklaringsvar
 
 # Bruk av AI{.unnumbered}
 
-Jeg har brukt AI som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. API-ene har omfattende dokumentasjon og komplekse strukturer, og det er svært tid- og resusskrevende å  å finne  riktig syntaks og utforme dataforespørsler. AI har derfor vært nyttig for å forstå API-ene, utforme forespørsler og feilsøke kode.
+Jeg har brukt AI som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. API-ene har omfattende dokumentasjon og komplekse strukturer, og det er svært tid- og ressurskrevende å finne  riktig syntaks og utforme dataforespørsler. AI har derfor vært nyttig for å forstå API-ene, utforme forespørsler og feilsøke kode.
 
 Jeg har ikke brukt AI-agenter til verken API-kallene eller utforming av analysen. All kode er gjennomgått av meg, og jeg har selv arbeidet med optimalisering, debugging og strukturering av koden. Jeg har dermed hatt kontroll over både
 datainnhentingen og den videre analysen, og kan derfor forstå og forklare
 all kode i prosjektet.
+
+Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
 
 # Referanser{.unnumbered}
 
