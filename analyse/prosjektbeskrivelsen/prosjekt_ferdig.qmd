@@ -34,8 +34,9 @@ execute:
 
 library(tidyverse)
 library(scales)
+library(here)
 
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble5.rds")|>
+tibble <- readRDS(here("Datasett", "tibble5.rds"))|>
   dplyr::select(datetime, prisomrade, pris_norge)|>
   mutate(datetime = as.Date(datetime))
 
@@ -129,9 +130,10 @@ I tillegg til spotprisen varierer kraft-produksjonen og forbruk mellom prisområ
 library(tidyverse)
 library(janitor)
 library(dtplyr)
+library(here)
 
 
-tibble <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble5.rds")|>
+tibble <- readRDS(here("Datasett","tibble5.rds"))|>
   lazy_dt()|>
   dplyr::select(datetime,starts_with("produksjon_"),prisomrade)|> 
   pivot_longer(-c(datetime,prisomrade), 
@@ -252,9 +254,9 @@ mål på tilsiget i de ulike prisområdene. Ekstremverdiene kunne vært utelatt 
 
 library(tidyverse)
 library(scales)
+library(here)
 
-
-tilsig_total <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds")|>
+tilsig_total <- readRDS(here("Datasett","tilsig_total_denviskalbruke.rds"))|>
   filter(vannforing %in% -10:1000) |>
   drop_na(dato, vannforing, station)
 
@@ -292,10 +294,9 @@ ggplot(tilsig_total) +
 
 
 library(tidyverse)
+library(here)
 
-tilsig_summary <- readRDS(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tilsig_total_denviskalbruke.rds"
-)
+tilsig_summary <- readRDS(here("Datasett","tilsig_total_denviskalbruke.rds"))
 
 tilsig_summary |>
   filter(!is.na(vannforing)) |>
@@ -409,10 +410,9 @@ Før vi trener modellen på datasettet, fjernes observasjoner med manglende elle
 library(tidyverse)
 library(gt)
 library(scales)
+library(here)
 
-tabell <- readRDS(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/observasjoner_lm.rds"
-) |>
+tabell <- readRDS(here("Datasett","observasjoner_lm.rds"))|>
   mutate(
     andel_beholdt = antall_beholdt / antall_for_rensing
   ) |>
@@ -448,10 +448,10 @@ tabell |>
 Dataene deles kronologisk ved hjelp av `initial_time_split()`, der de første 80 prosentene av observasjonene utgjør treningssettet, mens de resterende 20 prosentene utgjør testsettet, som vist i @tbl-observasjoner.
 
 For tidsseriedata er en kronologisk splitting hensiktsmessig, da modellene estimeres på historiske observasjoner og evalueres på senere data. Dermed unngår man at fremtidige observasjoner brukes til å predikere fortidige verdier. Ettersom modellene for de ulike prissonene estimeres separat, varierer delingsdatoen noe, som følge av ulik datadekning og filtrering av observasjoner. 
-For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.^[Vi merker oss at splitten skjer på nasjonaldagen, der vi feirer landet vi er så glade i. Landet med demokrati, frihet og lave produksjonskostnader ved strømproduksjon.]
+For å angi et felles tidspunkt for skillet mellom trenings- og testsettet, beregnes derfor gjennomsnittet av delingsdatoene. Dette tilsvarer omtrent tidspunktet der 80 prosent av observasjonene er passert.^[Vi merker oss at splitten skjer på nasjonaldagen, der vi feirer landet vi elsker. Landet med demokrati, frihet og lave produksjonskostnader ved strømproduksjon.]
 ```{r}
-
-min_date <- readRDS("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/min_date1.rds")
+library(here)
+min_date <- readRDS(here("Datasett","min_date1.rds"))
 
 sprintf("Splitten skjer %s",min_date)
 
@@ -461,7 +461,8 @@ sprintf("Splitten skjer %s",min_date)
 Da forklaringsvariablene har ulik størrelsesorden, standardiseres de for å gjøre dem lettere å sammenligne. Dette gjøres ved hjelp av funksjonen `standardiser(data)`, som sentrerer hver variabel rundt gjennomsnittet og skalerer den med standardavviket. Variablene får dermed gjennomsnitt lik null og standardavvik lik én, slik at de uttrykkes på samme skala uavhengig av opprinnelig måleenhet.
 
 ```{r}
-linjer <- readLines("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/analyse/analyse_steg4/analysen_vi_skal_bruke.R")
+library(here)
+linjer <- readLines(here("analyse","analysen","analysen_vi_skal_bruke.R"))
 
 cat(linjer[223:228],sep = "\n")
 
@@ -475,9 +476,9 @@ De tilpassede modellene brukes til å predikere strømprisene i testsettet. Pred
 #| label: tbl-metrikker
 #| fig-cal: "Oversikt over metrikkene"
 
-oversikt_metrikker <- readRDS(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/oversikt_metrikker.rds"
-) 
+library(here)
+
+oversikt_metrikker <- readRDS(here("Datasett","oversikt_metrikker.rds"))
 
 library(knitr)
 knitr::kable(
@@ -497,10 +498,8 @@ En viktig forklaring på de svake resultatene er at strømprisene steg i NO3 ett
 ```{r}
 #| label: fig-predikert
 #| fig-cap: "Predikerte verdier mot observerte verdier"
-
-alle <- readRDS(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/plott_all1.rds"
-) 
+library(here)
+alle <- readRDS(here("Datasett","plott_all1.rds"))
 alle
 
 ```
@@ -514,8 +513,8 @@ For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med st
 #| label: fig-plott
 #| fig-cap: "Plott av standardiserte regresjonskoeffisienter"
 
-plot <- readRDS( "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/koeffisient_plot.rds"
-) 
+library(here)
+plot <- readRDS(here("Datasett","koeffisient_plot.rds"))
 plot
 ```
 

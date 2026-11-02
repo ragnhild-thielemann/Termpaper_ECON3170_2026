@@ -8,7 +8,7 @@ library(broom)
 # =========================================================
 
 total_tibble <- readRDS(
-  "C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Datasett/tibble7.rds"
+  "Datasett/tibble7.rds"
 )
 
 glimpse(total_tibble)
