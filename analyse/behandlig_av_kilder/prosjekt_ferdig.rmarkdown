@@ -74,7 +74,7 @@ Norge har historisk hatt svært lave strømpriser, og frem til 2020 lå spotpris
 
 
 Prissjokket i 2021–2022 satte derfor strømprisene på den politiske dagsordenen, ettersom de kraftige prisøkningene rammet både husholdninger og bedrifter hardt. @fig-strompriser viser utviklingen i spotprisene i de fem norske prisområdene fra 2020 til 2026. Figuren viser en betydelig prisøkning i alle prisområdene, men med tydelige geografiske forskjeller. Prisøkningen var særlig kraftig i NO1, NO2 og NO5, mens prisene i NO3 og NO4 gjennomgående var lavere og mer stabile. 
-Utenlandskablene ble raskt fremstilt som en folkefiende i den norske offentligheten.^[@hoye_priser] Motstanden ble ikke bare drevet av høye strømpriser, men også av en opplevelse av at Norge eksporterte ren, fornybar vannkraft til Europa, samtidig som norske forbrukere måtte betale mer for strømmen, og at vi fikk skitten, forurenset kullkraft i stikkontakten. 
+Utenlandskablene ble raskt fremstilt som en folkefiende i den norske offentligheten.^[@hoye_priser] Motstanden ble ikke bare drevet av høye strømpriser, men også av en opplevelse av at Norge eksporterte ren, fornybar vannkraft til Europa, samtidig som norske forbrukere måtte betale mer for strømmen, samt at vi fikk skitten, forurenset kullkraft i stikkontakten. 
 
 ```{r}
 #| label: tbl-prisomrader
@@ -529,17 +529,18 @@ Analysen har en utforskende datavitenskapelig tilnærming og er ikke en økonomi
 
 Prosjektets hovedfunn er at europeiske strømpriser er en sentral forklaringsvariabel for prisutviklingen i NO1 og NO2, der modellene oppnår test-$R^2$ på henholdsvis 0,52 og 0,60. For NO3, NO4 og NO5 er prediksjonsevnen betydelig svakere, og modellene fanger i liten grad opp de observerte prissvingningene. Særlig viser den negative $R^2$-verdien for NO3 at modellen presterer dårligere enn en enkel prediksjon basert på gjennomsnittsprisen i testperioden. Resultatene viser dermed at en lineær modell med de valgte forklaringsvariablene fungerer bedre i noen prisområder enn i andre. Prosjektet har også vist hvor viktig datakvalitet, representativitet og valg av forklaringsvariabler er for å utvikle modeller som kan beskrive og predikere strømpriser. 
 
-# Bruk av AI{.unnumbered}
+# Bruk av KI{.unnumbered}
 
-Jeg har brukt AI som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. API-ene har omfattende dokumentasjon og komplekse strukturer, og det er svært tid- og ressurskrevende å finne  riktig syntaks og utforme dataforespørsler. AI har derfor vært nyttig for å forstå API-ene, utforme forespørsler og feilsøke kode.
+Jeg har brukt gratisversjonen av ChatGPT (GPT-5.f Luna og GPT-5 Thinking Mini) som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. API-ene har omfattende dokumentasjon og komplekse strukturer, og det er svært tid- og ressurskrevende å finne riktig syntaks og utforme dataforespørsler. ChatGPT har derfor vært nyttig for å forstå API-ene, utforme forespørsler og feilsøke kode. Jeg har også benyttet ChatGPT i arbeidet med å finne relevante kilder, og forstå dokumentasjonen.
 
-Jeg har ikke brukt AI-agenter til verken API-kallene eller utforming av analysen. All kode er gjennomgått av meg, og jeg har selv arbeidet med optimalisering, debugging og strukturering av koden. Jeg har dermed hatt kontroll over både
-datainnhentingen og den videre analysen, og kan derfor forstå og forklare
-all kode i prosjektet.
+Jeg har ikke brukt AI-agenter til verken API-kallene eller utformingen av analysen. All kode er gjennomgått av meg, og jeg har selv arbeidet med optimalisering, debugging og strukturering av koden. Jeg har dermed hatt kontroll over både datainnhentingen og den videre analysen, og kan forstå og forklare all kode i prosjektet. 
 
-Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
+I skriveprosessen skrev jeg et førsteutkast selv, og brukte deretter KI som et hjelpemiddel til å forbedre setningstruktur og flyten i teksten. Det faglige innholdet og vurderingene som er gjort underveis er mine egne.   
+
+Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - av sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
 
 # Referanser{.unnumbered}
 
 ::: {#refs}
 :::
+
