@@ -1,35 +1,29 @@
-
-library(data.table)
-library(tidyverse)
-library(dtplyr)
+library(httr2)
+library(xml2)
+library(dplyr)
+library(tibble)
+library(purrr)
 
 source("Kilder/henting_av_data_NVE/funksjon_tilsig.R")
-
-# Nøkkelen ligger i Kilder/.Renviron (som er ignorert av git) på formen:
-# NVE_HYDAPI=din-nøkkel
 readRenviron("Kilder/.Renviron")
+
 api_key <- Sys.getenv("nve")
 
 if (api_key == "") {
-  stop("Fant ikke NVE_HYDAPI. Sjekk Kilder/.Renviron.")
+  stop("Fant ikke NVE API-nokkel. Sjekk Kilder/.Renviron.")
 }
 
-# ---------------------------------------------------------
-# 1. Henter alle stasjoner med døgnverdier for vannføring
-# ---------------------------------------------------------
+# --------------------------------------------------------
+# 1. Hent stasjoner og velg de nærmeste for hver prissone
+# --------------------------------------------------------
 
-stasjoner <- hent_stasjoner(api_key)
-
-# Sjekk hva som faktisk kom tilbake, slik at vi ikke kjører koden, dersom den ikke fungerer
-glimpse(stasjoner)
-summary(stasjoner$regulert)
+stasjoner <- hent_stasjoner(
+  api_key,
+  kun_aktive = TRUE
+)
 
 # ---------------------------------------------------------
-# 2. Velger stasjoner nær hver prissone. Samme koordinater som
-#    for nedbør, slik at datasettene kan slås sammen.
-#    Husk at stasjonene bør velges med omhu: uregulerte felt gir
-#    naturlig tilsig, regulerte felt påvirkes av kraftverkene.
-#    Gå gjennom listen under og sjekk at stasjonene er rimelige.
+# 1. Definer sentrumspunkter for prisomradene
 # ---------------------------------------------------------
 
 koordinater_for_prissoner <- tibble(
@@ -38,68 +32,202 @@ koordinater_for_prissoner <- tibble(
   latitude  = c(59.91, 58.66, 63.43, 67.28, 60.39)
 )
 
-valgte_stasjoner <- koordinater_for_prissoner |>
+# ---------------------------------------------------------
+# 2. Finn naermeste sentrumspunkt for hver malestasjon
+# ---------------------------------------------------------
+
+stasjon_til_prissone <- stasjoner |>
+  filter(
+    !is.na(longitude),
+    !is.na(latitude)
+  ) |>
   mutate(
-    stasjoner = pmap(
-      list(longitude, latitude),
-      \(lon, lat) naermeste_stasjoner(stasjoner, lon, lat, antall = 5)
+    station = as.character(station),
+    prisomrade = purrr::map2_chr(
+      longitude,
+      latitude,
+      \(lon, lat) {
+        
+        # Beregn avstand fra stasjonen til alle fem punktene
+        rad <- pi / 180
+        
+        dlat <- (
+          koordinater_for_prissoner$latitude - lat
+        ) * rad
+        
+        dlon <- (
+          koordinater_for_prissoner$longitude - lon
+        ) * rad
+        
+        a <- sin(dlat / 2)^2 +
+          cos(lat * rad) *
+          cos(koordinater_for_prissoner$latitude * rad) *
+          sin(dlon / 2)^2
+        
+        avstand_km <- 6371 * 2 *
+          asin(pmin(1, sqrt(a)))
+        
+        # Tilordne stasjonen til det naermeste punktet
+        koordinater_for_prissoner$prisomrade[
+          which.min(avstand_km)
+        ]
+      }
     )
   ) |>
-  select(prisomrade, stasjoner) |>
-  unnest(stasjoner)
+  select(station, prisomrade, navn, latitude, longitude)
 
-# Se på utvalget før du henter data
-print(valgte_stasjoner, n = Inf)
+# Kontroller fordelingen
+stasjon_til_prissone |>
+  count(prisomrade)
 
-# ---------------------------------------------------------
-# 3. Henter vannføring for hver valgt stasjon
-#    (en liten pause mellom kallene for å være snill mot API-et)
-# ---------------------------------------------------------
+# Se alle stasjonene og deres tildelte prisomrade
 
-hent_en <- function(id) {
-  Sys.sleep(0.5)
-  hent_vannforing(
-    api_key,
-    station = id,
-    start_date = "2026-10-01",
-    end_date = Sys.Date()
-  )
-}
 
-tilsig_alle <- valgte_stasjoner |>
-  mutate(data = map(station, hent_en)) |>
-  select(prisomrade, station, data) |>
-  unnest(data, names_sep = "_") |>
-  rename(dato = data_dato, vannforing = data_vannforing) |>
-  select(prisomrade, station, dato, vannforing)
+# Kontroller hvilke stasjoner som skal hentes
 
 # ---------------------------------------------------------
-# 4. Samler til én verdi per prissone per dag.
-#    Stasjonene har ulik størrelse, så vi lager også en indeks der
-#    hver stasjons vannføring deles på stasjonens eget gjennomsnitt.
-#    Da veier ikke store elver tyngre bare fordi de er store.
+# 2. Hent data stasjon for stasjon
 # ---------------------------------------------------------
 
+# Hovedtibbel som ligger lokalt i R-sessionen
+tilsig_total <- tibble(
+  station = character(),
+  dato = as.Date(character()),
+  vannforing = numeric()
+)
 
-tilsig_behandlet <- tilsig_alle |>
-  lazy_dt() |>
+# Oversikt over eventuelle feil
+feilede_stasjoner <- tibble(
+  station = character(),
   
-  #finner vannførignen mot gjennomsnittlig vannføring for hver målestasjon
-  mutate(indeks = vannforing / mean(vannforing, na.rm = TRUE),
-    .by = station
+  feil = character()
+)
+
+# Går gjennom målestasjonene én etter én
+for (i in seq_len(nrow(stasjoner))) {
+  
+  stasjon <- stasjoner[i, ]
+  
+  id <- as.character(stasjon$station)
+
+  message(
+    "Henter stasjon ", id,
+    " (", i, " av ", nrow(stasjoner), ")"
+  )
+  
+  resultat <- tryCatch({
+    
+    Sys.sleep(0.5)
+    
+    data <- hent_vannforing(
+      api_key = api_key,
+      station = id,
+      start_date = "2020-01-01",
+      end_date = Sys.Date()
+    )
+    
+    if (nrow(data) == 0) { #stopper å lete, dersom det ikke retuneres noe
+      stop("Ingen data returnert")
+    }
+    
+    data |>
+      mutate(station = as.character(station)) |>
+      dplyr::select(station, dato, vannforing)
+    
+  }, error = function(e) {
+    
+    message(
+      "Feil for stasjon ", id, ": ",
+      conditionMessage(e)
+    )
+    
+    feilede_stasjoner <<- bind_rows(
+      feilede_stasjoner,
+      tibble(
+        station = id,
+        prisomrade = sone,
+        feil = conditionMessage(e)
+      )
+    )
+    
+    NULL
+  })
+  
+  # Fortsetter til neste stasjon dersom kallet feilet
+  if (is.null(resultat)) {
+    next
+  }
+  
+  # Legger dataene til hovedtibbelen i minnet
+  tilsig_total <- bind_rows(
+    tilsig_total,
+    resultat
+  )
+  
+ 
+}
+tilsig_total
+
+# Koordinater for prisomradene
+koordinater_for_prissoner <- tibble(
+  prisomrade = c("NO1", "NO2", "NO3", "NO4", "NO5"),
+  longitude = c(10.75, 6.72, 10.40, 14.40, 5.32),
+  latitude = c(59.91, 58.66, 63.43, 67.28, 60.39)
+)
+
+# Velg de fem naermeste stasjonene for hvert prisomrade
+stasjoner_prissone <- koordinater_for_prissoner |>
+  mutate(
+    stasjoner = purrr::map2(
+      longitude,
+      latitude,
+      \(lon, lat) naermeste_stasjoner(
+        stasjoner,
+        longitude = lon,
+        latitude = lat,
+        antall = 5
+      )
+    )
   ) |>
+  dplyr::select(prisomrade, stasjoner) |>
+  tidyr::unnest(stasjoner) |>
+  dplyr::select(station, prisomrade) |>
+  mutate(station = as.character(station)) |>
+  distinct()
 
-  as_tibble()
 
-View(tilsig_behandlet)
-# Rask kontroll: dekning per prissone
-tilsig_behandlet |>
-  summarise(
-    fra = min(datetime), til = max(datetime),
-    dager = n(), snitt_stasjoner = mean(antall_stasjoner),
-    .by = prisomrade
+
+
+
+
+tilsig_total <- tilsig_total |>
+  mutate(station = as.character(station)) |>
+  select(-any_of("prisomrade")) |>
+  left_join(
+    stasjon_til_prissone |>
+      select(station, prisomrade),
+    by = "station"
   )
 
-# Relativ sti, slik at skriptet fungerer uansett hvor prosjektet ligger
-saveRDS(tilsig_behandlet, "Datasett/tilsig_total_ferdig.rds")
+# Kontroller hvor mange stasjoner som ble koblet
+tilsig_total |>
+  summarise(
+    antall_stasjoner = n_distinct(station),
+    antall_med_prissone = n_distinct(
+      station[!is.na(prisomrade)]
+    ),
+    antall_uten_prissone = n_distinct(
+      station[is.na(prisomrade)]
+    )
+  )
+
+# Kontroller fordelingen per prisomrade
+tilsig_total |>
+  distinct(station, prisomrade) |>
+  count(prisomrade)
+View(tilsig_total)
+
+
+saveRDS(tilsig_total,
+        "Datasett/tilsig_total_denviskalbruke.rds")
 

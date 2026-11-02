@@ -3,8 +3,8 @@ title: "README"
 output: html_document
 ---
 
+# Forklaring av datakildene
 
-# Jeg må ha en oversikt over hvilke kilder jeg skal bruke. 
+I denne mappen ligger skriptene som er brukt til å hente inn data fra de ulike datakildene. Koden er strukturert i fire mapper: `henting_av_data_NVE`, `henting_av_data_nedbor`, `henting_av_data_ENTSO-E`.
 
-Jeg stukturerer slik at jeg har en fil for datainnsamlingen, som jeg så lagrer i tibbler. Dette gjør at dette slipper å lagres hver gang. 
-
+Nedbørsdataene er ikke benyttet i det endelige prosjektet, men skriptene er likevel inkludert i innleveringen for å dokumentere arbeidet med datainnhentingen. 
