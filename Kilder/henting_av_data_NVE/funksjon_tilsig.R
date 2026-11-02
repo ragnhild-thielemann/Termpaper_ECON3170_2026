@@ -69,7 +69,8 @@ hent_stasjoner <- function(api_key,
     )
   })
   
-  # Diagnose: hvor mange stasjoner kom tilbake, og hvor mange har serien vi vil ha?
+  #  hvor mange stasjoner kom tilbake, og hvor mange har serien vi vil ha?
+  # Gjør at vi kan følge API-kallet underveis
   message(
     "Stasjoner fra API: ", nrow(stasjoner),
     ", med vannføring i valgt oppløsning: ", sum(stasjoner$har_serie, na.rm = TRUE)
@@ -82,7 +83,8 @@ hent_stasjoner <- function(api_key,
 
 
 # ---------------------------------------------------------
-# 2. Finner de n nærmeste stasjonene til et punkt (haversine)
+# 2. Finner de n nærmeste stasjonene til et punkt
+# 
 # ---------------------------------------------------------
 
 naermeste_stasjoner <- function(stasjoner,

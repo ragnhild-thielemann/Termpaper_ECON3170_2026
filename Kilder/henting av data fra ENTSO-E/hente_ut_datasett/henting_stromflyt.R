@@ -3,13 +3,22 @@ library(xml2)
 library(dplyr)
 library(tibble)
 library(lubridate)
+library(docstring)
 
+#'Dette skriptet brukes til å 
+#'hente historiske data for strømflyt mellom 
+#'norske prisområder fra ENTSO-E sitt API. 
+#'Funksjonen hent_stromflyt() tar inn start- og sluttdato, 
+#'prisområdene det skal hentes data mellom, tilhørende EIC-koder 
+#'og API-nøkkel. Dataen brukes dog ikke i den ferdige analysen,
+#'bare for å få en forståelse av hvordan krafmarkedet fungerer. 
 
 # ------------------------------------------------------------
 # 1. API-nøkkel
 # ------------------------------------------------------------
 
-readRenviron("C:/Users/ragnh/OneDrive/Dokumenter/Termpaper_ECON3170_2026/Kilder/.Renviron")
+#Relativ filsti til API-nøkkelen
+readRenviron("Termpaper_ECON3170_2026/Kilder/.Renviron")
 
 api_key <- Sys.getenv("europa") #henter ut nøkkelen
 response <- httr2::request(

@@ -9,6 +9,7 @@ library(lubridate)
 
 
 hent_vannreservoar <- function(start_date ,
+                               #settes som standardverdier i funksjonen, 
                                end_date= Sys.Date(),
                                omrader = c("NO1", "NO2", "NO3", "NO4", "NO5")) { #har initialverdier for funksjonen, som kan endres om ønskelig
   
@@ -44,6 +45,6 @@ hent_vannreservoar <- function(start_date ,
       datetime,
       prisomrade
     )
-  
+  #retunerer res
   return(reservoarer)
 }
