@@ -1,7 +1,4 @@
----
-title: "README"
-output: html_document
----
+
 Mappen `henting av data fra ENTSO-E` inneholder skript med funksjonsdefinisjoner for uthenting av ulike datatyper fra ENTSO-E sitt API. Funksjonene er fordelt på separate skript etter hva slags data de henter eller behandler:
 
 - `funksjon_henteAPInokkel.R`: håndterer uthenting av API-nøkkel.
