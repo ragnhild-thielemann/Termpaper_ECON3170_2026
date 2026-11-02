@@ -11,3 +11,7 @@ Prosjektet har en utforskende og prediktiv tilnærming. Målet er å undersøke 
 ## Mappestruktur og arbeidsflyt
 
 Prosjektet er organisert slik at datainnsamling, databehandling og analyse gjennomføres i separate skript. Dette gjør det enklere å holde oversikt over datakildene, vedlikeholde koden og unngå unødvendig gjentakelse av beregninger og API-kall.
+
+- Mappen `Datasett` inneholder datasett som er hentet inn og bearbeidet underveis i prosjektet. Her lagres både mellomliggende datasett fra de ulike stegene i databehandlingen og datasett som benyttes i den endelige analysen. Dette gjør det mulig å gjenbruke allerede innhentede og bearbeidede data, uten å måtte gjennomføre alle API-kall og beregninger på nytt.
+- Mappen `Analyse` inneholder den ferdige analysen, samt en prosjektbeskrivelse som redegjør for prosjektets formål, datagrunnlag og metodiske tilnærming.
+- Mappen `Kilder` inneholder skriptene som brukes til å hente inn data fra de ulike datakildene, hovedsakelig ENTSO-E og NVE. Skriptene inneholder funksjoner for datauthenting og tilhørende API-kall.
