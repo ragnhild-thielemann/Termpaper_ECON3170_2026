@@ -472,11 +472,21 @@ Analysen av dataene (den linjære regresjonsmodellen) er i  basert på metodene 
 I skriveprosessen skrev jeg et førsteutkast selv, og brukte deretter gratisversjonen av ChatGPT som et hjelpemiddel til å forbedre settingstrukturen og flyten i teksten. Det faglige innholdet og vurderingene som er gjort underveis er mine egne.  
 
 ## Personvernsutfordringer {.unnumbered}
-Jeg valgte LLM-modell før jeg var kjent med personvernsutfordringene  knyttet til ChatGPT. I etterkant av prosjektet har jeg tatt *HMS0508 God bruk av kunstig intelligens*, som har gitt økt forståelse for personvern- og etiske utfordringer ved gratis språkmodeller. Dersom jeg hadde gjort prosjektet på nytt, ville jeg heller brukt Claude Code, som tilbyr mer transparent kodegenerering, samtidig som de har bedre personvernforordninger. 
+Jeg valgte LLM-modell før jeg var kjent med personvernsutfordringene  knyttet til ChatGPT. I etterkant av prosjektet har jeg tatt *HMS0508 God bruk av kunstig intelligens*, som har gitt økt forståelse for personvern- og etiske utfordringer ved gratis språkmodeller. Dersom jeg hadde gjort prosjektet på nytt, ville jeg heller brukt Claude Code, som tilbyr mer transparent kodegenerering, samtidig som de har bedre personvernforordninger.
 
-Slik jeg ser det, gis kunstig intelligens oss mulighet til å arbeide med langt mer avanserte problemstillinger enn det forkunnskapene våre alene skulle tilsi, noe dette prosjektet er et godt eksempel på. Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - av sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
+Jeg tror evnen til å bruke kunstig intelligens på en hensiktsmessig, kritisk og reflektert måte vil bli stadig viktigere i høyere utdanning. Dette prosjektet har vist meg hvordan KI kan utvide mine faglige muligheter, bidra til nye perspektiver og gjøre det mulig å arbeide med problemstillinger jeg ellers ikke ville hatt forutsetninger til å utforske. Erfaringen har også gitt meg en større forståelse av hvordan KI kan brukes som et verktøy for læring, analyse og faglig utvikling.
+
+Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - av sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
 
 # Referanser{.unnumbered}
+## Bruk av R-pakker{.unnumbered}
+
 
 ::: {#refs}
 :::
+
+# Vedlegg {.unnumbered}
+
+Jeg har lagt ved all R-koden som er benyttet i prosjektet, samlet i en ZIP-fil. README-filene beskriver hvordan koden er strukturert, og gir en oversikt over mappene og de ulike modulene, slik at det skal være enkelt å navigere i prosjektet.
+
+Prosjektet ble ganske omfattende, blant annet fordi jeg har valgt en modulbasert tilnærming med separate filer for ulike deler av datainnsamlingen, databehandlingen og analysen. Arbeidet har vært svært lærerikt, og det har vært spesielt spennende å se hvordan KI kan fungere som et nyttig verktøy for å utforske og gjennomføre et så omfattende prosjekt.
