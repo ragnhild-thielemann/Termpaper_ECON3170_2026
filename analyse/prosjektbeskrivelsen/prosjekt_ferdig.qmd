@@ -13,7 +13,7 @@ number-sections: true
 lang: nb # Uncomment if writing in Norwegian (gives "Figur", "Tabell")
 fig-cap-location: bottom
 abstract: |
-  I dette prosjektet har jeg innhentet og bearbeidet store datasett fra ENTSO-E og NVE, og utviklet en strukturert kodeflyt for å analysere strømpriser i norske prisområder. Ved hjelp av lineære regresjonsmodeller undersøker jeg hvilke variabler som bidrar til å forklare og predikere prisutviklingen. Modellene oppnår best prediksjonsevne i NO1 og NO2, med test-R² på henholdsvis 0.52 og 0.60, der europeiske strømpriser er sentrale forklaringsvariabler. I NO3 presterer modellen dårligere enn en enkel modell som predikerer gjennomsnittsprisen, blant annet fordi den ikke fanger opp den kraftige prisøkningen i testperioden. Prosjektet har gitt erfaring med API-er, effektiv databehandling, kodeorganisering og statistisk modellering.
+  I dette prosjektet har jeg innhentet og bearbeidet store datasett fra ENTSO-E og NVE, og utviklet en strukturert kodeflyt for å analysere strømpriser i norske prisområder. Ved hjelp av lineære regresjonsmodeller undersøker jeg hvilke variabler som bidrar til å forklare og predikere prisutviklingen. Modellene oppnår best prediksjonsevne i NO1 og NO2, med test-R² på henholdsvis 0.52 og 0.60, der europeiske strømpriser er sentrale forklaringsvariabler. I NO3 presterer modellen dårligere enn en enkel modell som predikerer gjennomsnittsprisen, blant annet fordi den ikke fanger opp den kraftige prisøkningen i testperioden. Prosjektet har gitt erfaring med API-er, effektiv databehandling, kodeorganisering og statistisk modellering. Rapporten består av ti sider med prosjektbeskrivelse og analyse, i tillegg til tre sider som redegjør for bruk av KI og kilder i arbeidet.
 
 format: typst
 execute:
@@ -479,7 +479,7 @@ Jeg tror evnen til å bruke kunstig intelligens på en hensiktsmessig, kritisk o
 Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - av sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
 
 # Referanser{.unnumbered}
-## Bruk av R-pakker{.unnumbered}
+## Bruk av 
 
 
 ::: {#refs}
@@ -487,6 +487,6 @@ Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham 
 
 # Vedlegg {.unnumbered}
 
-Jeg har lagt ved all R-koden som er benyttet i prosjektet, samlet i en ZIP-fil. README-filene beskriver hvordan koden er strukturert, og gir en oversikt over mappene og de ulike modulene, slik at det skal være enkelt å navigere i prosjektet.
+All R-kode som er benyttet i prosjetet leveres som en zip-fil. README-filene beskriver hvordan koden er strukturert, samt gir en oversikt over mappene, slik at det skal være enkelt å navigere i prosjektet.
 
-Prosjektet ble ganske omfattende, blant annet fordi jeg har valgt en modulbasert tilnærming med separate filer for ulike deler av datainnsamlingen, databehandlingen og analysen. Arbeidet har vært svært lærerikt, og det har vært spesielt spennende å se hvordan KI kan fungere som et nyttig verktøy for å utforske og gjennomføre et så omfattende prosjekt.
+Prosjektet ble ganske omfattende, blant annet fordi jeg har valgt en modulbasert tilnærming med separate filer for ulike deler av datainnsamlingen, databehandlingen og analysen. Arbeidet har vært svært lærerikt, og det har vært spesielt spennende å se hvordan KI kan fungere som et nyttig verktøy for å utforske og gjennomføre et omfattende prosjekt.
