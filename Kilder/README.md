@@ -1,13 +1,23 @@
+# Datainnhenting fra eksterne kilder
 
-# Bruk av AI i kildeuthentingen
+Denne mappen inneholder R-skriptene som er benyttet til å hente inn data fra de eksterne datakildene NVE og ENTSO-E. Koden er organisert i følgende undermapper:
 
-I denne mappen ligger skriptene som er brukt til å hente inn data fra de ulike datakildene. Koden er strukturert i fire mapper: `henting_av_data_NVE`, `henting_av_data_nedbor`, `henting_av_data_ENTSO-E`.
+- `henting_av_data_NVE`: Skript for innhenting av hydrologiske data fra NVE, blant annet magasinfylling og vannføring.
+- `henting_av_data_nedbor`: Skript for innhenting av nedbørsdata.
+- `henting_av_data_ENTSO-E`: Skript for innhenting av strømpriser, kraftforbruk og kraftflyt fra ENTSO-E.
 
-Nedbørsdataene er ikke benyttet i det endelige prosjektet, men skriptene er likevel inkludert i innleveringen for å dokumentere arbeidet med datainnhentingen. 
+Nedbørsdataene er ikke benyttet i den endelige analysen, men skriptene er inkludert for å dokumentere arbeidet med datainnhentingen og hvilke datakilder som ble undersøkt.
 
-Bruk av AI i kildehentingen
-Jeg har benyttet ChatGPT som støtte til å identifisere relevante datasett og forstå dokumentasjonen til ENTSO-E og NVE. Promptene har i hovedsak tatt utgangspunkt i hvilke sammenhenger jeg ønsket å undersøke i analysen, og hvilke variabler jeg trengte for å belyse disse. Jeg har blant annet bedt ChatGPT om hjelp til å identifisere relevante API-endepunkter, parametere og dataforespørsler for å hente ut strømpriser, kraftforbruk, kraftflyt, magasinfylling, vannføring og nedbørsdata.
+## Bruk av generativ KI i datainnhentingen
 
-For ENTSO-E spesifiserte jeg hvilke prisområder og omkringliggende europeiske markeder jeg ønsket data fra, hvilke typer observasjoner jeg trengte, og hvilken tidsperiode dataene skulle dekke (2020–2026). For NVE ba jeg om hjelp til å finne relevante hydrologiske datasett, blant annet magasinfylling, tilsig og nedbør, samt hvordan målinger fra ulike målestasjoner kunne hentes ut og sammenstilles.
+ChatGPT har blitt benyttet som et støtteverktøy for å identifisere relevante datasett, tolke API-dokumentasjonen og utforme kode for datainnhenting. Promptene tok utgangspunkt i hvilke sammenhenger som skulle undersøkes i analysen, og hvilke variabler som var nødvendige for å belyse disse.
 
-Arbeidet foregikk iterativt: Jeg beskrev ønsket datainnhold, fikk forslag til API-kall og kode, og justerte forespørslene underveis basert på dokumentasjonen og resultatene jeg fikk. Jeg brukte også ChatGPT til å forstå feilmeldinger og rette opp syntaks og parametere. Selve API-kallene ble gjennomført av meg ved hjelp av egne API-nøkler.
+For ENTSO-E omfattet arbeidet blant annet identifisering av relevante prisområder og omkringliggende europeiske markeder, aktuelle datatyper, API-parametere og tidsavgrensninger (2020–2026). For NVE ble ChatGPT brukt til å finne relevante hydrologiske datasett, undersøke tilgjengelige endepunkter og forstå hvordan målinger fra ulike målestasjoner kunne hentes ut og sammenstilles.
+
+Arbeidet foregikk iterativt. Jeg beskrev ønsket datainnhold, fikk forslag til API-forespørsler og R-kode, og videreutviklet løsningene gjennom testing og feilsøking. ChatGPT ble også brukt til å tolke feilmeldinger, identifisere feil i eksisterende kode og foreslå forbedringer. Jeg har selv vurdert og tilpasset kodeforslagene og gjennomført samtlige API-kall.
+
+## API-nøkler og reproduksjon av datainnhentingen
+
+Prosjektet benytter en `.Renviron`-fil til å lagre API-nøkler for tilgang til ENTSO-E og NVE. Filen inneholder private tilgangsnøkler og er derfor ikke inkludert i innleveringen.
+
+Dersom en annen bruker ønsker å gjennomføre datainnhentingen på nytt, må vedkommende opprette egne API-nøkler hos de respektive dataleverandørene og lagre disse i en lokal `.Renviron`-fil. Variabelnavnene må samsvare med dem som er benyttet i R-skriptene.
