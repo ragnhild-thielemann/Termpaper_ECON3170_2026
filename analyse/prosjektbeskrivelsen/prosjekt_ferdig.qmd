@@ -15,7 +15,14 @@ fig-cap-location: bottom
 abstract: |
   I dette prosjektet har jeg innhentet og bearbeidet store datasett fra ENTSO-E og NVE, og utviklet en strukturert kodeflyt for å analysere strømpriser i norske prisområder. Ved hjelp av lineære regresjonsmodeller undersøker jeg hvilke variabler som bidrar til å forklare og predikere prisutviklingen. Modellene oppnår best prediksjonsevne i NO1 og NO2, med test-R² på henholdsvis 0.52 og 0.60, der europeiske strømpriser er sentrale forklaringsvariabler. I NO3 presterer modellen dårligere enn en enkel modell som predikerer gjennomsnittsprisen, blant annet fordi den ikke fanger opp den kraftige prisøkningen i testperioden. Prosjektet har gitt erfaring med API-er, effektiv databehandling, kodeorganisering og statistisk modellering. Rapporten består av ti sider med prosjektbeskrivelse og analyse, i tillegg til tre sider som redegjør for bruk av KI og kilder i arbeidet.
 
-format: typst
+format: 
+  typst:
+    fig-cap-location: bottom
+    fig-align: center
+    include-in-header:
+      text: |
+        #show figure.caption: set text(size: 9pt)
+        #show figure.caption: set block(below: 12pt)
 execute:
   echo: false
   warning: false
@@ -26,10 +33,10 @@ execute:
 
 ```{r}
 #| label: fig-strompriser
-#| fig-cap: "Utvikling i strømpriser i norske prisområder fra 2020 til 2026."
-#| height: 2.5
-#| length: 6
-#| out-width: 70%
+#| fig-cap: "Utviklingen i spotpriser for strøm i de fem norske prisområdene (NO1–NO5) i perioden 2020–2026. Figuren viser variasjoner i prisnivå og prisutvikling over tid, samt forskjeller mellom prisområdene. Prisene er oppgitt i øre per kWh."
+#| height: 2.4
+#| length: 5
+#| out-width: 60%
 
 
 library(tidyverse)
@@ -42,31 +49,30 @@ tibble <- readRDS(here("Datasett", "tibble5.rds"))|>
 
 p1 <- tibble |>
   ggplot(aes(x = datetime, y = pris_norge, color = prisomrade)) + 
-  geom_line(alpha = 0.7,linewidth = 0.3) + 
+  geom_line(alpha = 0.7, linewidth = 0.2) + 
   labs(
     title = "Strompriser i norske prisomrader",
-    
     x = "Tidspunkt",
     y = "Spotpris (ore/kWh)",
-    color = "Prisomrade")+
-  
- 
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y" ) + 
+    color = "Prisomrade"
+  ) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") + 
   scale_y_continuous(
     labels = label_number(
       big.mark = " ",
       decimal.mark = ","
-    )) + 
+    )
+  ) +
+  theme_bw() +
   theme(
-    plot.title = element_text(size = 25),
-    
-    axis.text.y = element_text(size = 12),
-    axis.title.y = element_text(size = 14),
-    axis.title.x = element_text(angle = 45,hjust = 1)) +
-  
-  theme_bw()
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.text.y = element_text(size = 8),
+    axis.title.y = element_text(size = 9),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
 
 p1
+
 
 ```
 # Motivasjon for prosjektet
@@ -122,10 +128,10 @@ prisomrader |>
 I tillegg til spotprisen varierer kraft-produksjonen og forbruk mellom prisområdene, som vist i @tbl-prisomrader. @fig-kraftprodukjson viser fordelingen av kraftproduksjonen i de ulike prisområdene, og det er tydelig at vannkraft utgjør en betydelig del produksjonen. Vannkraft med magasiner skiller seg fra mange andre fornybare energikilder ved at produksjonen til en viss grad kan reguleres ved å styre hvor mye vann som slippes gjennom turbinene.
 ```{r}
 #| label: fig-kraftprodukjson
-#| fig-cap: "Sammensetning av kraftprosuksjonen i ulike prisområder"
-#|height: 2.5
-#| length: 6
-#| out-width: 70%
+#| fig-cap: "Gjennomsnittlig timeproduksjon fordelt på produksjonskilde og prisområde i perioden 2020–2026. Søylene viser gjennomsnittlig produksjon (MW) for hver produksjonskilde i de fem norske prisområdene, og illustrerer forskjeller i både produksjonssammensetning og produksjonsnivå mellom områdene."
+#|height: 2.4
+#| length: 5
+#| out-width: 65%
 
 library(tidyverse)
 library(janitor)
@@ -150,9 +156,12 @@ tibble <- readRDS(here("Datasett","tibble5.rds"))|>
 soylediagram <- tibble|>
   ggplot(aes(x = produksjonskilde, y = produksjon, fill = prisomrade)) + 
   geom_col(position = "dodge") + 
-  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW)", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
+  labs(x = "Produksjonskilde", y = "Gjennomsnittlig produksjon per time (MW) ", title = "Fordeling av ulike produksjonkilder (2020-2026)", fill = "Prisomrader") +
   theme_bw() + 
-   theme(
+     theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.text.y = element_text(size = 8),
+    axis.title.y = element_text(size = 8),
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
@@ -240,7 +249,7 @@ mål på tilsiget i de ulike prisområdene. Jeg kunne utelatt ekstremverdiene, o
 
 ```{r}
 #| label: fig-malestasjoner
-#| fig-cap: "Støy i hydrologiske forhold"
+#| fig-cap: "Tidsserier for målt vannføring ved de ulike hydrologiske målestasjonene. Hver linje representerer én målestasjon og viser hvordan vannføringen varierer over tid. Figuren viser betydelige forskjeller i absolutt vannføringsnivå mellom stasjonene, noe som gjør det utfordrende å sammenstille målingene og gjennomføre en overordnet analyse av vannføringen på tvers av stasjonene."
 #| height: 2.5
 #| length: 6
 #| out-width: 70%
@@ -261,10 +270,10 @@ ggplot(tilsig_total) +
     alpha = 0.7
   ) +
   labs(
-    title = "Stor variasjon i vannforing mellom malestasjoner",
+    title = "Stor variasjon i vannforing mellom målestasjoner",
     subtitle = "Enkelte store observasjoner dominerer variasjonen i datasettet",
-    x = "Dato",
-    y = "Vannforing"
+    x = "År",
+    y = "Vannføring"
   ) +
   scale_x_date(
     date_breaks = "1 year",
@@ -314,8 +323,6 @@ P_{t,j} = \beta_{0,j}
 $$
 
 Her betegner $P_{t,j}$ strømprisen i prisområde $j$ på tidspunkt $t$, $F_{t,j}$ strømforbruket, $M_{t,j}$ produksjonen fra magasinkraftverk, $V_{t,j}$ fyllingsgraden i vannmagasinene og $E_t$ europeisk strømpris. Konstantleddet betegnes med $\beta_{0,j}$, mens $\hat{\beta}_{1,j}  \ldots, \hat{\beta}_{4,j}$ er regresjonskoeffisientene. Det normalfordelte feilleddet betegnes med $\varepsilon_{t,j} \overset{\text{iid}}{\sim} N(0,\sigma^2)$.
-
-Modellen antar at feilleddene $\varepsilon_{t,j} {\sim} N(0,\sigma^2)$. Antagelsen om konstant varians innebærer at variasjonen i feilleddene er den samme på tvers av tidspunkter og prisområder. Det er mulig at denne antagelsen ikke holder for strømpriser, men testing for heteroskedastisitet ligger utenfor prosjektets omfang.
 
 
 ## Valg av forklaringsvariabler ^[Se *analyse/analyse_steg4/ferdig_til_tibble.R* ]
@@ -401,7 +408,7 @@ De tilpassede modellene brukes til å predikere strømprisene i testsettet. Pred
 
 ```{r}
 #| label: tbl-metrikker
-#| fig-cal: "Oversikt over metrikkene"
+#| fig-cal: "Modellresultater for de fem norske prisområdene, med tilhørende RMSE og test-R². Sammenligning av modellene må gjøres med forsiktighet, ettersom antallet forklaringsvariabler varierer mellom prisområdene."
 
 library(here)
 
@@ -438,7 +445,7 @@ For å undersøke hvilke forklaringsvariabler som har sterkest sammenheng med st
 
 ```{r}
 #| label: fig-plott
-#| fig-cap: "Plott av standardiserte regresjonskoeffisienter"
+#| fig-cap: "Standardiserte regresjonskoeffisienter med tilhørende tilnærmede 95 % konfidensintervaller for forklaringsvariablene i de fem norske prisområdene. Plottet viser variasjoner i både styrke og retning på sammenhengene mellom variablene og strømprisene. Europeiske priser er kun inkludert for NO1 og NO2, da data mangler for NO3, mens NO4 og NO5 ikke har direkte utenlandsforbindelser til det europeiske kraftmarkedet."
 
 library(here)
 plot <- readRDS(here("Datasett","koeffisient_plot.rds"))
@@ -457,30 +464,22 @@ Prosjektets hovedfunn er at europeiske strømpriser er en sentral forklaringsvar
 
 # Bruk av KI{.unnumbered}
 
-Jeg har benyttet gratisversjonen av ChatGPT (GPT-5 mini og GPT-5 Thinking Mini) som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. Gratisversjonen gir tilgang til enklere språkmodeller med mer begrenset kapasitet og kontekstminne. Jeg har derfor benyttet ChatGPT som en stegvis støtte i programmeringsarbeidet, fremfor å overlate hele prosjektet til en LLM.
+Jeg har benyttet gratisversjonen av ChatGPT (GPT-5 mini og GPT-5 Thinking Mini) som et hjelpemiddel i programmeringsarbeidet, særlig ved innhenting av data fra ENTSO-E og NVE. Gratisversjonen gir tilgang til enklere språkmodeller med mer begrenset kapasitet og kontekstminne. Jeg har derfor benyttet ChatGPT som en steg-vis støtte i programmeringsarbeidet, fremfor å overlate hele prosjektet til en LLM. Jeg har utelukkende brukt generativ KI i projektet. 
 
+ChatGPT har blitt brukt som et støtteverktøy gjennom arbeidet med API-integrasjonene. Jeg har beskrevet hvilke data jeg ønsker å hente ut, og fått hjelp til å tolke API-dokumentasjonen, utforme API-forespørsler og videreutvikle R-koden. Språkmodellen har også vært nyttig i arbeidet med feilsøking og optimalisering. Når jeg har oppdaget feil eller begrensninger i koden, har jeg beskrevet problemene og fått forslag til mulige løsninger. Et eksempel er oppdelingen av API-forespørsler i månedsintervaller for å unngå tidsavbrudd ved uthenting av store datamengder. Gjennom denne prosessen har jeg fått hjelp til å utvikle mer robuste og effektive løsninger, samtidig som jeg har opparbeidet meg bedre forståelse av API-strukturer og hvordan API-forespørsler bygges opp. Jeg har selv vurdert og tilpasset kodeforslagene, stått for implementeringen og gjennomført samtlige API-kall. Ettersom tilgang til API-ene fra ENTSO-E og NVE krever personlige API-nøkler, har all datainnhenting blitt gjennomført av meg.
 
-API-ene har omfattende dokumentasjon og komplekse strukturer, og det er være svært tid- og ressurskrevende å finne riktig syntaks og utforme dataforespørsler, særlig da jeg hadde begrenset forkunnskap om API-er.
-
-
-Arbeidsprosessen har vært at jeg beskriver hva jeg ønsker å hente ut, hvorpå ChatGPT foreslår kode for å konstruere API-kallene. Jeg gjennomgår deretter kodeforslagene, kontrollerer at forespørslene er korrekt utformet og feilsøker eventuelle problemer før jeg gjennomfører API-kallene selv.
-
-Ettersom både ENTSO-E og NVE krever API-nøkler for tilgang til API-ene, har ChatGPT ikke kunnet utføre API-kallene direkte. Språkmodellen har derfor kun blitt brukt som et hjelpemiddel til å forstå dokumentasjonen, utforme kodeforslag og feilsøke. Jeg har selv stått for implementering, kvalitetssikring og gjennomføring av samtlige API-kall.
-
-Analysen av dataene (den linjære regresjonsmodellen) er i  basert på metodene og fremgangsmåtene vi har gjennomgått i seminarene. Jeg har imidlertid benyttet ChatGPT som støtte til å utforme og forbedre visualiseringer og tabeller, slik at resultatene presenteres på en oversiktlig og hensiktsmessig måte.
+Den statistiske analysen av dataene, altså utformingen av de lineære regresjonsmodellene, er gjennomført med utgangspunkt i metodene og fremgangsmåtene vi har arbeidet med i seminarene. ChatGPT har imidlertid blitt benyttet som støtte i utformingen og forbedringen av visualiseringer og tabeller, med mål om å presentere dataene og analyseresultatene på en oversiktlig og hensiktsmessig måte.
 
 I skriveprosessen skrev jeg et førsteutkast selv, og brukte deretter gratisversjonen av ChatGPT som et hjelpemiddel til å forbedre settingstrukturen og flyten i teksten. Det faglige innholdet og vurderingene som er gjort underveis er mine egne.  
 
 ## Personvernsutfordringer {.unnumbered}
-Jeg valgte LLM-modell før jeg var kjent med personvernsutfordringene  knyttet til ChatGPT. I etterkant av prosjektet har jeg tatt *HMS0508 God bruk av kunstig intelligens*, som har gitt økt forståelse for personvern- og etiske utfordringer ved gratis språkmodeller. Dersom jeg hadde gjort prosjektet på nytt, ville jeg heller brukt Claude Code, som tilbyr mer transparent kodegenerering, samtidig som de har bedre personvernforordninger.
+Jeg valgte LLM-modell før jeg var kjent med personvernsutfordringene  knyttet til ChatGPT. I etterkant av prosjektet har jeg tatt *HMS0508 God bruk av kunstig intelligens*, som har gitt økt forståelse for personvern- og etiske utfordringer ved gratis språkmodeller. 
 
 Jeg tror evnen til å bruke kunstig intelligens på en hensiktsmessig, kritisk og reflektert måte vil bli stadig viktigere i høyere utdanning. Dette prosjektet har vist meg hvordan KI kan utvide mine faglige muligheter, bidra til nye perspektiver og gjøre det mulig å arbeide med problemstillinger jeg ellers ikke ville hatt forutsetninger til å utforske. Erfaringen har også gitt meg en større forståelse av hvordan KI kan brukes som et verktøy for læring, analyse og faglig utvikling.
 
 Den sterkeste mann i denne verden, er ikke ham som står mest alene. Det er ham som ber om hjelp, enten av en venn, eller i mitt tilfelle - av sin favoritt LLM. ^[For flere innsikter, se Ibsen (1882). ] 
 
 # Referanser{.unnumbered}
-## Bruk av 
-
 
 ::: {#refs}
 :::
